@@ -1,4 +1,4 @@
-#SoundBites
+# SoundBites
 
 ## Table of Contents
 1. [Description](#Description)
