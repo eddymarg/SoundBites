@@ -2,7 +2,7 @@
 
 ## Table of Contents
 1. [Description](#Description)
-2. [ERD](#Product-Spec)
+2. [ERD](#ERD)
 
 
 ## Description
