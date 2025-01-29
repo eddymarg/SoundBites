@@ -3,3 +3,12 @@ body {
     background-repeat: no-repeat;
     background-attachment: fixed;
 }
+
+.padding {
+    padding-top: 0.2rem;
+    padding-left: 1rem;
+}
+
+.padding-right {
+    padding-left: 0.5rem;
+}

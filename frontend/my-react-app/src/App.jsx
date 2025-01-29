@@ -1,7 +1,17 @@
 // Root component of application
 import React from "react"
 import { Route, createBrowserRouter, createRoutesFromElements, RouterProvider} from "react-router-dom"
+import { createTheme, ThemeProvider } from '@mui/material'
 import Home from "./pages/home"
+
+const theme = createTheme({
+  palette: {
+    mainRed: {
+      main: '#EF233C',
+      light: '#EF233C70'
+    }
+  }
+})
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -14,7 +24,9 @@ function App({routes}) {
 
   return (
     <>
-      <RouterProvider router={router}/>
+      <ThemeProvider theme={theme}>
+        <RouterProvider router={router}/>
+      </ThemeProvider>
     </>
   )
 }
