@@ -6,9 +6,13 @@ import Home from "./pages/home"
 
 const theme = createTheme({
   palette: {
+    basic: {
+      main: '#FFFFFF',
+      dark: '#EF233C50',
+    },
     mainRed: {
       main: '#EF233C',
-      light: '#EF233C70'
+      light: '#EF233C70',
     }
   }
 })
