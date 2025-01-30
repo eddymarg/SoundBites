@@ -3,6 +3,8 @@ import React from "react"
 import { Route, createBrowserRouter, createRoutesFromElements, RouterProvider} from "react-router-dom"
 import { createTheme, ThemeProvider } from '@mui/material'
 import Home from "./pages/home"
+import SignIn from "./pages/SignIn"
+import EmailSignup from "./pages/EmailSignUp"
 
 const theme = createTheme({
   palette: {
@@ -21,11 +23,13 @@ const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/">
       <Route index element={<Home />}/>
+      <Route path="signin" element={<SignIn />}/>
+      <Route path="emailSignup" element={<EmailSignup />}/>
     </Route>
   )
 )
-function App({routes}) {
 
+function App({routes}) {
   return (
     <>
       <ThemeProvider theme={theme}>

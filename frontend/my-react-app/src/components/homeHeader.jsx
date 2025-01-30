@@ -1,9 +1,10 @@
 import React from "react"
 import { Button, Stack } from "@mui/material"
-import { Link } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
+import { Logo } from "../assets/Logo"
+import { useAuth0 } from "@auth0/auth0-react"
 import "../css/home.css"
 import '@fontsource/roboto/500.css'
-import { Logo } from "../assets/Logo"
 
 const ScrollToTop = () => {
     window.scrollTo({
@@ -13,6 +14,8 @@ const ScrollToTop = () => {
 }
 
 const HomeHeader = () => {
+    const navigate = useNavigate()
+
     return (
         <nav>
             <Stack direction="row" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginRight: '1rem'}}>
@@ -35,7 +38,7 @@ const HomeHeader = () => {
                     >
                         About
                     </Button>
-                    <Button variant="contained" color="mainRed" fontWeight=""
+                    <Button variant="contained" color="mainRed" onClick={() => navigate("/signin")}
                         sx={{
                             color: "white",
                             width: "140px",
@@ -50,7 +53,7 @@ const HomeHeader = () => {
                             }
                         }}
                     >
-                        Sign In
+                        Log In
                     </Button>
                 </Stack>
             </Stack>

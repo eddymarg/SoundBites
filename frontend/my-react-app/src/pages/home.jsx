@@ -1,5 +1,6 @@
 import React from "react"
 import { Stack, Button, Typography, Avatar } from "@mui/material"
+import { useNavigate } from "react-router-dom"
 import EmailIcon from '@mui/icons-material/Email';
 import HomeHeader from "../components/homeHeader"
 import { NoteLogo } from "../assets/noteLogo"
@@ -7,6 +8,8 @@ import '@fontsource/roboto/500.css'
 import "../css/home.css"
 
 const Home = () => {
+    const navigate = useNavigate()
+
     return(
         <div>
             <HomeHeader />
@@ -33,7 +36,7 @@ const Home = () => {
                     >
                         Continue with Spotify
                     </Button>
-                    <Button variant="contained" color="basic" startIcon={<EmailIcon/>}
+                    <Button variant="contained" color="basic" startIcon={<EmailIcon/>} onClick={() => navigate("/EmailSignup")}
                     sx={{
                         width: '525px',
                         height: '70px',
