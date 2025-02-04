@@ -2,9 +2,9 @@ const User = require("../models/User")
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 
-exports.register = async (req, res) => {
+exports.signup = async (req, res) => {
     try {
-        const { email, password } = req.body
+        const { name, email, password } = req.body
 
         // check for existing user
         let user = await User.findOne({ email })
@@ -16,6 +16,7 @@ exports.register = async (req, res) => {
 
         // create new user
         user = new User({
+            name,
             email,
             password: hashedPassword,
         })
@@ -23,7 +24,7 @@ exports.register = async (req, res) => {
         await user.save()
         res.status(201).json({ msg: "User registered successfully" })
     } catch (err) {
-        res.status(500).json({ msg: "Server error" })
+        res.status(500).json({ msg: err.message || "Internal Server Error" })
     }
 }
 
@@ -44,8 +45,15 @@ exports.login = async (req, res) => {
             expiresIn: "1h",
         })
 
-        res.json({ token, user: { id: user._id, email: user.email }})
+        // send token in HTTP-only cookie(more security)
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production", 
+            sameSite: "strict",
+        })
+
+        res.json({ user: { id: user._id, email: user.email }})
     } catch(err) {
-        res.status(500).json({ msg: "Server error" })
+        res.status(500).json({ msg: "Internal server error" })
     }
 }
