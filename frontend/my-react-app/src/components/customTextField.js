@@ -1,6 +1,7 @@
-import { styled, TextField } from "@mui/material";
+import { styled, TextField, InputAdornment, IconButton } from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material"
 
-const CustomTextField = styled(TextField)({
+const CustomTextField = styled(TextField)(({ theme })=> ({
     '& .MuiInputLabel-root': {
         color: '#0D1B2A',
         '&.Mui-focused': {
@@ -19,6 +20,6 @@ const CustomTextField = styled(TextField)({
     input: {
         color: '#0D1B2A',
     },
-})
+}))
 
 export default CustomTextField

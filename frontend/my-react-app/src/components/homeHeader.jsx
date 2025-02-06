@@ -1,5 +1,5 @@
 import React from "react"
-import { Button, Stack } from "@mui/material"
+import { Button, Box, Stack } from "@mui/material"
 import { useNavigate } from "react-router-dom"
 import { Logo } from "../assets/Logo"
 import { useAuth0 } from "@auth0/auth0-react"
@@ -20,7 +20,17 @@ const HomeHeader = () => {
         <nav>
             <Stack direction="row" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginRight: '1rem'}}>
                 {/* NEED TO MAKE CLICKABLE ONCE PAGE EXPANDS */}
-                <Logo/>
+                <Box
+                    onClick={window.scrollTo(0,0)}
+                    sx={{
+                        transition: "transform 0.3s ease-in-out",
+                        "&:hover": {
+                            transform: "scale(1.1)"
+                        }
+                    }}
+                >
+                    <Logo/>
+                </Box>
                 <Stack spacing={2} direction="row">
                     <Button variant="outlined" color="mainRed"
                     sx={{
