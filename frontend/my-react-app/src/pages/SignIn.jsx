@@ -1,11 +1,17 @@
 import React from "react"
-import { useAuth0 } from "@auth0/auth0-react"
+import axios from "axios"
+import { useState } from "react"
 import { Typography, Stack, TextField, Button } from "@mui/material"
-import { Logo } from "../assets/Logo"
 import { NoteLogo } from "../assets/noteLogo"
+import { useNavigate } from "react-router-dom"
 
 const SignIn = () => {
-    const { loginWithRedirect } = useAuth0();
+    const navigate = useNavigate();
+
+    // states for input fields
+    const [email, setEmail] = useState("")
+    const [password, setPassword] = useState("")
+    const [error, setError] = useState("")
 
     return(
         <Stack>
