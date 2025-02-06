@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Typography, Stack, TextField, Button} from "@mui/material"
 import { useNavigate } from "react-router-dom"
 import signupImage from "../assets/signup-img.png"
+import CustomTextField from "../components/customTextField"
 
 const EmailSignup = () => {
     const navigate = useNavigate()
@@ -43,7 +44,7 @@ const EmailSignup = () => {
                     }}
                 >Welcome to the <br /> community!</Typography>
                 <Typography fontSize='40px' fontWeight={700}>Sign Up</Typography>
-                <TextField 
+                <CustomTextField 
                     id="outlined-basic" 
                     label="Name" 
                     variant="outlined" 
@@ -53,7 +54,7 @@ const EmailSignup = () => {
                         width: '428px'
                     }}
                 />
-                <TextField 
+                <CustomTextField 
                     id="outlined-basic" 
                     label="Email" 
                     variant="outlined" 
@@ -63,7 +64,7 @@ const EmailSignup = () => {
                         width: '428px'
                     }}
                 />
-                <TextField 
+                <CustomTextField
                     id="outlined-basic" 
                     label="Password" 
                     variant="outlined" 
@@ -75,7 +76,22 @@ const EmailSignup = () => {
                 />
                 {error && <Typography color="error">{error}</Typography>}
 
-                <Button onClick={handleSignUp}>Sign Up</Button>
+                <Button 
+                    onClick={handleSignUp} variant="contained"
+                    color="basic"
+                    sx={{
+                        width: '428px',
+                        height: '49px',
+                        color: '#0D1B2A',
+                        fontSize: '24px',
+                        borderRadius: '36px',
+                        boxShadow: '-8px 8px 0 #EF233C',
+                        textTransform: "none",
+                        '&:hover': {
+                            boxShadow: 'none'
+                        }
+                    }}
+                >Sign Up</Button>
             </Stack>
         </Stack>
     )
