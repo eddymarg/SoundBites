@@ -1,5 +1,11 @@
 {
   "dependencies": {
+    "concurrently": "^9.1.2",
     "mongodb": "^6.12.0"
+  },
+  "scripts": {
+    "frontend": "cd frontend/my-react-app && npm run dev",
+    "backend": "cd backend && npm start",
+    "dev": "concurrently \"npm run frontend\" \"npm run backend\""
   }
 }

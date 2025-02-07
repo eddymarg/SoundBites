@@ -5,6 +5,7 @@ import { createTheme, ThemeProvider } from '@mui/material'
 import Home from "./pages/home"
 import SignIn from "./pages/SignIn"
 import EmailSignup from "./pages/EmailSignUp"
+import UserHome from "./pages/loggedinHome"
 
 const theme = createTheme({
   palette: {
@@ -25,6 +26,7 @@ const router = createBrowserRouter(
       <Route index element={<Home />}/>
       <Route path="signin" element={<SignIn />}/>
       <Route path="emailSignup" element={<EmailSignup />}/>
+      <Route path="userHome" element={<UserHome />}/>
     </Route>
   )
 )

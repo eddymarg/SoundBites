@@ -26,8 +26,51 @@ const EmailSignup = () => {
     const handleMouseUpPassword = (event) => event.preventDefault()
 
     const handleSignUp = async () => {
+        setError("")
+
+        const errors = []
+
+        // basic validation
+        const missingFields = []
+
+        if (!name) missingFields.push("Name")
+        if (!email) missingFields.push("Email")
+        if (!password) missingFields.push("Password")
+
+        if(missingFields.length === 3) {
+            errors.push("All fields are required")
+        } else if (missingFields.length > 0) {
+            errors.push(`${missingFields.join(" and ")} ${missingFields.length > 1? "are" : "is"} required`)
+        }
+
+        // email validation
+        if (email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^s\s@]+$/
+            if(!emailRegex.test(email)) {
+                errors.push("Invalid email format")
+            }
+        }
+
+        // password validation
+        if (password) {
+            if(password.length < 8) {
+                errors.push("Password must be at least 8 characters long")
+            }
+            if(!/[A-Z]/.test(password)) {
+                errors.push("Password must contain at least one uppercase letter")
+            }
+            if(!/[!@#$%&*,.?:]/.test(password)) {
+                errors.push("Password must include at least one special character")
+            }
+        }
+
+        if(errors.length > 0) {
+            setError(errors.join("\n"))
+            return
+        }
+
         try {
-            const response = await axios.post("http://localhost:5001/signup", {
+            const response = await axios.post("http://localhost:5001/api/auth/signup", {
                 name,
                 email,
                 password
@@ -36,6 +79,7 @@ const EmailSignup = () => {
             // store token in local storage
             localStorage.setItem("token", response.data.token)
 
+            console.log("Signup successful, navigating to /userHome")
             navigate("/userHome")
         } catch (err) {
             setError(err.response?.data?.msg || "Sign-up failed")
@@ -82,7 +126,7 @@ const EmailSignup = () => {
                     >Welcome to the <br /> community!</Typography>
                     <Typography fontSize='36px' fontWeight={700}>Sign Up</Typography>
                     <CustomTextField 
-                        id="outlined-basic" 
+                        id="outlined-basic name" 
                         label="Name" 
                         variant="outlined" 
                         value={name}
@@ -92,7 +136,7 @@ const EmailSignup = () => {
                         }}
                     />
                     <CustomTextField 
-                        id="outlined-basic" 
+                        id="outlined-basic email" 
                         label="Email" 
                         variant="outlined" 
                         value={email}
@@ -102,7 +146,7 @@ const EmailSignup = () => {
                         }}
                     />
                     <CustomTextField
-                        id="outlined-basic" 
+                        id="outlined-basic password" 
                         label="Password" 
                         variant="outlined" 
                         value={password}
@@ -125,7 +169,11 @@ const EmailSignup = () => {
                             )
                         }}
                     />
-                    {error && <Typography color="error">{error}</Typography>}
+                    {error && <Typography color="error"
+                        sx={{ whiteSpace: 'pre-line'}}
+                    >
+                        {error}
+                    </Typography>}
 
                     <Button 
                         onClick={handleSignUp} variant="contained"
