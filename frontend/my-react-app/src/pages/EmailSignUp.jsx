@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom"
 import { Logo } from "../assets/Logo"
 import signupImage from "../assets/signup-img.png"
 import CustomTextField from "../components/customTextField"
-import zIndex from "@mui/material/styles/zIndex"
 import { Visibility, VisibilityOff } from "@mui/icons-material"
 
 
@@ -18,6 +17,8 @@ const EmailSignup = () => {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [error, setError] = useState("")
+    const [emailError, setEmailError] = useState("")
+    const [passwordError, setPasswordError] = useState("")
     const [showPassword, setShowPassword] = useState(false)
 
     const handleClickShowPassword = () => setShowPassword((show) => !show)
@@ -27,6 +28,8 @@ const EmailSignup = () => {
 
     const handleSignUp = async () => {
         setError("")
+        setEmailError("")
+        setPasswordError("")
 
         const errors = []
 
@@ -45,26 +48,26 @@ const EmailSignup = () => {
 
         // email validation
         if (email) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^s\s@]+$/
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/ 
             if(!emailRegex.test(email)) {
-                errors.push("Invalid email format")
+                setEmailError("Invalid email format")
             }
         }
 
         // password validation
         if (password) {
             if(password.length < 8) {
-                errors.push("Password must be at least 8 characters long")
+                setPasswordError("Password must be at least 8 characters long")
             }
             if(!/[A-Z]/.test(password)) {
-                errors.push("Password must contain at least one uppercase letter")
+                setPasswordError("Password must contain at least one uppercase letter")
             }
             if(!/[!@#$%&*,.?:]/.test(password)) {
-                errors.push("Password must include at least one special character")
+                setPasswordError("Password must include at least one special character")
             }
         }
 
-        if(errors.length > 0) {
+        if(errors.length > 0 || emailError || passwordError) {
             setError(errors.join("\n"))
             return
         }
@@ -145,6 +148,15 @@ const EmailSignup = () => {
                             width: '428px',
                         }}
                     />
+                    {emailError && <Typography color="error"
+                        sx={{ 
+                            whiteSpace: 'pre-line',
+                            fontSize: '12px',
+                            pl: 3,
+                        }}
+                    >
+                        {emailError}
+                    </Typography>}
                     <CustomTextField
                         id="outlined-basic password" 
                         label="Password" 
@@ -169,8 +181,20 @@ const EmailSignup = () => {
                             )
                         }}
                     />
+                    {passwordError && <Typography color="error"
+                        sx={{ 
+                            whiteSpace: 'pre-line',
+                            fontSize: '12px',
+                            pl: 3,
+                        }}
+                    >
+                        {passwordError}
+                    </Typography>}
+
                     {error && <Typography color="error"
-                        sx={{ whiteSpace: 'pre-line'}}
+                        sx={{ 
+                            whiteSpace: 'pre-line',
+                        }}
                     >
                         {error}
                     </Typography>}

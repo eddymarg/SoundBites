@@ -12,7 +12,7 @@ exports.signup = async (req, res) => {
         }
 
         // email validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^s\s@]+$/
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/ 
         if (!emailRegex.test(email)) {
             return res.status(400).json({ msg: "Invalid email format" })
         }
@@ -55,11 +55,11 @@ exports.login = async (req, res) => {
 
         // find user by email
         const user = await User.findOne({ email })
-        if (!user) return res.status(400).json({ msg: "Invalid credentials" })
+        if (!user) return res.status(400).json({ msg: "Email not found" })
 
         // compare password
         const isMatch = await bcrypt.compare(password, user.password)
-        if(!isMatch) return res.status(400).json({ msg: "Invalid credentials" })
+        if(!isMatch) return res.status(400).json({ msg: "Incorrect password" })
 
         // generate jwt token
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
