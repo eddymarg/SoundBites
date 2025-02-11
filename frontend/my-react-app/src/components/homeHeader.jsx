@@ -33,6 +33,7 @@ const HomeHeader = () => {
                 </Box>
                 <Stack spacing={2} direction="row">
                     <Button variant="outlined" color="mainRed"
+                    onClick={() => document.getElementById('about-section').scrollIntoView({ behavior: 'smooth'})}
                     sx={{
                         width: "140px",
                         height: "50px",
