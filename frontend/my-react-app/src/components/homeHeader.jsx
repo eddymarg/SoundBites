@@ -18,7 +18,7 @@ const HomeHeader = () => {
 
     return (
         <nav>
-            <Stack direction="row" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginRight: '1rem'}}>
+            <Stack direction="row" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginRight: '1rem', marginLeft: '1rem'}}>
                 {/* NEED TO MAKE CLICKABLE ONCE PAGE EXPANDS */}
                 <Box
                     onClick={window.scrollTo(0,0)}

@@ -13,15 +13,38 @@ import { throttle } from "lodash";
 
 const Home = () => {
     const navigate = useNavigate()
+    const bowl1Ref = useRef(null)
+    const bowl2Ref = useRef(null)
+    const bowl3Ref = useRef(null)
+    const mirrorBowl1Ref = useRef(null)
+    const mirrorBowl2Ref = useRef(null)
+    const mirrorBowl3Ref = useRef(null)
+
+    useEffect(() => {
+        const handleScroll = throttle(() => {
+            const scrollY = window.scrollY
+
+            bowl1Ref.current.style.transform = `rotate(${scrollY * 0.1}deg)`
+            bowl2Ref.current.style.transform = `rotate(${scrollY * -0.15}deg)`
+            bowl3Ref.current.style.transform = `rotate(${scrollY * 0.2}deg)`
+            mirrorBowl1Ref.current.style.transform = `rotate(${scrollY * -0.1}deg)`
+            mirrorBowl2Ref.current.style.transform = `rotate(${scrollY * 0.15}deg)`
+            mirrorBowl3Ref.current.style.transform = `rotate(${scrollY * -0.2}deg)`
+        }, 20)
+
+        window.addEventListener("scroll", handleScroll)
+        return () => window.removeEventListener("scroll", handleScroll)
+    }, [])
 
     return(
         <div style={{ scrollBehavior: 'smooth'}}>
             <HomeHeader />
             {/* Sign up stuff */}
-            <Box sx={{ minHeight: '100vh', position: 'relative'}}>
+            <Box sx={{ minHeight: '100vh', position: 'relative', overflow: 'hidden'}}>
                 <Box sx={{ position: 'absolute',top: 0, left: 0, width: '100%', zIndex: -1}}>
                     <Box sx={{ position: 'relative'}}>
                         <img 
+                            ref={bowl1Ref}
                             src={foodBowl1} 
                             style={{ 
                                 width: '26vw', 
@@ -29,9 +52,11 @@ const Home = () => {
                                 top: 10, 
                                 left: -100, 
                                 zIndex: 1,
+                                transition: "transform 0.1s linear",
                             }}
                         />
                         <img 
+                            ref={bowl2Ref}
                             src={foodBowl2} 
                             style={{ 
                                 width: '40vw', 
@@ -39,9 +64,11 @@ const Home = () => {
                                 top: 150, 
                                 left: -250, 
                                 zIndex: 0,
+                                transition: "transform 0.1s linear",
                             }}
                         />
                         <img 
+                            ref={bowl3Ref}
                             src={foodBowl3} 
                             style={{ 
                                 width: '18vw', 
@@ -49,38 +76,46 @@ const Home = () => {
                                 top: 350, 
                                 left: '-40px', 
                                 zIndex: -1,
+                                transition: "transform 0.1s linear",
                             }}
                         />
                     </Box>
-                    <Box sx={{ position: 'relative', top: 0, right: 0}}>
+                    {/* mirrored side */}
+                    <Box sx={{ position: 'relative', top: 0, right: 0, transform: 'scaleX(-1)'}}>
                         <img 
+                            ref={mirrorBowl1Ref}
                             src={foodBowl3} 
                             style={{ 
                                 width: '18vw', 
                                 position: 'absolute', 
                                 top: 350, 
-                                right: 0,
+                                left: -100,
                                 zIndex: -1,
+                                transition: "transform 0.1s linear",
                             }}
                         />
                         <img 
+                            ref={mirrorBowl2Ref}
                             src={foodBowl2} 
                             style={{ 
                                 width: '40vw', 
                                 position: 'absolute', 
                                 top: 150, 
-                                right: 0,
+                                left: -250,
                                 zIndex: 0,
+                                transition: "transform 0.1s linear",
                             }}
                         />
                         <img 
+                            ref={mirrorBowl3Ref}
                             src={foodBowl1} 
                             style={{ 
                                 width: '26vw', 
                                 position: 'absolute', 
                                 top: 10, 
-                                right: 0,
+                                left: '-40px',
                                 zIndex: 1,
+                                transition: "transform 0.1s linear",
                             }}
                         />
                     </Box>
