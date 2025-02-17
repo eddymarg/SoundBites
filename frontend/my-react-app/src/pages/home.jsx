@@ -138,6 +138,9 @@ const Home = () => {
                             boxShadow: 'none'
                         }
                     }}
+                    onClick={() => {
+                        window.location.href = "https://localhost:5001/auth/spotify/callback"
+                    }}
                     >
                         Continue with Spotify
                     </Button>
