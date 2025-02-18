@@ -139,7 +139,7 @@ const Home = () => {
                         }
                     }}
                     onClick={() => {
-                        window.location.href = "https://localhost:5001/auth/spotify/callback"
+                        window.location.href = "http://localhost:5001/auth/spotify/login"
                     }}
                     >
                         Continue with Spotify

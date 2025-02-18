@@ -19,6 +19,7 @@ const generateRandomString = (length) => {
 
 exports.spotifyLogin = (req, res) => {
     const state = generateRandomString(16)
+    res.cookie("spotify_auth_state", state) // stores state in cookies for later verification
     const scope = "user-read-private user-read-email playlist-read-private playlist-read-collaborative"
 
     res.redirect(
@@ -34,29 +35,38 @@ exports.spotifyLogin = (req, res) => {
 }
 
 exports.spotifyCallback = async (req, res) => {
-    const { code } = req.query
+    // console.log("Spotify Callback Query:", req.query)
+    const { code, state } = req.query
+
     if(!code) {
         return res.status(400).json({ error: "Authorization code missing" })
     }
 
     try {
         const response = await axios.post(
-        "https://accounts.spotify.com",
+        "https://accounts.spotify.com/api/token",
         querystring.stringify({
             grant_type: "authorization_code",
             code,
             redirect_uri,
-            client_id,
-            client_secret,
         }),
         {
-            headers: { "Content-type": "application/x-www-form-urlencoded"},
+            headers: { 
+                "Content-type": "application/x-www-form-urlencoded",
+                "Authorization" : "Basic " + Buffer.from(`${client_id}:${client_secret}`).toString("base64")
+            },
         }
         )
 
         const { access_token, refresh_token } = response.data
-        res.json({ access_token, refresh_token })
+
+        // store tokens in a cookie (for frontend)
+        res.cookie("spotify_access_token", access_token, { httpOnly: true, secure: false})
+        res.cookie("spotify_refresh_token", refresh_token, { httpOnly: true, secure: false })
+
+        res.redirect("http://localhost:5173/userHome")
     } catch (error) {
+        console.error("Error fetching token:", error.response?.data || error.message)
         res.status(500).json({ error: "Failed to get tokens", details: error.message })
     }
 }
