@@ -1,54 +1,27 @@
 import React from "react"
-import { Button, Box, Stack, Avatar } from "@mui/material"
+import { Button, Box, Stack, Avatar, IconButton } from "@mui/material"
 import { useNavigate } from "react-router-dom"
-import { Logo } from "../assets/Logo"
+import { LogoWNote } from "../assets/logoWNote"
+import BookmarkIcon from '@mui/icons-material/Bookmark';
 import "../css/home.css"
 import '@fontsource/roboto/500.css'
 
-const ScrollToTop = () => {
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-    })
-}
-
 const HomeHeader = () => {
     const navigate = useNavigate()
-
     return (
         <nav>
-            <Stack direction="row" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginRight: '1rem', marginLeft: '1rem'}}>
-                <Avatar src="/broken-image.jpg" />
-                <Box
-                    onClick={window.scrollTo(0,0)}
-                    sx={{
-                        transition: "transform 0.3s ease-in-out",
-                        "&:hover": {
-                            transform: "scale(1.1)"
-                        }
-                    }}
-                >
-                    <Logo/>
+            <Stack direction="row" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: '1rem'}}>
+                <IconButton>
+                    <Avatar src="/broken-image.jpg"/>
+                </IconButton>
+                <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center'}}>
+                    <LogoWNote />
                 </Box>
                 <Stack spacing={2} direction="row">
-                    <Button variant="outlined" color="mainRed"
-                    onClick={() => document.getElementById('about-section').scrollIntoView({ behavior: 'smooth'})}
-                    sx={{
-                        width: "140px",
-                        height: "50px",
-                        borderRadius: "36px",
-                        fontSize: "20px",
-                        textTransform: "none",
-                        "&:hover": {
-                            backgroundColor: "mainRed.light",
-                            color: "white",
-                            border: "0 none",
-                        }
-                    }}
-                    >
-                        About
-                    </Button>
-                    <Button variant="contained" color="mainRed" onClick={() => navigate("/signin")}
+                    <IconButton aria-label="bookmark">
+                        <BookmarkIcon fontSize="large" color="mainRed"/>
+                    </IconButton>
+                    <Button variant="contained" color="mainRed" onClick={() => navigate("/")}
                         sx={{
                             color: "white",
                             width: "140px",
@@ -63,7 +36,7 @@ const HomeHeader = () => {
                             }
                         }}
                     >
-                        Log In
+                        Log Out
                     </Button>
                 </Stack>
             </Stack>
