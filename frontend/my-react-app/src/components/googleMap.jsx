@@ -1,8 +1,10 @@
 "use client"
-import { APIProvider, Map, AdvancedMarker, Pin, InfoWindow } from "@vis.gl/react-google-maps"
+import { useState, useEffect } from "react"
+import { Map, AdvancedMarker, Pin, InfoWindow } from "@vis.gl/react-google-maps"
 
-const GoogleMap = ({ userLocation, error, isLoading }) => {
+const GoogleMap = ({ userLocation, restaurants, error, isLoading }) => {
     const fallbackLocation = { lat: 40.7128, lng: -74.0060 }
+
 
     return (
         <>
@@ -10,13 +12,35 @@ const GoogleMap = ({ userLocation, error, isLoading }) => {
                 <div className="text-center">Loading...</div>
             ) : userLocation ? (
                 <Map 
-                    zoom={12} 
+                    defaultZoom={9}
                     center={userLocation} 
                     mapId={import.meta.env.VITE_GOOGLE_MAP_ID}
+                    gestureHandling="auto"
                 >
-                    <AdvancedMarker position={userLocation}>
-                        {/* <Pin background="grey"/> this customizes the pin*/}
-                    </AdvancedMarker>
+                    {/* user's location */}
+                    {userLocation && (
+                        <AdvancedMarker position={userLocation}>
+                            {/* <Pin background="grey"/> this customizes the pin*/}
+                        </AdvancedMarker>
+                    )}
+
+                    {/* recommended restaurants pins */}
+                    {restaurants?.map((resto, index) => (
+                        resto.geometry?.location && (
+                            <AdvancedMarker
+                                key={index}
+                                position={{
+                                    lat: resto.geometry.location.lat,
+                                    lng: resto.geometry.location.lng,
+                                }}
+                            >
+                                <Pin 
+                                    background="orange" borderColor="darkOrange" 
+                                    glyphColor="darkOrange"
+                                />
+                            </AdvancedMarker>
+                        )
+                    )) }
                 </Map>
             ) : (
                 <Map 

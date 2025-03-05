@@ -31,8 +31,26 @@ exports.getNearbyRestoByMusic = async (req, res) => {
             throw new Error("Invalid response from Google Places API")
         }
 
-        const restaurants = response.data.results
-        res.status(200).json(restaurants)
+        const restaurants = response.data.results.map((resto) => {
+            let photoUrl = null
+            if (resto.photos && resto.photos.length > 0) {
+                photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${resto.photos[0].photo_reference}&key=${GOOGLE_PLACES_API_KEY}`
+            }
+
+            return {
+                name: resto.name,
+                address: resto.formatted_address,
+                rating: resto.rating || "No rating",
+                user_ratings_total: resto.use_ratings_total || 0,
+                price_level: resto.price_level,
+                photo: photoUrl,
+                geometry: resto.geometry,
+            }
+        }) 
+
+        const topRestaurants = restaurants.slice(0,4)
+
+        res.status(200).json(topRestaurants)
     } catch (error) {
         console.error('Error fetching restaurants:', error)
         res.status(500).json({message: 'Error fetching restaurants'})
