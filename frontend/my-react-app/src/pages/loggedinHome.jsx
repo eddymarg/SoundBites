@@ -13,6 +13,8 @@ const userHome = () => {
     const [error, setError] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
     const [genre, setGenre] = useState("jazz")
+    const [visibleCount, setVisibleCount] = useState(4)
+    const [nextPageToken, setNextPageToken] = useState(null)
 
     useEffect(() => {
         if("geolocation" in navigator) {
@@ -44,9 +46,10 @@ const userHome = () => {
     useEffect(() => {
         if (userLocation) {
             setIsLoading(true)
-            getNearbyRestoByMusic(userLocation.lat, userLocation.lng, genre)
+            getNearbyRestoByMusic(userLocation.lat, userLocation.lng, genre, visibleCount)
                 .then((data) => {
-                    setRestaurants(data)
+                    setRestaurants((prev) => [...prev, ...data])
+                    setNextPageToken(data.nextPageToken)
                     setIsLoading(false)
                 })
                 .catch((err) => {
@@ -54,7 +57,24 @@ const userHome = () => {
                     setIsLoading(false)
                 })
         }
-    }, [userLocation, genre])
+    }, [userLocation, genre, visibleCount])
+
+    const handleShowMore = () => {
+        if (nextPageToken) {
+        setIsLoading(true)
+        getNearbyRestoByMusic(userLocation.lat, userLocation.lng, genre, visibleCount, nextPageToken)
+            .then((data) => {
+                setRestaurants((prev) => [...prev, ...data.restaurants]) 
+                setNextPageToken(data.nextPageToken)
+                setIsLoading(false)
+            })
+            .catch((err) => {
+                setError(err.message)
+                setIsLoading(false)
+            })
+        }
+        setVisibleCount((prev) => prev + 4)
+    }
 
     return(
         <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAP_API_KEY}>
@@ -62,7 +82,7 @@ const userHome = () => {
                 <LoggedInHeader/>
                 <div className="flex h-screen">
                     <div className="w-1/2 p-8 overflow-y-auto">
-                        <RestaurantList restaurants={restaurants}/>
+                        <RestaurantList restaurants={restaurants} handleShowMore={handleShowMore}/>
                     </div>
                     <div className="w-1/2 p-8">
                         <GoogleMap 
