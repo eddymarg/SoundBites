@@ -48,11 +48,17 @@ const userHome = () => {
             setIsLoading(true)
             getNearbyRestoByMusic(userLocation.lat, userLocation.lng, genre, visibleCount)
                 .then((data) => {
-                    setRestaurants((prev) => [...prev, ...data])
-                    setNextPageToken(data.nextPageToken)
+                    if(data && Array.isArray(data.restaurants)) {
+                        setRestaurants(data.restaurants)
+                        setNextPageToken(data.nextPageToken || null)
+                    } else {
+                        console.error("Invalid response format:", data)
+                        setRestaurants([])
+                    }
                     setIsLoading(false)
                 })
                 .catch((err) => {
+                    console.error("Error fetching restaurants:", err)
                     setError(err.message)
                     setIsLoading(false)
                 })
