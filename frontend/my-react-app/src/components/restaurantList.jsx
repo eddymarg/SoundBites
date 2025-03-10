@@ -1,6 +1,6 @@
 import { Box, Button, Typography, Stack, Rating } from "@mui/material"
 
-const restaurantList = ({ restaurants, handleShowMore }) => {
+const restaurantList = ({ restaurants, handleLoadMore, hasMore }) => {
     const priceLevels = ["$", "$$", "$$$", "$$$$"]
 
 
@@ -73,7 +73,7 @@ const restaurantList = ({ restaurants, handleShowMore }) => {
                         backgroundColor: "#EF233C20",
                     }
                 }}
-                onClick={handleShowMore}
+                onClick={handleLoadMore}
                 >Load More</Button>
             </Box>
         </>

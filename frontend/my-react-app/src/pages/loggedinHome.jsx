@@ -2,7 +2,7 @@
 import { Box } from "@mui/material"
 import { useState, useEffect } from "react"
 import { APIProvider } from "@vis.gl/react-google-maps"
-import { getNearbyRestoByMusic } from "../services/locationService"
+import getNearbyRestoByMusic from "../services/locationService"
 import LoggedInHeader from "../components/loggedinHeader"
 import GoogleMap from "../components/googleMap"
 import RestaurantList from "../components/restaurantList"
@@ -13,8 +13,10 @@ const userHome = () => {
     const [error, setError] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
     const [genre, setGenre] = useState("jazz")
-    const [visibleCount, setVisibleCount] = useState(4)
-    const [nextPageToken, setNextPageToken] = useState(null)
+    //  For load more
+    const [loadedCount, setLoadedCount] = useState(4)
+    const [hasMore, setHasMore] = useState(true)
+    const [offset, setOffset] = useState(null)
 
     useEffect(() => {
         if("geolocation" in navigator) {
@@ -46,11 +48,12 @@ const userHome = () => {
     useEffect(() => {
         if (userLocation) {
             setIsLoading(true)
-            getNearbyRestoByMusic(userLocation.lat, userLocation.lng, genre, visibleCount)
+            getNearbyRestoByMusic(userLocation.lat, userLocation.lng, genre, loadedCount, offset)
                 .then((data) => {
                     if(data && Array.isArray(data.restaurants)) {
-                        setRestaurants(data.restaurants)
-                        setNextPageToken(data.nextPageToken || null)
+                        setRestaurants(prevRestaurants => [...prevRestaurants, ...data.restaurants])
+                        setHasMore(data.hasMore)
+                        setOffset(data.offset)
                     } else {
                         console.error("Invalid response format:", data)
                         setRestaurants([])
@@ -63,23 +66,10 @@ const userHome = () => {
                     setIsLoading(false)
                 })
         }
-    }, [userLocation, genre, visibleCount])
+    }, [userLocation, genre, loadedCount])
 
-    const handleShowMore = () => {
-        if (nextPageToken) {
-        setIsLoading(true)
-        getNearbyRestoByMusic(userLocation.lat, userLocation.lng, genre, visibleCount, nextPageToken)
-            .then((data) => {
-                setRestaurants((prev) => [...prev, ...data.restaurants]) 
-                setNextPageToken(data.nextPageToken)
-                setIsLoading(false)
-            })
-            .catch((err) => {
-                setError(err.message)
-                setIsLoading(false)
-            })
-        }
-        setVisibleCount((prev) => prev + 4)
+    const handleLoadMore = () => {
+        setLoadedCount(prevCount => prevCount + 4)
     }
 
     return(
@@ -88,7 +78,7 @@ const userHome = () => {
                 <LoggedInHeader/>
                 <div className="flex h-screen">
                     <div className="w-1/2 p-8 overflow-y-auto">
-                        <RestaurantList restaurants={restaurants} handleShowMore={handleShowMore}/>
+                        <RestaurantList restaurants={restaurants} handleLoadMore={handleLoadMore} hasMore={hasMore}/>
                     </div>
                     <div className="w-1/2 p-8">
                         <GoogleMap 
