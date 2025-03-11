@@ -17,6 +17,8 @@ const userHome = () => {
     const [loadedCount, setLoadedCount] = useState(4)
     const [hasMore, setHasMore] = useState(true)
     const [offset, setOffset] = useState(null)
+    // for full info modal
+    const [selectedLocation, setSelectedLocation] = useState(null)
 
     useEffect(() => {
         if("geolocation" in navigator) {
@@ -72,20 +74,27 @@ const userHome = () => {
         setLoadedCount(prevCount => prevCount + 4)
     }
 
+    const handleLocationClick = (location) => {
+        setSelectedLocation(location)
+    }
+
     return(
         <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAP_API_KEY}>
             <div>
                 <LoggedInHeader/>
                 <div className="flex h-screen">
                     <div className="w-1/2 p-8 overflow-y-auto">
-                        <RestaurantList restaurants={restaurants} handleLoadMore={handleLoadMore} hasMore={hasMore}/>
+                        <RestaurantList restaurants={restaurants} handleLoadMore={handleLoadMore} hasMore={hasMore} handleLocationClick={handleLocationClick}/>
                     </div>
                     <div className="w-1/2 p-8">
                         <GoogleMap 
                             userLocation={userLocation} 
                             restaurants={restaurants}
                             error={error} 
-                            isLoading={isLoading}/>
+                            isLoading={isLoading}
+                            selectedLocation={selectedLocation}
+                            setSelectedLocation={setSelectedLocation}
+                        />
                     </div>
                 </div>
             </div>

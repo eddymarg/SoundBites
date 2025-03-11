@@ -1,8 +1,7 @@
 import { Box, Button, Typography, Stack, Rating } from "@mui/material"
 
-const restaurantList = ({ restaurants, handleLoadMore, hasMore }) => {
+const restaurantList = ({ restaurants, handleLoadMore, hasMore, handleLocationClick }) => {
     const priceLevels = ["$", "$$", "$$$", "$$$$"]
-
 
     return (
         <>
@@ -24,6 +23,7 @@ const restaurantList = ({ restaurants, handleLoadMore, hasMore }) => {
                             border: "1.5px solid #EF233C",
                         }
                     }}
+                    onClick={()=>handleLocationClick(resto)}
                 >
                     <Box sx={{ width: '120px', height: '120px', mr: 2}}>
                         <img

@@ -1,10 +1,10 @@
 "use client"
 import { useState, useEffect } from "react"
 import { Map, AdvancedMarker, Pin, InfoWindow } from "@vis.gl/react-google-maps"
+import '../css/googleModal.css'
 
-const GoogleMap = ({ userLocation, restaurants, error, isLoading }) => {
+const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocation, setSelectedLocation }) => {
     const fallbackLocation = { lat: 40.7128, lng: -74.0060 }
-
 
     return (
         <>
@@ -41,6 +41,19 @@ const GoogleMap = ({ userLocation, restaurants, error, isLoading }) => {
                             </AdvancedMarker>
                         )
                     )) }
+                    {selectedLocation && (
+                        <div className="info-modal">
+                            <button onClick={() => setSelectedLocation(null)}>✖</button>
+                            <img src={selectedLocation.photo || "https://via.placeholder.com/400"} alt={selectedLocation.name} />
+                            <h2>{selectedLocation.name}</h2>
+                            <p>{selectedLocation.address}</p>
+                            <p>{selectedLocation.rating} ⭐</p>
+                            <p>{selectedLocation.price_level ? `$`.repeat(selectedLocation.price_level) : "No price info"}</p>
+                            <p>{selectedLocation.description || "No description available."}</p>
+                            {selectedLocation.website && <a href={selectedLocation.website} target="_blank">Website</a>}
+                            {selectedLocation.phone && <p>{selectedLocation.phone}</p>}
+                        </div>
+                    )}
                 </Map>
             ) : (
                 <Map 
