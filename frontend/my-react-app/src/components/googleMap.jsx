@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react"
 import { Map, AdvancedMarker, Pin, InfoWindow } from "@vis.gl/react-google-maps"
 import '../css/googleModal.css'
+import { Box, Typography, Rating, Divider } from "@mui/material"
 
 const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocation, setSelectedLocation }) => {
     const fallbackLocation = { lat: 40.7128, lng: -74.0060 }
@@ -43,15 +44,29 @@ const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocati
                     )) }
                     {selectedLocation && (
                         <div className="info-modal">
-                            <button onClick={() => setSelectedLocation(null)}>✖</button>
-                            <img src={selectedLocation.photo || "https://via.placeholder.com/400"} alt={selectedLocation.name} />
-                            <h2>{selectedLocation.name}</h2>
-                            <p>{selectedLocation.address}</p>
-                            <p>{selectedLocation.rating} ⭐</p>
-                            <p>{selectedLocation.price_level ? `$`.repeat(selectedLocation.price_level) : "No price info"}</p>
-                            <p>{selectedLocation.description || "No description available."}</p>
+                            <Box sx={{ position: "relative", display: "inline-block"}}>
+                                <img src={selectedLocation.photo} alt={selectedLocation.name} />
+                                <button onClick={() => setSelectedLocation(null)}>✖</button>
+                            </Box>
+                            <Typography variant="h4" style={{fontFamily: "'Tinos', serif", fontWeight: "700"}}>{selectedLocation.name}</Typography>
+                            <Box display="flex" alignItems="center" gap={1}>
+                                <Typography>
+                                    {selectedLocation.rating ? selectedLocation.rating.toFixed(1) : "N/A"}
+                                </Typography>
+                                <Rating
+                                    name={`restaurant-rating-${selectedLocation.id}`}
+                                    readOnly
+                                    value={Number(selectedLocation.rating) || 0}
+                                    precision={0.1}
+                                />
+                            </Box>
+                            <Typography>{selectedLocation.address}</Typography>
+                            <Divider orientation="horizontal" variant="middle" flexItem sx={{ borderColor: 'mainYellow.main'}}/>
+                            <Typography>{selectedLocation.description || "No description available."}</Typography>
+                            <Divider orientation="horizontal" variant="middle" flexItem sx={{ borderColor: 'mainYellow.main'}}/>
+                            <Typography>{selectedLocation.price_level ? `$`.repeat(selectedLocation.price_level) : "No price info"}</Typography>
                             {selectedLocation.website && <a href={selectedLocation.website} target="_blank">Website</a>}
-                            {selectedLocation.phone && <p>{selectedLocation.phone}</p>}
+                            {selectedLocation.phone && <Typography>{selectedLocation.phone}</Typography>}
                         </div>
                     )}
                 </Map>
