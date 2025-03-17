@@ -3,6 +3,11 @@ import { useState, useEffect } from "react"
 import { Map, AdvancedMarker, Pin, InfoWindow } from "@vis.gl/react-google-maps"
 import '../css/googleModal.css'
 import { Box, Typography, Rating, Divider } from "@mui/material"
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import LanguageIcon from '@mui/icons-material/Language';
+import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
+
 
 const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocation, setSelectedLocation }) => {
     const fallbackLocation = { lat: 40.7128, lng: -74.0060 }
@@ -49,7 +54,7 @@ const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocati
                                 <button onClick={() => setSelectedLocation(null)}>✖</button>
                             </Box>
                             <Typography variant="h4" style={{fontFamily: "'Tinos', serif", fontWeight: "700"}}>{selectedLocation.name}</Typography>
-                            <Box display="flex" alignItems="center" gap={1}>
+                            <Box display="flex" alignItems="center" gap={1} sx={{marginBottom: '0.5rem'}}>
                                 <Typography>
                                     {selectedLocation.rating ? selectedLocation.rating.toFixed(1) : "N/A"}
                                 </Typography>
@@ -60,11 +65,31 @@ const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocati
                                     precision={0.1}
                                 />
                             </Box>
-                            <Typography>{selectedLocation.address}</Typography>
-                            <Divider orientation="horizontal" variant="middle" flexItem sx={{ borderColor: 'mainYellow.main'}}/>
-                            <Typography>{selectedLocation.description || "No description available."}</Typography>
-                            <Divider orientation="horizontal" variant="middle" flexItem sx={{ borderColor: 'mainYellow.main'}}/>
-                            <Typography>{selectedLocation.price_level ? `$`.repeat(selectedLocation.price_level) : "No price info"}</Typography>
+                            <Typography sx={{marginBottom: "0.5rem"}}>{selectedLocation.address}</Typography>
+                            <Divider orientation="horizontal" flexItem sx={{ borderColor: 'mainYellow.main'}}/>
+                            <Typography margin={1}>{selectedLocation.description || "No description available."}</Typography>
+                            <Divider orientation="horizontal" flexItem sx={{ borderColor: 'mainYellow.main'}}/>
+
+                            <Box margin={3} display="flex" flexDirection="column" gap={2}>
+                                <Typography><LocalOfferIcon/> {selectedLocation.price_level ? `$`.repeat(selectedLocation.price_level) : "No price info"}</Typography>
+                                {selectedLocation.opening_hours?.weekday_text?.map((day, index) => (
+                                    <Typography key={index}>
+                                        <AccessTimeIcon/>
+                                        {day}
+                                    </Typography>
+                                ))}
+                                <Typography>
+                                    <LanguageIcon/>
+                                    <a href={selectedLocation.website} target="_blank" rel="noopener noreferrer">
+                                        {selectedLocation.website}
+                                    </a>
+                                </Typography>
+                                <Typography>
+                                    <LocalPhoneIcon/>
+                                    {selectedLocation.phone_number}
+                                </Typography>
+                            </Box>
+
                             {selectedLocation.website && <a href={selectedLocation.website} target="_blank">Website</a>}
                             {selectedLocation.phone && <Typography>{selectedLocation.phone}</Typography>}
                         </div>
