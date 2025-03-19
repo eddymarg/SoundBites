@@ -4,10 +4,12 @@
     left: 10px;
     width: 447px;
     height: auto;
+    max-height: 90vh;
     background: white;
     padding: 15px;
     border-radius: 36px;
     z-index: 1000;
+    overflow: scroll;
   }
   
 .info-modal img {

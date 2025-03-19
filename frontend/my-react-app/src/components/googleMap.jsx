@@ -70,28 +70,25 @@ const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocati
                             <Typography margin={1}>{selectedLocation.description || "No description available."}</Typography>
                             <Divider orientation="horizontal" flexItem sx={{ borderColor: 'mainYellow.main'}}/>
 
-                            <Box margin={3} display="flex" flexDirection="column" gap={2}>
+                            <Box margin={3} display="flex" flexDirection="column" gap={1.5}>
                                 <Typography><LocalOfferIcon/> {selectedLocation.price_level ? `$`.repeat(selectedLocation.price_level) : "No price info"}</Typography>
                                 {selectedLocation.opening_hours?.weekday_text?.map((day, index) => (
-                                    <Typography key={index}>
-                                        <AccessTimeIcon/>
-                                        {day}
+                                    <Typography key={index} style={{fontSize: "14px", color: "0D1B2A90", display: "flex", alignItems: "center"}}>
+                                        {index === 0 && <AccessTimeIcon style={{ marginRight: 4, color: "0D1B2A", lineHeight: 1}}/>}
+                                        <span style={{marginLeft: index === 0 ? 0 : 28, lineHeight: 1}}>{day}</span>
                                     </Typography>
                                 ))}
                                 <Typography>
-                                    <LanguageIcon/>
+                                    <LanguageIcon style={{margin: 4}}/>
                                     <a href={selectedLocation.website} target="_blank" rel="noopener noreferrer">
                                         {selectedLocation.website}
                                     </a>
                                 </Typography>
                                 <Typography>
-                                    <LocalPhoneIcon/>
-                                    {selectedLocation.phone_number}
+                                    <LocalPhoneIcon style={{margin: 4}}/>
+                                    {selectedLocation.formatted_phone_number || "Phone number is not available"}
                                 </Typography>
                             </Box>
-
-                            {selectedLocation.website && <a href={selectedLocation.website} target="_blank">Website</a>}
-                            {selectedLocation.phone && <Typography>{selectedLocation.phone}</Typography>}
                         </div>
                     )}
                 </Map>

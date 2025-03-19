@@ -10,15 +10,15 @@ async function getPlaceDetails(placeId) {
                 params: {
                     place_id: placeId,
                     key: GOOGLE_PLACES_API_KEY,
-                    fields: 'website, formatted_phone_number, opening_hours',
+                    fields: 'website,formatted_phone_number,opening_hours',
                 }
             }
         )
         console.log(`Details for placeId ${placeId}:`, detailsResponse.data)
-        if (detailsResponse.data.results) {
+        if (detailsResponse.data.result) {
             return {
                 website: detailsResponse.data.result.website || "No website found",
-                phone_number: detailsResponse.data.result.formatted_phone_number || "No associated phone number",
+                formatted_phone_number: detailsResponse.data.result.formatted_phone_number || "No associated phone number",
                 opening_hours: detailsResponse.data.result.opening_hours || "No hours provided",
             }
         }
@@ -26,7 +26,7 @@ async function getPlaceDetails(placeId) {
         console.error(`Error fetching details for place ${placeId}:`, error)
     }
 
-    return { website: null, phone_number: null, opening_hours: null}
+    return { website: null, formatted_phone_number: null, opening_hours: null}
 }
 
 exports.getNearbyRestoByMusic = async (req, res) => {
@@ -78,7 +78,7 @@ exports.getNearbyRestoByMusic = async (req, res) => {
                     geometry: resto.geometry,
                     opening_hours: details.opening_hours || "No hours available",
                     website: details.website,
-                    phone_number: details.formatted_phone_number,
+                    formatted_phone_number: details.formatted_phone_number,
                 }
             }) 
         )
