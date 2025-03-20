@@ -27,4 +27,8 @@
     font-size: 18px;
     cursor: pointer;
 }
+
+.info-modal button:hover {
+    color: #FFBF69 !important;
+}
   

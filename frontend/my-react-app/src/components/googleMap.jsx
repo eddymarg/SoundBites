@@ -7,6 +7,7 @@ import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LanguageIcon from '@mui/icons-material/Language';
 import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
+import CloseIcon from '@mui/icons-material/Close';
 
 
 const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocation, setSelectedLocation }) => {
@@ -51,7 +52,7 @@ const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocati
                         <div className="info-modal">
                             <Box sx={{ position: "relative", display: "inline-block"}}>
                                 <img src={selectedLocation.photo} alt={selectedLocation.name} />
-                                <button onClick={() => setSelectedLocation(null)}>✖</button>
+                                <button onClick={() => setSelectedLocation(null)} style={{color: "white"}}><CloseIcon/></button>
                             </Box>
                             <Typography variant="h4" style={{fontFamily: "'Tinos', serif", fontWeight: "700"}}>{selectedLocation.name}</Typography>
                             <Box display="flex" alignItems="center" gap={1} sx={{marginBottom: '0.5rem'}}>
@@ -73,9 +74,13 @@ const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocati
                             <Box margin={3} display="flex" flexDirection="column" gap={1.5}>
                                 <Typography><LocalOfferIcon/> {selectedLocation.price_level ? `$`.repeat(selectedLocation.price_level) : "No price info"}</Typography>
                                 {selectedLocation.opening_hours?.weekday_text?.map((day, index) => (
-                                    <Typography key={index} style={{fontSize: "14px", color: "0D1B2A90", display: "flex", alignItems: "center"}}>
-                                        {index === 0 && <AccessTimeIcon style={{ marginRight: 4, color: "0D1B2A", lineHeight: 1}}/>}
-                                        <span style={{marginLeft: index === 0 ? 0 : 28, lineHeight: 1}}>{day}</span>
+                                    <Typography key={index} style={{fontSize: "14px", color: "0D1B2A90", display: "flex", alignItems: "center", gap: "8px"}}>
+                                        {index === 0 ? (
+                                            <AccessTimeIcon style={{ color: "0D1B2A"}}/>
+                                        ) : (
+                                            <span style={{ width: 24 }}/>
+                                        )}
+                                        <span style={{lineHeight: 1}}>{day}</span>
                                     </Typography>
                                 ))}
                                 <Typography>
