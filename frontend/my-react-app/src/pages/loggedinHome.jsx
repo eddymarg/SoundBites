@@ -6,6 +6,7 @@ import getNearbyRestoByMusic from "../services/locationService"
 import LoggedInHeader from "../components/loggedinHeader"
 import GoogleMap from "../components/googleMap"
 import RestaurantList from "../components/restaurantList"
+import FilterBar from "../components/filterBar"
 
 const userHome = () => {
     const [userLocation, setUserLocation] = useState(null)
@@ -83,9 +84,16 @@ const userHome = () => {
             <div>
                 <LoggedInHeader/>
                 <div className="flex h-screen">
-                    <div className="w-1/2 p-8 overflow-y-auto">
-                        <RestaurantList restaurants={restaurants} handleLoadMore={handleLoadMore} hasMore={hasMore} handleLocationClick={handleLocationClick}/>
+                    {/* Left Side: Recommendations */}
+                    <div className="w-1/2 p-8 flex flex-col">
+                        <div className="sticky top-0 bg-white p-4 shadow-md z-10 rounded-lg">
+                            <FilterBar/>
+                        </div>
+                        <div className="flex-1 overflow-y-auto mt-4">
+                            <RestaurantList restaurants={restaurants} handleLoadMore={handleLoadMore} hasMore={hasMore} handleLocationClick={handleLocationClick}/>
+                        </div>
                     </div>
+                    {/* Right side: map */}
                     <div className="w-1/2 p-8">
                         <GoogleMap 
                             userLocation={userLocation} 

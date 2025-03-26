@@ -70,7 +70,14 @@ const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocati
                             </Box>
                             <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center"}}>
                                 <Typography variant="h4" style={{fontFamily: "'Tinos', serif", fontWeight: "700"}}>{selectedLocation.name}</Typography>
-                                <Typography><LocationOnIcon fontSize="large" onClick={showInMapClicked}/></Typography>
+                                <Typography>
+                                    <LocationOnIcon 
+                                        fontSize="large" 
+                                        onClick={showInMapClicked} 
+                                        sx={{
+                                            '&:hover': {color: 'grey'}
+                                        }}/>
+                                </Typography>
                             </Stack>
                             <Box display="flex" alignItems="center" gap={1} sx={{marginBottom: '0.5rem'}}>
                                 <Typography>
@@ -100,13 +107,25 @@ const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocati
                                         <span style={{lineHeight: 1}}>{day}</span>
                                     </Typography>
                                 ))}
-                                <Typography>
+                                <Typography
+                                    component="a"
+                                    href={selectedLocation.website}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    sx={{
+                                        textDecoration: "none",
+                                        "&:hover": { textDecoration: "underline"}
+                                    }}
+                                >
                                     <LanguageIcon style={{margin: 4}}/>
-                                    <a href={selectedLocation.website} target="_blank" rel="noopener noreferrer">
-                                        {selectedLocation.website}
-                                    </a>
+                                    {selectedLocation.website}
                                 </Typography>
-                                <Typography>
+                                <Typography
+                                    sx={{
+                                        textDecoration: "none",
+                                        "&:hover": { textDecoration: "underline"}
+                                    }}
+                                >
                                     <LocalPhoneIcon style={{margin: 4}}/>
                                     {selectedLocation.formatted_phone_number || "Phone number is not available"}
                                 </Typography>

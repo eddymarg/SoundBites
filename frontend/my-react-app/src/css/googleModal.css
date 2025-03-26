@@ -2,9 +2,8 @@
     position: absolute;
     top: 10px;
     left: 10px;
-    width: 447px;
-    height: auto;
-    max-height: 90vh;
+    width: 60%; /*447px*/
+    height: 90vh;
     background: white;
     padding: 15px;
     border-radius: 36px;
@@ -13,8 +12,9 @@
   }
   
 .info-modal img {
-    width: 450px;
-    height: 187px;
+    width: 450px; /*450px*/
+    height: 187px; /*187px*/
+    flex-shrink: 0;
     border-radius: 20px 20px 0px 0px;
     object-fit: cover;
 }
