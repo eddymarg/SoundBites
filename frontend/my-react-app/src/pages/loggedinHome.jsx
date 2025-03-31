@@ -86,7 +86,7 @@ const userHome = () => {
                 <div className="flex h-screen">
                     {/* Left Side: Recommendations */}
                     <div className="w-1/2 p-8 flex flex-col">
-                        <div className="sticky top-0 bg-white p-4 shadow-md z-10 rounded-lg">
+                        <div className="sticky top-0 bg-white shadow-md z-10 rounded-lg" style={{height: '8%', borderRadius: '20px'}}>
                             <FilterBar/>
                         </div>
                         <div className="flex-1 overflow-y-auto mt-4">
