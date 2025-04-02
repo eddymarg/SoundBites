@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Box, OutlinedInput, Typography } from "@mui/material"
+import { Box, OutlinedInput, Typography, Slider } from "@mui/material"
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
@@ -26,7 +26,6 @@ const genres = [
     'New-age',
     'Electronic',
     'Pop',
-    'Rock',
     'Hip-hop',
     'Blues',
     'R&B',
@@ -47,10 +46,14 @@ const distances = [
     '10 - 15 mi',
 ]
 
-const filterBar = () => {
-    const [genreFilter, setGenreFilter] = useState([])
-    const [distanceFilter, setDistanceFilter] = useState([])
+const marks = [
+    { value: 0, label: "$"},
+    { value: 25, label: "$$"},
+    { value: 50, label: "$$$"},
+    { value: 75, label: "$$$$"},
+]
 
+const filterBar = ({ genreFilter, setGenreFilter, distanceFilter, setDistanceFilter, price, setPrice }) => {
     const handleGenreChange = (event) => {
         const {
             target: { value },
@@ -69,9 +72,21 @@ const filterBar = () => {
         )
     }
 
+    const handlePriceChange = (event, newValue) => {
+        setPrice(newValue)
+    }
+
     return (
-        <div style={{ marginLeft: '0.5rem'}}>
-            <FormControl sx={{ m: 1, width: 140}}>
+        <Box 
+            sx={{ 
+                display: "flex",
+                flexWrap: "wrap",
+                width: "100%",
+                maxWidth: "600px",
+                padding: "0.5rem"
+            }}
+        >
+            <FormControl sx={{ flex: "1 1 140", minWidth: "120px", marginLeft: "0.5rem"}}>
                 <InputLabel id="genre-selection" shrink={false} sx={{ top: "0px", transform: "translate(14px, 8px) scale(1)"}}>Genre</InputLabel>
                 <Select
                     labelId="genre-selection"
@@ -82,7 +97,14 @@ const filterBar = () => {
                     input={<OutlinedInput label="Tag" />}
                     renderValue={(selected) => selected.join(', ')}
                     MenuProps={MenuProps}
-                    sx={{ height: 40, display: "flex", alignItems: "center", marginTop: '0.1rem', backgroundColor: '#FFF4E693', borderRadius: '20px'}}
+                    sx={{ 
+                        height: 40, 
+                        display: "flex", 
+                        alignItems: "center", 
+                        marginTop: '0.1rem', 
+                        backgroundColor: '#FFF4E693', 
+                        borderRadius: '20px'
+                    }}
                 >
                     {genres.map((genre) => (
                         <MenuItem key={genre} value={genre}>
@@ -92,7 +114,8 @@ const filterBar = () => {
                     ))}
                 </Select>
             </FormControl>
-            <FormControl sx={{ m: 1, width: 175}}>
+
+            <FormControl sx={{ flex: "1 1 175", minWidth: "140px", marginLeft: "0.5rem" }}>
                 <InputLabel id="distance-selection" sx={{ top: "0px", transform: "translate(14px, 8px) scale(1)"}}>Distance</InputLabel>
                 <Select
                     labelId="distance-selection"
@@ -103,7 +126,14 @@ const filterBar = () => {
                     input={<OutlinedInput label="Tag" />}
                     renderValue={(selected) => selected.join(', ')}
                     MenuProps={MenuProps}
-                    sx={{ height: 40, display: "flex", alignItems: "center", marginTop: '0.1rem', backgroundColor: '#FFF4E693', borderRadius: '20px'}}
+                    sx={{ 
+                        height: 40, 
+                        display: "flex", 
+                        alignItems: "center", 
+                        marginTop: '0.1rem', 
+                        backgroundColor: '#FFF4E693', 
+                        borderRadius: '20px',
+                    }}
                 >
                     {distances.map((distance) => (
                         <MenuItem key={distance} value={distance}>
@@ -113,7 +143,60 @@ const filterBar = () => {
                     ))}
                 </Select>
             </FormControl>
-        </div>
+
+            <Box 
+                sx={{ 
+                    flex: "1 1 20%", 
+                    minWidth: "130px", 
+                    textAlign: "center",
+                    marginLeft: "4rem", 
+                }}
+            >
+                <Slider
+                    value={price}
+                    onChange={handlePriceChange}
+                    step={null}
+                    marks={marks}
+                    min={0}
+                    max={75}
+                    sx={{
+                        color: "#FFBF69",
+                        height: 8,
+                        "& .MuiSlider-thumb": {
+                            width: 24,
+                            height: 24,
+                            backgroundColor: "#FFBF69",
+                            border: "2px solid white",
+                            "&:focus, &:hover": { boxShadow: "0px 0px 5px #FFBF69"},
+                        },
+                        "& .MuiSlider-track": {
+                            height: 4,
+                            backgroundColor: "#FFBF69",
+                        },
+                        "& .MuiSlider-rail": {
+                            height: 4,
+                            backgroundColor: "#FFBF69",
+                        },
+                        "& .MuiSlider-mark": {
+                            backgroundColor: "#FCE8C8",
+                            width: 24,
+                            height: 24,
+                            borderRadius: "50%",
+                            transform: "translate(-50%, -50%)",
+                        },
+                        "& .MuiSlider-markActive": {
+                            backgroundColor: "orange",
+                        },
+                        "& .MuiSlider-markLabel": {
+                            fontSize: 16,
+                            fontFamily: "Tinos, Serif",
+                            fontWeight: "bold",
+                            color: "#0E182A",
+                        },
+                    }}
+                />
+            </Box>
+        </Box>
     )
 }
 

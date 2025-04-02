@@ -13,7 +13,10 @@ const userHome = () => {
     const [restaurants, setRestaurants] = useState([])
     const [error, setError] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
-    const [genre, setGenre] = useState("jazz")
+    // Filter states
+    const [genreFilter, setGenreFilter] = useState([])
+    const [distanceFilter, setDistanceFilter] = useState([])
+    const [price, setPrice] = useState(0)
     //  For load more
     const [loadedCount, setLoadedCount] = useState(4)
     const [hasMore, setHasMore] = useState(true)
@@ -51,7 +54,7 @@ const userHome = () => {
     useEffect(() => {
         if (userLocation) {
             setIsLoading(true)
-            getNearbyRestoByMusic(userLocation.lat, userLocation.lng, genre, loadedCount, offset)
+            getNearbyRestoByMusic(userLocation.lat, userLocation.lng, genreFilter, distanceFilter, price, loadedCount, offset)
                 .then((data) => {
                     if(data && Array.isArray(data.restaurants)) {
                         setRestaurants(prevRestaurants => [...prevRestaurants, ...data.restaurants])
@@ -69,7 +72,7 @@ const userHome = () => {
                     setIsLoading(false)
                 })
         }
-    }, [userLocation, genre, loadedCount])
+    }, [userLocation, genreFilter, distanceFilter, price, loadedCount])
 
     const handleLoadMore = () => {
         setLoadedCount(prevCount => prevCount + 4)
@@ -87,7 +90,9 @@ const userHome = () => {
                     {/* Left Side: Recommendations */}
                     <div className="w-1/2 p-8 flex flex-col">
                         <div className="sticky top-0 bg-white shadow-md z-10 rounded-lg" style={{height: '8%', borderRadius: '20px'}}>
-                            <FilterBar/>
+                            <FilterBar
+                                genreFilter={genreFilter} setGenreFilter={setGenreFilter} distanceFilter={distanceFilter} setDistanceFilter={setDistanceFilter} price={price} setPrice={setPrice}
+                            />
                         </div>
                         <div className="flex-1 overflow-y-auto mt-4">
                             <RestaurantList restaurants={restaurants} handleLoadMore={handleLoadMore} hasMore={hasMore} handleLocationClick={handleLocationClick}/>
