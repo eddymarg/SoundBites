@@ -45,7 +45,7 @@ const restaurantList = ({ restaurants, handleLoadMore, hasMore, handleLocationCl
                             <Rating 
                                 name={`restaurant-rate-${resto.id}-${index}`} 
                                 readOnly 
-                                defaultValue={resto.rating} 
+                                defaultValue={Number(resto.rating)} 
                                 precision={0.1}
                             />
                             <Typography variant="body1" marginLeft={2}>{priceLevels[resto.price_level]}</Typography>

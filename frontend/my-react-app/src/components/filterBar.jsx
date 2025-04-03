@@ -39,11 +39,11 @@ const genres = [
 ]
 
 const distances = [
-    '0 - 1 mi',
-    '1 - 3 mi',
-    '3 - 5 mi',
-    '5 - 10 mi',
-    '10 - 15 mi',
+    { label: '0 - 1 mi', range: [0, 1]},
+    { label: '1 - 3 mi', range: [1, 3]},
+    { label: '3 - 5 mi', range: [3, 5]},
+    { label: '5 - 10 mi', range: [5, 10]},
+    { label: '10 - 15 mi', range: [10, 15]},
 ]
 
 const marks = [
@@ -58,21 +58,42 @@ const filterBar = ({ genreFilter, setGenreFilter, distanceFilter, setDistanceFil
         const {
             target: { value },
         } = event
-        setGenreFilter(
-            typeof value === 'string' ? value.split(',') : value,
-        )
+        const newGenres = typeof value === 'string' ? value.split(',') : value
+        
+        if (newGenres.length > genreFilter.length) {
+            console.log('Genres added:', newGenres.filter((genre) => !genreFilter.includes(genre)))
+        } else if (newGenres.length < genreFilter.length){
+            console.log('Genres removed:', genreFilter.filter((genre) => !newGenres.includes(genre)))
+        } else {
+            console.log('Genres changed:', newGenres)
+        }
+        setGenreFilter(newGenres)
     }
 
     const handleDistanceChange = (event) => {
         const {
             target: { value },
         } = event
-        setDistanceFilter(
-            typeof value === 'string' ? value.split(',') : value,
-        )
+        const newDistances = typeof value === 'string' ? value.split(',') : value
+
+        const selectedRanges = newDistances.map(label => {
+            const selected = distances.find(d => d.label === label)
+            return selected ? selected.range : null
+        }).filter(range => range !== null)
+
+        // if (newDistances.length > distanceFilter.length) {
+        //     console.log('Distances added:', newDistances.filter((distance) => !distanceFilter(distance)))
+        // } else if (newDistances.length < distanceFilter.length) {
+        //     console.log('Distances removed:', distanceFilter.filter((distance) => !newDistances.includes(distance)))
+        // } else {
+        //     console.log('Distances changed:', newDistances)
+        // }
+
+        setDistanceFilter(selectedRanges)
     }
 
     const handlePriceChange = (event, newValue) => {
+        console.log('Price changed:', newValue)
         setPrice(newValue)
     }
 
@@ -121,7 +142,7 @@ const filterBar = ({ genreFilter, setGenreFilter, distanceFilter, setDistanceFil
                     labelId="distance-selection"
                     id="distance"
                     multiple
-                    value={distanceFilter}
+                    value={distanceFilter.map(range => distances.find(d => d.range === range)?.label || '')}
                     onChange={handleDistanceChange}
                     input={<OutlinedInput label="Tag" />}
                     renderValue={(selected) => selected.join(', ')}
@@ -136,9 +157,9 @@ const filterBar = ({ genreFilter, setGenreFilter, distanceFilter, setDistanceFil
                     }}
                 >
                     {distances.map((distance) => (
-                        <MenuItem key={distance} value={distance}>
-                        <Checkbox checked={distanceFilter.includes(distance)} />
-                        <ListItemText primary={distance} />
+                        <MenuItem key={distance.label} value={distance.label}>
+                        <Checkbox checked={distanceFilter.includes(distance.label)} />
+                        <ListItemText primary={distance.label} />
                     </MenuItem>
                     ))}
                 </Select>

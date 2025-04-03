@@ -41,7 +41,7 @@ const userHome = () => {
                 },
                 {
                     enableHighAccuracy: true,
-                    timeout: 10000,
+                    timeout: 15000,
                     maximumAge: 0,
                 }
             )
@@ -55,11 +55,7 @@ const userHome = () => {
         if (userLocation) {
             setIsLoading(true)
             setRestaurants([])
-
-            const validGenreFilter = genreFilter.length ? genreFilter : ['all genres of']
-            const validDistanceFilter = distanceFilter.length ? distanceFilter : [10]
-            const validPrice = price >= 0 ? price : 0
-            getNearbyRestoByMusic(userLocation.lat, userLocation.lng, validGenreFilter, validDistanceFilter, validPrice, loadedCount, offset)
+            getNearbyRestoByMusic(userLocation.lat, userLocation.lng, genreFilter, distanceFilter, price, loadedCount, offset)
                 .then((data) => {
                     if(data && Array.isArray(data.restaurants)) {
                         setRestaurants(prevRestaurants => [...prevRestaurants, ...data.restaurants])

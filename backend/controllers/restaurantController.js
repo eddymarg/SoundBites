@@ -37,10 +37,14 @@ exports.getNearbyRestoByMusic = async (req, res) => {
         return res.status(400).json({ message: "Missing required parameters."})
     }
 
-    const genreQuery = genreFilter && genreFilter.length > 0 ? genreFilter.join(' ') : "all genres of"
-    const query = `restaurant live ${genreQuery} music`
+    const genreQuery = genreFilter && genreFilter.length > 0 ? `with live music ${genreFilter.join(' ')}` : "with live music"
+    const query = `restaurant ${genreQuery}`
 
-    const radius = distanceFilter && distanceFilter > 0 ? distanceFilter : [50000]
+    let radius = 50000
+    if (distanceFilter && distanceFilter.length > 0) {
+        const selectedRange = distanceFilter[0]
+        radius = selectedRange[1] * 1000
+    }
 
     try {
         const params = {
