@@ -14,7 +14,7 @@ async function getPlaceDetails(placeId) {
                 }
             }
         )
-        console.log(`Details for placeId ${placeId}:`, detailsResponse.data)
+        // console.log(`Details for placeId ${placeId}:`, detailsResponse.data)
         if (detailsResponse.data.result) {
             return {
                 website: detailsResponse.data.result.website || "No website found",
@@ -31,29 +31,38 @@ async function getPlaceDetails(placeId) {
 
 exports.getNearbyRestoByMusic = async (req, res) => {
     console.log("Received request:", req.body)
-    const { lat, lng, genre, offset } = req.body
-    const radius = 50000
-    const query = `restaurant live ${genre} music`
+    const { lat, lng, genreFilter, distanceFilter, price, offset } = req.body
 
-    if (!lat || !lng || !genre || offset === undefined) {
+    if (!lat || !lng || offset === undefined) {
         return res.status(400).json({ message: "Missing required parameters."})
     }
 
+    const genreQuery = genreFilter && genreFilter.length > 0 ? genreFilter.join(' ') : "all genres of"
+    const query = `restaurant live ${genreQuery} music`
+
+    const radius = distanceFilter && distanceFilter > 0 ? distanceFilter : [50000]
+
     try {
+        const params = {
+            query: query,
+            location: `${lat}, ${lng}`,
+            radius: radius,
+            key: GOOGLE_PLACES_API_KEY,
+        }
+
+        if (price > 0) {
+            params.minprice = price
+            params.maxprice = price
+        }
+
+        if (offset) {
+            params.pagetoken = offset
+        }
+
         const response = await axios.get(
             'https://maps.googleapis.com/maps/api/place/textsearch/json',
-            {
-                params: {
-                    query: query,
-                    location: `${lat},${lng}`,
-                    radius: radius,
-                    key: GOOGLE_PLACES_API_KEY,
-                    pagetoken: offset,
-                }
-            },
+            { params }
         )
-
-        // console.log("Google Places API response:", response.data)
 
         if (!response.data || !response.data.results) {
             throw new Error("Invalid response from Google Places API")

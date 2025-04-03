@@ -54,7 +54,12 @@ const userHome = () => {
     useEffect(() => {
         if (userLocation) {
             setIsLoading(true)
-            getNearbyRestoByMusic(userLocation.lat, userLocation.lng, genreFilter, distanceFilter, price, loadedCount, offset)
+            setRestaurants([])
+
+            const validGenreFilter = genreFilter.length ? genreFilter : ['all genres of']
+            const validDistanceFilter = distanceFilter.length ? distanceFilter : [10]
+            const validPrice = price >= 0 ? price : 0
+            getNearbyRestoByMusic(userLocation.lat, userLocation.lng, validGenreFilter, validDistanceFilter, validPrice, loadedCount, offset)
                 .then((data) => {
                     if(data && Array.isArray(data.restaurants)) {
                         setRestaurants(prevRestaurants => [...prevRestaurants, ...data.restaurants])
