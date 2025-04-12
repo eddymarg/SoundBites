@@ -48,9 +48,9 @@ const distances = [
 
 const marks = [
     { value: 0, label: "$"},
-    { value: 25, label: "$$"},
-    { value: 50, label: "$$$"},
-    { value: 75, label: "$$$$"},
+    { value: 1, label: "$$"},
+    { value: 2, label: "$$$"},
+    { value: 3, label: "$$$$"},
 ]
 
 const filterBar = ({ genreFilter, setGenreFilter, distanceFilter, setDistanceFilter, price, setPrice }) => {
@@ -81,14 +81,6 @@ const filterBar = ({ genreFilter, setGenreFilter, distanceFilter, setDistanceFil
             return selected ? selected.range : null
         }).filter(range => range !== null)
 
-        // if (newDistances.length > distanceFilter.length) {
-        //     console.log('Distances added:', newDistances.filter((distance) => !distanceFilter(distance)))
-        // } else if (newDistances.length < distanceFilter.length) {
-        //     console.log('Distances removed:', distanceFilter.filter((distance) => !newDistances.includes(distance)))
-        // } else {
-        //     console.log('Distances changed:', newDistances)
-        // }
-
         setDistanceFilter(selectedRanges)
     }
 
@@ -108,15 +100,19 @@ const filterBar = ({ genreFilter, setGenreFilter, distanceFilter, setDistanceFil
             }}
         >
             <FormControl sx={{ flex: "1 1 140", minWidth: "120px", marginLeft: "0.5rem"}}>
-                <InputLabel id="genre-selection" shrink={false} sx={{ top: "0px", transform: "translate(14px, 8px) scale(1)"}}>Genre</InputLabel>
                 <Select
-                    labelId="genre-selection"
-                    id="genre"
                     multiple
+                    displayEmpty
                     value={genreFilter}
                     onChange={handleGenreChange}
-                    input={<OutlinedInput label="Tag" />}
-                    renderValue={(selected) => selected.join(', ')}
+                    input={<OutlinedInput />}
+                    inputProps={{ 'aria-label': 'Genre'}}
+                    renderValue={(selected) => {
+                        if(selected.length === 0) {
+                            return <Typography>Genre</Typography>
+                        }
+                        return selected.join(', ')
+                    }}
                     MenuProps={MenuProps}
                     sx={{ 
                         height: 40, 
@@ -137,15 +133,19 @@ const filterBar = ({ genreFilter, setGenreFilter, distanceFilter, setDistanceFil
             </FormControl>
 
             <FormControl sx={{ flex: "1 1 175", minWidth: "140px", marginLeft: "0.5rem" }}>
-                <InputLabel id="distance-selection" sx={{ top: "0px", transform: "translate(14px, 8px) scale(1)"}}>Distance</InputLabel>
                 <Select
-                    labelId="distance-selection"
-                    id="distance"
                     multiple
+                    displayEmpty
                     value={distanceFilter.map(range => distances.find(d => d.range === range)?.label || '')}
                     onChange={handleDistanceChange}
-                    input={<OutlinedInput label="Tag" />}
-                    renderValue={(selected) => selected.join(', ')}
+                    input={<OutlinedInput/>}
+                    inputProps={{ 'aria-label': 'Distance' }}
+                    renderValue={(selected) => {
+                        if(selected.length === 0) {
+                            return <Typography>Distance</Typography>
+                        }
+                        return selected.join(', ')
+                    }}
                     MenuProps={MenuProps}
                     sx={{ 
                         height: 40, 
@@ -158,7 +158,7 @@ const filterBar = ({ genreFilter, setGenreFilter, distanceFilter, setDistanceFil
                 >
                     {distances.map((distance) => (
                         <MenuItem key={distance.label} value={distance.label}>
-                        <Checkbox checked={distanceFilter.includes(distance.label)} />
+                        <Checkbox checked={distanceFilter.includes(distance.range)} />
                         <ListItemText primary={distance.label} />
                     </MenuItem>
                     ))}
@@ -176,10 +176,10 @@ const filterBar = ({ genreFilter, setGenreFilter, distanceFilter, setDistanceFil
                 <Slider
                     value={price}
                     onChange={handlePriceChange}
-                    step={null}
+                    step={1}
                     marks={marks}
                     min={0}
-                    max={75}
+                    max={3}
                     sx={{
                         color: "#FFBF69",
                         height: 8,

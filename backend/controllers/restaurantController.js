@@ -54,7 +54,7 @@ exports.getNearbyRestoByMusic = async (req, res) => {
             key: GOOGLE_PLACES_API_KEY,
         }
 
-        if (price > 0) {
+        if (price >= 0) {
             params.minprice = price
             params.maxprice = price
         }
