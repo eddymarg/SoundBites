@@ -20,7 +20,6 @@ const userHome = () => {
     //  For load more
     const [loadedCount, setLoadedCount] = useState(4)
     const [hasMore, setHasMore] = useState(true)
-    const [offset, setOffset] = useState(null)
     // for full info modal
     const [selectedLocation, setSelectedLocation] = useState(null)
 
@@ -41,7 +40,7 @@ const userHome = () => {
                 },
                 {
                     enableHighAccuracy: true,
-                    timeout: 15000,
+                    timeout: 1000,
                     maximumAge: 0,
                 }
             )
@@ -55,12 +54,11 @@ const userHome = () => {
         if (userLocation) {
             setIsLoading(true)
             setRestaurants([])
-            getNearbyRestoByMusic(userLocation.lat, userLocation.lng, genreFilter, distanceFilter, price, loadedCount, offset)
+            getNearbyRestoByMusic(userLocation.lat, userLocation.lng, genreFilter, distanceFilter, price, loadedCount)
                 .then((data) => {
                     if(data && Array.isArray(data.restaurants)) {
                         setRestaurants(prevRestaurants => [...prevRestaurants, ...data.restaurants])
                         setHasMore(data.hasMore)
-                        setOffset(data.offset)
                     } else {
                         console.error("Invalid response format:", data)
                         setRestaurants([])

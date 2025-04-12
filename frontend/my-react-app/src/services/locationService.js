@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const getNearbyRestoByMusic = async (lat, lng, genreFilter, distanceFilter, price, limit, offset) => {
+const getNearbyRestoByMusic = async (lat, lng, genreFilter, distanceFilter, price, limit) => {
     try {
         const response = await axios.post('http://localhost:5001/api/nearby-restaurants', {
             lat,
@@ -9,7 +9,6 @@ const getNearbyRestoByMusic = async (lat, lng, genreFilter, distanceFilter, pric
             distanceFilter,
             price,
             limit,
-            offset,
         })
         return response.data
     } catch (error) {

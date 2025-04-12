@@ -31,9 +31,9 @@ async function getPlaceDetails(placeId) {
 
 exports.getNearbyRestoByMusic = async (req, res) => {
     console.log("Received request:", req.body)
-    const { lat, lng, genreFilter, distanceFilter, price, offset } = req.body
+    const { lat, lng, genreFilter, distanceFilter, price } = req.body
 
-    if (!lat || !lng || offset === undefined) {
+    if (!lat || !lng) {
         return res.status(400).json({ message: "Missing required parameters."})
     }
 
@@ -57,10 +57,6 @@ exports.getNearbyRestoByMusic = async (req, res) => {
         if (price > 0) {
             params.minprice = price
             params.maxprice = price
-        }
-
-        if (offset) {
-            params.pagetoken = offset
         }
 
         const response = await axios.get(
@@ -97,7 +93,7 @@ exports.getNearbyRestoByMusic = async (req, res) => {
         )
         const hasMore = response.data.next_page_token ? true : false
 
-        res.status(200).json({ restaurants, hasMore, offset: response.data.next_page_token })
+        res.status(200).json({ restaurants })
     } catch (error) {
         console.error('Error fetching restaurants:', error)
         res.status(500).json({message: 'Error fetching restaurants'})
