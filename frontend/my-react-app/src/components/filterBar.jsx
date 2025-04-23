@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Box, OutlinedInput, Typography, Slider } from "@mui/material"
+import { Box, Chip, OutlinedInput, Typography, Slider } from "@mui/material"
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
@@ -111,7 +111,9 @@ const filterBar = ({ genreFilter, setGenreFilter, distanceFilter, setDistanceFil
                         if(selected.length === 0) {
                             return <Typography>Genre</Typography>
                         }
-                        return selected.join(', ')
+                        return (
+                            selected.join(', ')
+                        )
                     }}
                     MenuProps={MenuProps}
                     sx={{ 

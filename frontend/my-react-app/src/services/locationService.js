@@ -2,7 +2,7 @@ import axios from 'axios'
 
 const getNearbyRestoByMusic = async (lat, lng, genreFilter, distanceFilter, price, limit) => {
     try {
-        const response = await axios.post('http://localhost:5001/api/nearby-restaurants', {
+        const res = await axios.post('http://localhost:5001/api/nearby-restaurants', {
             lat,
             lng,
             genreFilter,
@@ -10,7 +10,7 @@ const getNearbyRestoByMusic = async (lat, lng, genreFilter, distanceFilter, pric
             price,
             limit,
         })
-        return response.data
+        return res.data
     } catch (error) {
         console.error("Error fetching music-themed restaurants (locationService):", error)
         throw error

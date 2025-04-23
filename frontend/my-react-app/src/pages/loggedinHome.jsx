@@ -1,5 +1,4 @@
 "use client"
-import { Box } from "@mui/material"
 import { useState, useEffect } from "react"
 import { APIProvider } from "@vis.gl/react-google-maps"
 import getNearbyRestoByMusic from "../services/locationService"
@@ -24,8 +23,10 @@ const userHome = () => {
     const [selectedLocation, setSelectedLocation] = useState(null)
 
     useEffect(() => {
+        let watchId;
+
         if("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(
+            watchId = navigator.geolocation.watchPosition(
                 (position) => {
                     setUserLocation ({
                         lat: position.coords.latitude,
@@ -34,9 +35,27 @@ const userHome = () => {
                     setIsLoading(false)
                 },
                 (error) => {
-                    console.error("Error getting location:", error.message)
-                    setError(error.message)
-                    setIsLoading(false)
+                    console.warn("Location error:", error.message)
+
+                    if (error.code === 1) 
+                        setError("Permission denied.")
+                    else if (error.code === 2)
+                        setError("Location unavailable. Showing default.")
+                    else if (error.code === 3)
+                        setError("Location request timed out.")
+                    else 
+                        setError("Unknown error occurred.")
+
+                    fetch("https://ipapi.co/json/")
+                        .then((res) => res.json())
+                        .then((data) => {
+                            setUserLocation({lat: data.latitude, lng: data.longitude})
+                            setIsLoading(false)
+                        })
+                        .catch(() => {
+                            setUserLocation({lat: 40.7128, lng: -74.0060})
+                            setIsLoading(false)
+                        })
                 },
                 {
                     enableHighAccuracy: true,
@@ -48,14 +67,26 @@ const userHome = () => {
             setError("Geolocation is not supported by this browser.")
             setIsLoading(false)
         }
+
+        return () => {
+            if(watchId) navigator.geolocation.clearWatch(watchId)
+        }
     }, [])
 
     useEffect(() => {
+        console.log("Fetching with:", {
+            userLocation,
+            genreFilter,
+            distanceFilter,
+            price,
+            loadedCount
+        })
         if (userLocation) {
             setIsLoading(true)
             setRestaurants([])
             getNearbyRestoByMusic(userLocation.lat, userLocation.lng, genreFilter, distanceFilter, price, loadedCount)
                 .then((data) => {
+                    console.log("fetched restaurant data:", data)
                     if(data && Array.isArray(data.restaurants)) {
                         setRestaurants(prevRestaurants => [...prevRestaurants, ...data.restaurants])
                         setHasMore(data.hasMore)

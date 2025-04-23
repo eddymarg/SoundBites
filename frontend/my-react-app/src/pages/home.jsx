@@ -144,7 +144,7 @@ const Home = () => {
                     >
                         Continue with Spotify
                     </Button>
-                    <Button variant="contained" color="basic" startIcon={<EmailIcon/>} onClick={() => navigate("/EmailSignup")}
+                    {/* <Button variant="contained" color="basic" startIcon={<EmailIcon/>} onClick={() => navigate("/EmailSignup")}
                     sx={{
                         width: '525px',
                         height: '70px',
@@ -159,7 +159,7 @@ const Home = () => {
                     }}
                     >
                         Continue with Email
-                    </Button>
+                    </Button> */}
                 </Stack>
             </Box>
             <Box id='about-section'

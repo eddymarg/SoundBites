@@ -1,7 +1,15 @@
 import { Box, Button, Typography, Stack, Rating } from "@mui/material"
+import { useEffect } from "react"
 
-const restaurantList = ({ restaurants, handleLoadMore, hasMore, handleLocationClick }) => {
+const RestaurantList = ({ restaurants, handleLoadMore, hasMore, handleLocationClick }) => {
     const priceLevels = ["$", "$$", "$$$", "$$$$"]
+
+    // useEffect(() => {
+    //     console.log("Loaded restaurants:", restaurants)
+    //     restaurants.forEach((resto, i) => {
+    //         console.log(`Recc #${i + 1}:`, resto)
+    //     })
+    // }, [restaurants])
 
     return (
         <>
@@ -80,4 +88,4 @@ const restaurantList = ({ restaurants, handleLoadMore, hasMore, handleLocationCl
     )
 }
 
-export default restaurantList
+export default RestaurantList

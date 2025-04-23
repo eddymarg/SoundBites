@@ -93,7 +93,7 @@ exports.getNearbyRestoByMusic = async (req, res) => {
         )
         const hasMore = response.data.next_page_token ? true : false
 
-        res.status(200).json({ restaurants })
+        res.status(200).json({ restaurants, hasMore })
     } catch (error) {
         console.error('Error fetching restaurants:', error)
         res.status(500).json({message: 'Error fetching restaurants'})
