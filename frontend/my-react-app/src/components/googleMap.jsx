@@ -1,3 +1,5 @@
+// Main file for anything relating to just the Google Map
+
 "use client"
 import { useState, useEffect } from "react"
 import { Map, AdvancedMarker, Pin, InfoWindow } from "@vis.gl/react-google-maps"

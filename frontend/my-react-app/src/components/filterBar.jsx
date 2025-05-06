@@ -1,3 +1,5 @@
+// Styling and main parts of the filter bar
+
 import { useState } from "react";
 import { Box, Chip, OutlinedInput, Typography, Slider } from "@mui/material"
 import InputLabel from '@mui/material/InputLabel';

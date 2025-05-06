@@ -1,3 +1,5 @@
+// Main header file for when the user is logged in
+
 import React from "react"
 import { Button, Box, Stack, Avatar, IconButton } from "@mui/material"
 import { useNavigate } from "react-router-dom"

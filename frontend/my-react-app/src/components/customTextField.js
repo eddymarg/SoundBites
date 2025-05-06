@@ -1,3 +1,4 @@
+// Customized SoundBites text styling
 import { styled, TextField, InputAdornment, IconButton } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material"
 

@@ -1,3 +1,5 @@
+// Main file for header when user is not yet logged in
+
 import React from "react"
 import { Button, Box, Stack } from "@mui/material"
 import { useNavigate } from "react-router-dom"

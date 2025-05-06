@@ -1,3 +1,6 @@
+// Deals with logic and displaying of all 
+// restaurant recommendations
+
 import { Box, Button, Typography, Stack, Rating } from "@mui/material"
 import { useEffect } from "react"
 
