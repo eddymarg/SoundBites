@@ -69,4 +69,20 @@ exports.spotifyCallback = async (req, res) => {
         console.error("Error fetching token:", error.response?.data || error.message)
         res.status(500).json({ error: "Failed to get tokens", details: error.message })
     }
+
+    exports.getTopGenres = async(res, req) => {
+        const access_token = req.cookies.spotify_access_token
+
+        if (!access_token) {
+            return res.status(401).json({ error: "Missing access token" })
+        }
+
+        try {
+            const topGenres = await this.getTopGenres(access_token)
+            res.json({ topGenres })
+        } catch (error) {
+            console.error("Error fetching top genres:", error.response?.data || error.message)
+            res.status(500).json({ error: "Failed to get top genres" })
+        }
+    }
 }
