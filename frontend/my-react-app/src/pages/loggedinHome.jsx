@@ -104,6 +104,26 @@ const userHome = () => {
         }
     }, [userLocation, genreFilter, distanceFilter, price, loadedCount])
 
+    useEffect(() => {
+        const fetchTopGenres = async () => {
+            try {
+                const response = await fetch("/api/top-artists", {
+                    credentials: "include",
+                })
+                const data = await response.json()
+                console.log("Top genres from Spotify:", data.topGenres)
+
+                if(Array.isArray(data.topGenres)) {
+                    setGenreFilter(data.topGenres)
+                }
+            } catch (error) {
+                console.error("Error fetching top genres:", error)
+            }
+        }
+
+        fetchTopGenres()
+    }, [])
+
     const handleLoadMore = () => {
         setLoadedCount(prevCount => prevCount + 4)
     }

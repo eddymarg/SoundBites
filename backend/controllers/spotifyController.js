@@ -70,19 +70,39 @@ exports.spotifyCallback = async (req, res) => {
         res.status(500).json({ error: "Failed to get tokens", details: error.message })
     }
 
-    exports.getTopGenres = async(res, req) => {
-        const access_token = req.cookies.spotify_access_token
+}
 
-        if (!access_token) {
-            return res.status(401).json({ error: "Missing access token" })
-        }
+exports.getTopArtist = async(req, res) => {
+    const access_token = req.cookies.spotify_access_token
 
-        try {
-            const topGenres = await this.getTopGenres(access_token)
-            res.json({ topGenres })
-        } catch (error) {
-            console.error("Error fetching top genres:", error.response?.data || error.message)
-            res.status(500).json({ error: "Failed to get top genres" })
-        }
+    if (!access_token) {
+        return res.status(401).json({ error: "Missing access token" })
+    }
+
+    try {
+        const response = await axios.get("https://api.spotify.com/v1/me/top/artists?limit=10", {
+            headers: {
+                Authorization: `Bearer ${access_token}`,
+            }
+        })
+
+        const artists = response.data.items
+
+        const genreCounts = {}
+        artists.forEach(artist => {
+            artist.genres.forEach(genre => {
+                genreCounts[genre] = (genreCounts[genre] || 0) + 1
+            })
+        })
+
+        const topGenres = Object.entries(genreCounts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 3)
+            .map(entry => entry[0])
+
+        res.json({ topArtists: artists, topGenres})
+    } catch (error) {
+        console.error("Error fetching top genres:", error.response?.data || error.message)
+        res.status(500).json({ error: "Failed to get top genres" })
     }
 }
