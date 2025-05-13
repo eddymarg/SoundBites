@@ -29,7 +29,8 @@ exports.spotifyLogin = (req, res) => {
             client_id: client_id,
             scope: scope,
             redirect_uri: redirect_uri,
-            state: state
+            state: state,
+            show_dialog: true,
         })
     )
 }
@@ -61,8 +62,16 @@ exports.spotifyCallback = async (req, res) => {
         const { access_token, refresh_token } = response.data
 
         // store tokens in a cookie (for frontend)
-        res.cookie("spotify_access_token", access_token, { httpOnly: true, secure: false})
-        res.cookie("spotify_refresh_token", refresh_token, { httpOnly: true, secure: false })
+        res.cookie("spotify_access_token", access_token, { 
+            httpOnly: true, 
+            secure: false,
+            maxAge: 10 * 1000,
+        })
+        res.cookie("spotify_refresh_token", refresh_token, { 
+            httpOnly: true, 
+            secure: false,
+            maxAge: 10 * 1000
+        })
 
         res.redirect("http://localhost:5173/userHome")
     } catch (error) {
