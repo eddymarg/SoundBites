@@ -16,6 +16,7 @@ const userHome = () => {
     const [genreFilter, setGenreFilter] = useState([])
     const [distanceFilter, setDistanceFilter] = useState([])
     const [price, setPrice] = useState(0)
+    const [topGenres, setTopGenres] = useState([])
     //  For load more
     const [loadedCount, setLoadedCount] = useState(4)
     const [hasMore, setHasMore] = useState(true)
@@ -46,7 +47,7 @@ const userHome = () => {
                     else 
                         setError("Unknown error occurred.")
 
-                    fetch("https://ipapi.co/json/")
+                    fetch("http://localhost:5001/api/get-ip-location")
                         .then((res) => res.json())
                         .then((data) => {
                             setUserLocation({lat: data.latitude, lng: data.longitude})
@@ -102,27 +103,46 @@ const userHome = () => {
                     setIsLoading(false)
                 })
         }
-    }, [userLocation, genreFilter, distanceFilter, price, loadedCount])
+    }, [userLocation])
 
     useEffect(() => {
-        const fetchTopGenres = async () => {
+        const fetchTopArtists = async () => {
             try {
-                const response = await fetch("/api/top-artists", {
-                    credentials: "include",
+                const response = await fetch("http://localhost:5001/top-artists", {
+                    method: 'GET',
+                    credentials: "include"
                 })
-                const data = await response.json()
-                console.log("Top genres from Spotify:", data.topGenres)
 
-                if(Array.isArray(data.topGenres)) {
-                    setGenreFilter(data.topGenres)
+                if (!response.ok) {
+                    throw new Error("Failed to fetch top artists")
                 }
-            } catch (error) {
-                console.error("Error fetching top genres:", error)
+    
+                const data = await response.json()
+                console.log("Top artists loaded:", data)
+
+                const desiredGenreCount = 3
+                const genreSet = new Set()
+
+                for (const artist of data) {
+                    if (artist.genres && artist.genres.length > 0) {
+                        for (const genre of artist.genres) {
+                            if (genre) genreSet.add(genre.toLowerCase())
+                            if(genreSet.size >= desiredGenreCount) break
+                        }
+                    }
+                    if(genreSet.size >= desiredGenreCount) break
+                }
+
+                const topGenres = Array.from(genreSet)
+                console.log("Top extracted genres:", topGenres)
+                setTopGenres(topGenres)
+                setGenreFilter(topGenres)
+            } catch (err) {
+                console.error("Error loading top artists:", err)
             }
         }
-
-        fetchTopGenres()
-    }, [])
+        fetchTopArtists()
+    },[])
 
     const handleLoadMore = () => {
         setLoadedCount(prevCount => prevCount + 4)

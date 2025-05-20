@@ -5,6 +5,7 @@ const router = express.Router()
 
 router.get("/auth/spotify/login", spotifyController.spotifyLogin)
 router.get("/auth/spotify/callback", spotifyController.spotifyCallback)
-router.get("/auth/spotify/top-artists", spotifyController.getTopArtist)
+router.get("/top-artists", spotifyController.getTopArtists)
+
 
 module.exports = router

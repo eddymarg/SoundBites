@@ -1,5 +1,6 @@
 const querystring = require("querystring")
 const axios = require("axios")
+const { access } = require("fs")
 require("dotenv").config()
 
 const client_id = process.env.SPOTIFY_CLIENT_ID
@@ -20,7 +21,7 @@ const generateRandomString = (length) => {
 exports.spotifyLogin = (req, res) => {
     const state = generateRandomString(16)
     res.cookie("spotify_auth_state", state) // stores state in cookies for later verification
-    const scope = "user-read-private user-read-email playlist-read-private playlist-read-collaborative"
+    const scope = "user-read-private user-read-email user-top-read playlist-read-private playlist-read-collaborative"
 
     res.redirect(
         "https://accounts.spotify.com/authorize?" +
@@ -65,12 +66,10 @@ exports.spotifyCallback = async (req, res) => {
         res.cookie("spotify_access_token", access_token, { 
             httpOnly: true, 
             secure: false,
-            maxAge: 10 * 1000,
         })
         res.cookie("spotify_refresh_token", refresh_token, { 
             httpOnly: true, 
             secure: false,
-            maxAge: 10 * 1000
         })
 
         res.redirect("http://localhost:5173/userHome")
@@ -78,40 +77,93 @@ exports.spotifyCallback = async (req, res) => {
         console.error("Error fetching token:", error.response?.data || error.message)
         res.status(500).json({ error: "Failed to get tokens", details: error.message })
     }
-
 }
 
-exports.getTopArtist = async(req, res) => {
-    const access_token = req.cookies.spotify_access_token
+exports.getTopArtists = async(req, res) => {
+    let access_token = req.cookies.spotify_access_token
+    const refresh_token = req.cookies.spotify_refresh_token
 
-    if (!access_token) {
-        return res.status(401).json({ error: "Missing access token" })
+
+    if(!access_token || !refresh_token) {
+        return res.status(400).json({error: 'Tokens are required'})
     }
 
     try {
-        const response = await axios.get("https://api.spotify.com/v1/me/top/artists?limit=10", {
+        const response = await axios.get('https://api.spotify.com/v1/me/top/artists', {
             headers: {
-                Authorization: `Bearer ${access_token}`,
+                Authorization: `Bearer ${access_token}`
+            },
+            params: {
+                limit: 10,
+                time_range: 'short_term'
             }
         })
 
-        const artists = response.data.items
+        const topArtists = response.data.items.map(artist => ({
+            name: artist.name,
+            genres: artist.genres,
+            image: artist.images[0]?.url,
+            id: artist.id,
+            url: artist.external_urls.spotify
+        }))
 
-        const genreCounts = {}
-        artists.forEach(artist => {
-            artist.genres.forEach(genre => {
-                genreCounts[genre] = (genreCounts[genre] || 0) + 1
-            })
-        })
+        res.status(200).json(topArtists)
+    } catch (err) {
+        if (err.response?.status === 401) {
+            console.log('Access token expired. Refreshing...')
 
-        const topGenres = Object.entries(genreCounts)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 3)
-            .map(entry => entry[0])
+            try {
+                const refreshResponse = await axios.post('https://accounts.spotify.com/api/token', 
+                    querystring.stringify({
+                        grant_type: 'refresh_token',
+                        refresh_token: refresh_token,
+                    }),
+                    {
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            Authorization:
+                                'Basic ' + 
+                                Buffer.from(`${client_id}:${client_secret}`).toString('base64'),
+                        },
+                    }
+                )
+                access_token = refreshResponse.data.access_token
 
-        res.json({ topArtists: artists, topGenres})
-    } catch (error) {
-        console.error("Error fetching top genres:", error.response?.data || error.message)
-        res.status(500).json({ error: "Failed to get top genres" })
+                // updates cookie
+                res.cookie('spotify_access_token', access_token, {
+                    httpOnly: true,
+                    secure: false,
+                })
+
+                // retry original request
+                const retryResponse = await axios.get(
+                    'https://api.spotify.com/v1/me/top/artists',
+                    {
+                        headers: {
+                            Authorization: `Bearer ${access_token}`,
+                        },
+                        params: {
+                            limit: 10,
+                            time_range: 'short_term',
+                        },
+                    }
+                )
+
+                const topArtists = retryResponse.data.items.map(artist => ({
+                    name: artist.name,
+                    genres: artist.genres,
+                    image: artist.images[0]?.url,
+                    id: artist.id,
+                    url: artist.external_urls.spotify
+                }))
+
+                return res.status(200).json(topArtists)
+            } catch (refreshErr) {
+                console.error('Error refreshing access token:', refreshErr.response?.data || refreshErr.message)
+                return res.status(500).json({ error: 'Failed to refresh access token' })
+            }
+        }
+        console.error('Error fetching top artists:', err.response?.data || err.message)
+        res.status(500).json({ error: 'Failed to fetch top artists'})
     }
 }
