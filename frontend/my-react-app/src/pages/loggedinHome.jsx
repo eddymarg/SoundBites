@@ -6,28 +6,26 @@ import LoggedInHeader from "../components/loggedinHeader"
 import GoogleMap from "../components/googleMap"
 import RestaurantList from "../components/restaurantList"
 import "../css/loggedin.css"
+import { cache } from "react"
 
 const userHome = () => {
     const [userLocation, setUserLocation] = useState(null)
     const [restaurants, setRestaurants] = useState([])
     const [error, setError] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
+    const [hasFetchedRestaurants, setHasFetchedRestaurants] = useState(false)
     // Filter states
     const [genreFilter, setGenreFilter] = useState([])
-    const [distanceFilter, setDistanceFilter] = useState([])
-    const [price, setPrice] = useState(0)
     const [topGenres, setTopGenres] = useState([])
     //  For load more
     const [loadedCount, setLoadedCount] = useState(4)
-    const [hasMore, setHasMore] = useState(true)
     // for full info modal
     const [selectedLocation, setSelectedLocation] = useState(null)
 
+    // Retrieves location data
     useEffect(() => {
-        let watchId;
-
         if("geolocation" in navigator) {
-            watchId = navigator.geolocation.watchPosition(
+            navigator.geolocation.getCurrentPosition(
                 (position) => {
                     setUserLocation ({
                         lat: position.coords.latitude,
@@ -51,6 +49,7 @@ const userHome = () => {
                         .then((res) => res.json())
                         .then((data) => {
                             setUserLocation({lat: data.latitude, lng: data.longitude})
+                            console.log("IP location", data)
                             setIsLoading(false)
                         })
                         .catch(() => {
@@ -60,7 +59,7 @@ const userHome = () => {
                 },
                 {
                     enableHighAccuracy: true,
-                    timeout: 1000,
+                    timeout: 10000,
                     maximumAge: 0,
                 }
             )
@@ -68,32 +67,38 @@ const userHome = () => {
             setError("Geolocation is not supported by this browser.")
             setIsLoading(false)
         }
-
-        return () => {
-            if(watchId) navigator.geolocation.clearWatch(watchId)
-        }
     }, [])
 
+    // Deals with loading restaurant data
     useEffect(() => {
-        console.log("Fetching with:", {
-            userLocation,
-            genreFilter,
-            distanceFilter,
-            price,
-            loadedCount
-        })
-        if (userLocation) {
+        console.count("useEffect ran")
+        console.log("Current userLocation:", userLocation)
+
+        const cacheKey = JSON.stringify({ userLocation, genreFilter })
+        // console.log("Cache key: ", cacheKey)
+        
+
+        if (userLocation && genreFilter.length > 0 && !hasFetchedRestaurants) {
+            const cached = localStorage.getItem(cacheKey)
+
+            if(cached) {
+                console.log("Loaded from localStorage")
+                setRestaurants(JSON.parse(cached))
+                console.log("local storage", JSON.parse(localStorage.getItem(cacheKey)))
+                setHasFetchedRestaurants(true)
+                setIsLoading(false)
+                return
+            }
+
             setIsLoading(true)
-            setRestaurants([])
-            getNearbyRestoByMusic(userLocation.lat, userLocation.lng, genreFilter, distanceFilter, price, loadedCount)
+            getNearbyRestoByMusic(userLocation.lat, userLocation.lng, genreFilter)
                 .then((data) => {
-                    console.log("fetched restaurant data:", data)
+                    console.log("API response:", data)
                     if(data && Array.isArray(data.restaurants)) {
-                        setRestaurants(prevRestaurants => [...prevRestaurants, ...data.restaurants])
-                        setHasMore(data.hasMore)
-                    } else {
-                        console.error("Invalid response format:", data)
-                        setRestaurants([])
+                        setRestaurants(data.restaurants)
+                        localStorage.setItem(cacheKey, JSON.stringify(data.restaurants))
+                        setHasFetchedRestaurants(true)
+                        console.log("Loaded restaurants:", data.restaurants)
                     }
                     setIsLoading(false)
                 })
@@ -103,8 +108,9 @@ const userHome = () => {
                     setIsLoading(false)
                 })
         }
-    }, [userLocation])
+    }, [userLocation, genreFilter, hasFetchedRestaurants])
 
+    // Gets Genres
     useEffect(() => {
         const fetchTopArtists = async () => {
             try {
@@ -144,9 +150,11 @@ const userHome = () => {
         fetchTopArtists()
     },[])
 
+    // Assists with load more button
     const handleLoadMore = () => {
         setLoadedCount(prevCount => prevCount + 4)
     }
+
 
     const handleLocationClick = (location) => {
         setSelectedLocation(location)
@@ -162,7 +170,7 @@ const userHome = () => {
                         <div className="sticky top-0 bg-white shadow-md z-10 rounded-lg" style={{height: '8%', borderRadius: '20px'}}>
                         </div> {/* for filters */}
                         <div className="flex-1 overflow-y-auto mt-4">
-                            <RestaurantList restaurants={restaurants} handleLoadMore={handleLoadMore} hasMore={hasMore} handleLocationClick={handleLocationClick}/>
+                            <RestaurantList restaurants={restaurants} handleLoadMore={handleLoadMore} handleLocationClick={handleLocationClick}/>
                         </div>
                     </div>
                     {/* Right side: map */}

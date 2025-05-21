@@ -31,8 +31,9 @@ async function getPlaceDetails(placeId) {
 
 exports.getNearbyRestoByMusic = async (req, res) => {
     console.log("Received request:", req.body)
-    const { lat, lng, genreFilter, distanceFilter, price } = req.body
+    const { lat, lng, genreFilter } = req.body
 
+    console.log("lat:", lat, "lng:", lng)
     if (!lat || !lng) {
         return res.status(400).json({ message: "Missing required parameters."})
     }
@@ -40,11 +41,6 @@ exports.getNearbyRestoByMusic = async (req, res) => {
     const genreQuery = genreFilter && genreFilter.length > 0 ? `with live music ${genreFilter.join(' ')}` : "with live music"
     const query = `restaurant ${genreQuery}`
 
-    let radius = 50000
-    if (distanceFilter && distanceFilter.length > 0) {
-        const selectedRange = distanceFilter[0]
-        radius = selectedRange[1] * 1000
-    }
 
     try {
         const params = {
@@ -52,11 +48,6 @@ exports.getNearbyRestoByMusic = async (req, res) => {
             location: `${lat}, ${lng}`,
             radius: radius,
             key: GOOGLE_PLACES_API_KEY,
-        }
-
-        if (price >= 0) {
-            params.minprice = price
-            params.maxprice = price
         }
 
         const response = await axios.get(

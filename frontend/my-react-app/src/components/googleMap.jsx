@@ -33,7 +33,7 @@ const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocati
         <>
             {isLoading ? (
                 <div className="text-center">Loading...</div>
-            ) : userLocation ? (
+            ) : userLocation && typeof userLocation.lat === 'number' && typeof userLocation.lng === 'number' ? (
                 <Box sx={{ height: '85%'}}>
                     <Map 
                         defaultZoom={9}
