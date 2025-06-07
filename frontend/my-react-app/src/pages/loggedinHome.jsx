@@ -19,6 +19,7 @@ const UserHome = () => {
     const [topGenres, setTopGenres] = useState([])
     //  For load more
     const [loadedCount, setLoadedCount] = useState(4)
+    const [hasMore, setHasMore] = useState(false)
     // for full info modal
     const [selectedLocation, setSelectedLocation] = useState(null)
     const [savedIds, setSavedIds] = useState([])
@@ -176,10 +177,8 @@ const UserHome = () => {
 
         if (isSaved) {
             setSavedIds(savedIds.filter(id => id !== restaurant.place_id))
-            await fetch('http://localhost:5001/api/save', {
+            await fetch(`http://localhost:5001/api/remove/${restaurant.place_id}`, {
                 method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ place_id: restaurant.place_id })
             })
         } else {
             setSavedIds([...savedIds, restaurant.place_id])
@@ -205,6 +204,7 @@ const UserHome = () => {
                     }
                 })
             })
+            console.log("saved into db")
         }
     }
 
@@ -231,9 +231,10 @@ const UserHome = () => {
                             <RestaurantList 
                                 restaurants={restaurants} 
                                 handleLoadMore={handleLoadMore} 
+                                hasMore={hasMore}
                                 handleLocationClick={handleLocationClick}
                                 savedIds={savedIds}
-                                onBookmarkToggle={bookmarkToggle}
+                                bookmarkToggle={bookmarkToggle}
                             />
                         </div>
                     </div>

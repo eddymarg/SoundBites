@@ -18,7 +18,8 @@ exports.saveRestaurant = async (req, res) => {
 
 exports.removeRestaurant = async (req, res) => {
     try {
-        const { place_id } = req.params
+        const place_id = req.params.place_id
+        console.log("Removing place_id:", place_id)
         const removed = await SaveSchema.findOneAndDelete({ place_id })
         if(!removed) return res.status(404).json({ message: "Not found" })
 

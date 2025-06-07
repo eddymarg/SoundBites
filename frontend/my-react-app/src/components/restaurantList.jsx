@@ -5,6 +5,7 @@ import { Box, Button, Typography, Stack, Rating, IconButton } from "@mui/materia
 import { useEffect } from "react"
 import '../css/googleModal.css'
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder'
+import BookmarkAddedIcon from '@mui/icons-material/BookmarkAdded';
 
 
 const RestaurantList = ({ restaurants, handleLoadMore, hasMore, handleLocationClick, savedIds, bookmarkToggle }) => {
@@ -58,7 +59,7 @@ const RestaurantList = ({ restaurants, handleLoadMore, hasMore, handleLocationCl
                                 bookmarkToggle(resto)
                             }}>
                                 {savedIds.includes(resto.place_id) ? (
-                                    <BookmarkBorderIcon sx={{ color: "#EF233C", fontSize: "35px" }} />
+                                    <BookmarkAddedIcon sx={{ color: "#EF233C", fontSize: "35px" }} />
                                 ) : (
                                     <BookmarkBorderIcon sx={{ color: "#FFBF69", fontSize: "35px"}}/>
                                 )}
