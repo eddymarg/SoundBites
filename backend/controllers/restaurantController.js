@@ -32,6 +32,7 @@ async function getPlaceDetails(placeId) {
 exports.getNearbyRestoByMusic = async (req, res) => {
     console.log("Received request:", req.body)
     const { lat, lng, genreFilter } = req.body
+    const radius = 5000
 
     console.log("lat:", lat, "lng:", lng)
     if (!lat || !lng) {
@@ -69,6 +70,7 @@ exports.getNearbyRestoByMusic = async (req, res) => {
                 const details = await getPlaceDetails(resto.place_id)
 
                 return {
+                    place_id: resto.place_id,
                     name: resto.name,
                     address: resto.formatted_address,
                     rating: resto.rating || "No rating",

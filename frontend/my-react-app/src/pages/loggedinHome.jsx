@@ -8,7 +8,7 @@ import RestaurantList from "../components/restaurantList"
 import "../css/loggedin.css"
 import { cache } from "react"
 
-const userHome = () => {
+const UserHome = () => {
     const [userLocation, setUserLocation] = useState(null)
     const [restaurants, setRestaurants] = useState([])
     const [error, setError] = useState(null)
@@ -21,86 +21,107 @@ const userHome = () => {
     const [loadedCount, setLoadedCount] = useState(4)
     // for full info modal
     const [selectedLocation, setSelectedLocation] = useState(null)
+    const [savedIds, setSavedIds] = useState([])
 
     // Retrieves location data
     useEffect(() => {
-        if("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    setUserLocation ({
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude
-                    })
-                    setIsLoading(false)
-                },
-                (error) => {
-                    console.warn("Location error:", error.message)
-
-                    if (error.code === 1) 
-                        setError("Permission denied.")
-                    else if (error.code === 2)
-                        setError("Location unavailable. Showing default.")
-                    else if (error.code === 3)
-                        setError("Location request timed out.")
-                    else 
-                        setError("Unknown error occurred.")
-
-                    fetch("http://localhost:5001/api/get-ip-location")
-                        .then((res) => res.json())
-                        .then((data) => {
-                            setUserLocation({lat: data.latitude, lng: data.longitude})
-                            console.log("IP location", data)
-                            setIsLoading(false)
-                        })
-                        .catch(() => {
-                            setUserLocation({lat: 40.7128, lng: -74.0060})
-                            setIsLoading(false)
-                        })
-                },
-                {
-                    enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 0,
+        if("permissions" in navigator && "geolocation" in navigator) {
+            navigator.permissions.query({ name: "geolocation" }).then((result) => {
+                if (result.state === "granted" || result.state === "prompt") {
+                    const options = {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0,
+                    }
+                    navigator.geolocation.getCurrentPosition(successCallback, errorCallback, options)
+                } else {
+                    fallbackToIP()
                 }
-            )
+            })
         } else {
-            setError("Geolocation is not supported by this browser.")
+            fallbackToIP()
+        }
+
+        function successCallback(position) {
+            const coords = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
+            }
+            console.log("Success Geolocation:", coords)
+            setUserLocation(coords)
             setIsLoading(false)
+        }
+
+        function errorCallback(error) {
+            console.warn("location error:", error.message)
+            fallbackToIP()
+        }
+
+        function fallbackToIP() {
+            const cachedIPLocation = localStorage.getItem("ipLocation")
+
+            if (cachedIPLocation) {
+                const coords = JSON.parse(cachedIPLocation)
+                console.log("Using cached IP location:", coords)
+                setUserLocation(coords)
+                setIsLoading(false)
+                return
+            }
+
+            fetch("http://localhost:5001/api/get-ip-location")
+                .then((res) => res.json())
+                .then((data) => {
+                    const fallbackCoords = { lat: data.latitude, lng: data.longitude}
+                    console.log("Using IP fallback:", fallbackCoords)
+                    setUserLocation(fallbackCoords)
+                    console.log("IP location", data)
+                    setIsLoading(false)
+                })
+                .catch(() => {
+                    const nyc = { lat: 40.7128, lng: -74.0060 }
+                    setUserLocation(nyc)
+                    setIsLoading(false)
+                })
         }
     }, [])
 
     // Deals with loading restaurant data
     useEffect(() => {
         console.count("useEffect ran")
+        console.log("Loaded count:", loadedCount)
         console.log("Current userLocation:", userLocation)
 
-        const cacheKey = JSON.stringify({ userLocation, genreFilter })
-        // console.log("Cache key: ", cacheKey)
-        
+        if (!userLocation || genreFilter.length === 0) return
 
-        if (userLocation && genreFilter.length > 0 && !hasFetchedRestaurants) {
-            const cached = localStorage.getItem(cacheKey)
+        const cacheKey = JSON.stringify({ location: userLocation, genres: genreFilter })
+        const cachedData = localStorage.getItem("restaurantCache")
+        // console.log("Genre filter before fetching:", genreFilter)
 
-            if(cached) {
-                console.log("Loaded from localStorage")
-                setRestaurants(JSON.parse(cached))
-                console.log("local storage", JSON.parse(localStorage.getItem(cacheKey)))
+        if (cachedData) {
+            const parsed = JSON.parse(cachedData)
+            if(parsed.key === cacheKey) {
+                console.log("Loading from restaurantCache")
+                setRestaurants(parsed.restaurants)
+                console.log("Parsed restaurants", parsed.restaurants)
                 setHasFetchedRestaurants(true)
                 setIsLoading(false)
                 return
             }
+        }
 
+        if (!hasFetchedRestaurants) {
             setIsLoading(true)
             getNearbyRestoByMusic(userLocation.lat, userLocation.lng, genreFilter)
                 .then((data) => {
-                    console.log("API response:", data)
-                    if(data && Array.isArray(data.restaurants)) {
+                    if (data && Array.isArray(data.restaurants)) {
                         setRestaurants(data.restaurants)
-                        localStorage.setItem(cacheKey, JSON.stringify(data.restaurants))
-                        setHasFetchedRestaurants(true)
-                        console.log("Loaded restaurants:", data.restaurants)
+                        localStorage.setItem("restaurantCache", JSON.stringify({
+                            key: cacheKey,
+                            restaurants: data.restaurants
+                        }))
                     }
                     setIsLoading(false)
+                    console.log("Restaurants loaded:", data.restaurants)
                 })
                 .catch((err) => {
                     console.error("Error fetching restaurants:", err)
@@ -150,6 +171,43 @@ const userHome = () => {
         fetchTopArtists()
     },[])
 
+    const bookmarkToggle = async (restaurant) => {
+        const isSaved = savedIds.includes(restaurant.place_id)
+
+        if (isSaved) {
+            setSavedIds(savedIds.filter(id => id !== restaurant.place_id))
+            await fetch('http://localhost:5001/api/save', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ place_id: restaurant.place_id })
+            })
+        } else {
+            setSavedIds([...savedIds, restaurant.place_id])
+
+            await fetch('http://localhost:5001/api/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    place_id: restaurant.place_id,
+                    name: restaurant.name,
+                    photo: restaurant.photo,
+                    rating: restaurant.rating,
+                    address: restaurant.address,
+                    geometry: {
+                        location: {
+                            lat: restaurant.geometry?.location?.lat ?? restaurant.geometry?.location?.lat?.(),
+                            lng: restaurant.geometry?.location?.lng ?? restaurant.geometry?.location?.lng?.()
+                        },
+                        viewport: {
+                            northeast: restaurant.geometry?.viewport?.northeast,
+                            southeast: restaurant.geometry?.viewport?.southeast
+                        }
+                    }
+                })
+            })
+        }
+    }
+
     // Assists with load more button
     const handleLoadMore = () => {
         setLoadedCount(prevCount => prevCount + 4)
@@ -170,7 +228,13 @@ const userHome = () => {
                         <div className="sticky top-0 bg-white shadow-md z-10 rounded-lg" style={{height: '8%', borderRadius: '20px'}}>
                         </div> {/* for filters */}
                         <div className="flex-1 overflow-y-auto mt-4">
-                            <RestaurantList restaurants={restaurants} handleLoadMore={handleLoadMore} handleLocationClick={handleLocationClick}/>
+                            <RestaurantList 
+                                restaurants={restaurants} 
+                                handleLoadMore={handleLoadMore} 
+                                handleLocationClick={handleLocationClick}
+                                savedIds={savedIds}
+                                onBookmarkToggle={bookmarkToggle}
+                            />
                         </div>
                     </div>
                     {/* Right side: map */}
@@ -182,6 +246,8 @@ const userHome = () => {
                             isLoading={isLoading}
                             selectedLocation={selectedLocation}
                             setSelectedLocation={setSelectedLocation}
+                            savedIds={savedIds}
+                            bookmarkToggle={bookmarkToggle}
                         />
                     </div>
                 </div>
@@ -190,4 +256,4 @@ const userHome = () => {
     )
 }
 
-export default userHome
+export default UserHome
