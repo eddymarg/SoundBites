@@ -5,6 +5,7 @@ import getNearbyRestoByMusic from "../services/locationService"
 import LoggedInHeader from "../components/loggedinHeader"
 import GoogleMap from "../components/googleMap"
 import RestaurantList from "../components/restaurantList"
+import GenreDisplay from "../components/genreDisplay"
 import "../css/loggedin.css"
 import { cache } from "react"
 
@@ -225,8 +226,13 @@ const UserHome = () => {
                 <div className="flex h-screen">
                     {/* Left Side: Recommendations */}
                     <div className="w-1/2 p-8 flex flex-col">
-                        <div className="sticky top-0 bg-white shadow-md z-10 rounded-lg" style={{height: '8%', borderRadius: '20px'}}>
-                        </div> {/* for filters */}
+                        {/* <div className="sticky top-0 bg-white shadow-md z-10 rounded-lg" style={{height: '8%', borderRadius: '20px'}}>
+                        </div> for filters */}
+                        <div className="sticky top-0">
+                            <GenreDisplay 
+                                topGenres={topGenres}
+                            />
+                        </div>
                         <div className="flex-1 overflow-y-auto mt-4">
                             <RestaurantList 
                                 restaurants={restaurants} 

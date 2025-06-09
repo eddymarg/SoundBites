@@ -77,7 +77,13 @@ const RestaurantList = ({ restaurants, handleLoadMore, hasMore, handleLocationCl
                             />
                             <Typography variant="body1" marginLeft={2}>{priceLevels[resto.price_level]}</Typography>
                         </Box>
-                        <Typography variant="body-2">{resto.address}</Typography>
+                        <Typography 
+                            variant="body-2"
+                            overflow="hidden"
+                            textOverflow="ellipsis"
+                        >
+                            {resto.address}
+                        </Typography>
                     </Stack>
                 </Box>
                 ))}
