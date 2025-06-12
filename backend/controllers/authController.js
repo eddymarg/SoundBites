@@ -40,9 +40,11 @@ exports.signup = async (req, res) => {
             name,
             email,
             password: hashedPassword,
+            avatar,
         })
 
         await user.save()
+
         res.status(201).json({ msg: "User registered successfully" })
     } catch (err) {
         res.status(500).json({ msg: err.message || "Internal Server Error" })
@@ -70,8 +72,10 @@ exports.login = async (req, res) => {
         res.cookie("token", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production", 
-            sameSite: "strict",
+            sameSite: "strict", 
         })
+
+        console.log("Token cookie set")
 
         res.json({ user: { id: user._id, email: user.email }})
     } catch(err) {

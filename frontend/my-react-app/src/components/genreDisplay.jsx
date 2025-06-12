@@ -4,16 +4,11 @@ import { Button, Box, IconButton, Dialog, DialogTitle, DialogContent, DialogActi
 import ClearIcon from '@mui/icons-material/Clear';
 import { motion } from "motion/react"
 
-const GenreDisplay = ({ topGenres }) => {
-    const [newGenres, setNewGenres] = useState([])
+const GenreDisplay = ({ topGenres, setTopGenres }) => {
     const [genreToDelete, setGenreToDelete] = useState(null)
     const [open, setOpen] = useState(false)
     const [lastDeletedGenre, setLastDeletedGenre] = useState(null)
     const [snackbarOpen, setSnackbarOpen] = useState(false)
-
-    useEffect(() => {
-        if(topGenres) setNewGenres(topGenres)
-    }, [topGenres])
 
 
     const handleOpenDialog = (genre) => {
@@ -28,14 +23,14 @@ const GenreDisplay = ({ topGenres }) => {
 
     const handleDeleteGenre = (genreToRemove) => {
         setLastDeletedGenre(genreToRemove)
-        setNewGenres(prev => prev.filter(g => g !== genreToRemove))
+        setTopGenres(prev => prev.filter(g => g !== genreToRemove))
         handleCloseDialog()
         setSnackbarOpen(true)
     }
 
     const handleUndo = () => {
         if (lastDeletedGenre) {
-            setNewGenres(prev => [...prev, lastDeletedGenre])
+            setTopGenres(prev => [...prev, lastDeletedGenre])
             setLastDeletedGenre(null)
         }
         setSnackbarOpen(false)
@@ -44,7 +39,7 @@ const GenreDisplay = ({ topGenres }) => {
     return (
     <>
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-            {newGenres.map((genre, index) => (
+            {topGenres.map((genre, index) => (
                 <motion.div
                     key={genre}
                     initial={{ y: -100, opacity: 0}}
@@ -60,12 +55,12 @@ const GenreDisplay = ({ topGenres }) => {
                         sx={{
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '0.5rem',
+                            gap: 1,
                             borderRadius: '50px',
                             textTransform: 'capitalize',
                             fontSize: '15px',
                             fontWeight: '500',
-                            padding: '0.8rem 1rem',
+                            padding: '0.8rem 0.5rem 0.8rem 1rem',
                             borderColor: '#EF233C95',
                             color: 'white',
                             backgroundColor: '#EF233C',

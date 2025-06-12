@@ -2,6 +2,8 @@ const querystring = require("querystring")
 const axios = require("axios")
 const { access } = require("fs")
 require("dotenv").config()
+const SpotifyUser = require("../models/SpotifyUser")
+const { em } = require("motion/react-client")
 
 const client_id = process.env.SPOTIFY_CLIENT_ID
 const client_secret = process.env.SPOTIFY_CLIENT_SECRET
@@ -62,6 +64,24 @@ exports.spotifyCallback = async (req, res) => {
 
         const { access_token, refresh_token } = response.data
 
+        const profileRes = await axios.get("https://api.spotify.com/v1/me", {
+            headers: {
+                Authorization: `Bearer ${access_token}`,
+            },
+        })
+
+        const { id: spotifyId, display_name, email, images } = profileRes.data
+        const avatar = images?.[0]?.url || ""
+
+        console.log("Saving user with:", { spotifyId, display_name, email, avatar })
+
+        // save to DB
+        let user = await SpotifyUser.findOne({ spotifyId })
+        if (!user) {
+            user = new SpotifyUser({ spotifyId, display_name, email, avatar })
+            await user.save()
+        }
+
         // store tokens in a cookie (for frontend)
         res.cookie("spotify_access_token", access_token, { 
             httpOnly: true, 
@@ -76,6 +96,69 @@ exports.spotifyCallback = async (req, res) => {
     } catch (error) {
         console.error("Error fetching token:", error.response?.data || error.message)
         res.status(500).json({ error: "Failed to get tokens", details: error.message })
+    }
+}
+
+// helps return spotify user info
+exports.getSpotifyUserFromDB = async (req, res) => {
+    try {
+        const access_token = req.cookies.spotify_access_token
+
+        const profileRes = await axios.get("https://api.spotify.com/v1/me", {
+            headers: {
+                Authorization: `Bearer ${access_token}`,
+            },
+        })
+
+        const spotifyId = profileRes.data.id
+        const user = await SpotifyUser.findOne({ spotifyId })
+
+        if (!user) {
+            return res.status(404).json({ error: "User not found" })
+        }
+
+        const userData = ({
+            display_name: user.display_name,
+            email: user.email,
+            avatar: user.avatar,
+        })
+        res.json(userData)
+    } catch (error) {
+        console.error("Error fetching Spotify user from DB:", error.message)
+        res.status(500).json({ error: "Server error fetching user from DB" })
+    }
+}
+
+// updates the user info
+exports.updateSpotifyUser = async (req, res) => {
+    try {
+        const access_token = req.cookies.spotify_access_token
+
+        const profileRes = await axios.get("https://api.spotify.com/v1/me", {
+            headers: {Authorization: `Bearer ${access_token}` }
+        })
+
+        const spotifyId = profileRes.data.id
+        const { display_name, email } = req.body
+        let avatar = req.body.avatar // fallback if no file
+
+        if (req.file) {
+            const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`
+            avatar = base64Image
+        }
+
+        const user = await SpotifyUser.findOneAndUpdate(
+            { spotifyId },
+            { display_name, email, avatar },
+            { new: true }
+        )
+
+        if(!user) return res.status(404).json({ error: "User not found" })
+
+        res.json(user)
+    } catch (err) {
+        console.error("Failed to update user:", err.message)
+        res.status(500).json({ error: "Server error"})
     }
 }
 

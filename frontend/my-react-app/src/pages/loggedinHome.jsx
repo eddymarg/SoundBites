@@ -173,6 +173,9 @@ const UserHome = () => {
         fetchTopArtists()
     },[])
 
+    // retrieves Spotify user info
+
+    // helps to save locations
     const bookmarkToggle = async (restaurant) => {
         const isSaved = savedIds.includes(restaurant.place_id)
 
@@ -214,7 +217,7 @@ const UserHome = () => {
         setLoadedCount(prevCount => prevCount + 4)
     }
 
-
+    // Helps with storing selected location
     const handleLocationClick = (location) => {
         setSelectedLocation(location)
     }
@@ -222,15 +225,17 @@ const UserHome = () => {
     return(
         <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAP_API_KEY}>
             <div>
-                <LoggedInHeader/>
+                <LoggedInHeader />
                 <div className="flex h-screen">
                     {/* Left Side: Recommendations */}
                     <div className="w-1/2 p-8 flex flex-col">
-                        {/* <div className="sticky top-0 bg-white shadow-md z-10 rounded-lg" style={{height: '8%', borderRadius: '20px'}}>
-                        </div> for filters */}
                         <div className="sticky top-0">
                             <GenreDisplay 
                                 topGenres={topGenres}
+                                setTopGenres={(updated) => {
+                                    setGenreFilter(updated)
+                                    setTopGenres(updated)
+                                }}
                             />
                         </div>
                         <div className="flex-1 overflow-y-auto mt-4">
