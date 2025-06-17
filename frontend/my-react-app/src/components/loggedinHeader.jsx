@@ -99,7 +99,7 @@ const HomeHeader = () => {
                     <LogoWNote />
                 </Box>
                 <Stack spacing={2} direction="row">
-                    <IconButton aria-label="bookmark">
+                    <IconButton aria-label="bookmark" onClick={() => navigate("/savedRestaurantsPage")}>
                         <BookmarkIcon fontSize="large" color="mainRed"/>
                     </IconButton>
                     <Button variant="contained" color="mainRed" onClick={() => navigate("/")}

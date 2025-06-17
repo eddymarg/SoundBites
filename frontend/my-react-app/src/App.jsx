@@ -6,6 +6,7 @@ import Home from "./pages/home"
 import SignIn from "./pages/SignIn"
 import EmailSignup from "./pages/EmailSignUp"
 import UserHome from "./pages/loggedinHome"
+import SavedRestaurantsPage from "./pages/savedRecs"
 
 const theme = createTheme({
   palette: {
@@ -30,6 +31,7 @@ const router = createBrowserRouter(
       <Route path="signin" element={<SignIn />}/>
       <Route path="emailSignup" element={<EmailSignup />}/>
       <Route path="userHome" element={<UserHome />}/>
+      <Route path="savedRestaurantsPage" element={<SavedRestaurantsPage />}/>
     </Route>
   )
 )

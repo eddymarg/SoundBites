@@ -1,14 +1,14 @@
 // Deals with logic and displaying of all 
 // restaurant recommendations
 
-import { Box, Button, Typography, Stack, Rating, IconButton } from "@mui/material"
+import { Box, Typography, Stack, Rating, IconButton } from "@mui/material"
 import { useEffect } from "react"
 import '../css/googleModal.css'
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder'
 import BookmarkAddedIcon from '@mui/icons-material/BookmarkAdded';
 
 
-const RestaurantList = ({ restaurants, handleLoadMore, hasMore, handleLocationClick, savedIds, bookmarkToggle }) => {
+const RestaurantList = ({ restaurants, handleLocationClick, savedIds, bookmarkToggle }) => {
     const priceLevels = ["$", "$$", "$$$", "$$$$"]
 
     return (
@@ -88,27 +88,6 @@ const RestaurantList = ({ restaurants, handleLoadMore, hasMore, handleLocationCl
                 </Box>
                 ))}
             </ul>
-            <Box
-                display="flex"
-                justifyContent="center"
-                alignItems="center"
-                marginTop="2rem"
-            >
-                <Button variant="outlined" color="mainRed" 
-                sx={{
-                    borderRadius: "36px",
-                    border: "2px solid",
-                    backgroundColor: "white",
-                    fontSize: "20px",
-                    textTransform: "none",
-                    width: "260px",
-                    "&:hover": {
-                        backgroundColor: "#EF233C20",
-                    }
-                }}
-                onClick={handleLoadMore}
-                >Load More</Button>
-            </Box>
         </>
     )
 }

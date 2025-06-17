@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect } from "react"
 import { APIProvider } from "@vis.gl/react-google-maps"
+import { Box, Button } from "@mui/material"
 import getNearbyRestoByMusic from "../services/locationService"
 import LoggedInHeader from "../components/loggedinHeader"
 import GoogleMap from "../components/googleMap"
@@ -19,11 +20,15 @@ const UserHome = () => {
     const [genreFilter, setGenreFilter] = useState([])
     const [topGenres, setTopGenres] = useState([])
     //  For load more
-    const [loadedCount, setLoadedCount] = useState(4)
-    const [hasMore, setHasMore] = useState(false)
+    const [allRestaurants, setAllRestaurants] = useState([])
+    const [visibleRestaurants, setVisibleRestaurants] = useState([])
+    const [loadedCount, setLoadedCount] = useState(0)
     // for full info modal
     const [selectedLocation, setSelectedLocation] = useState(null)
     const [savedIds, setSavedIds] = useState([])
+
+    const CACHE_DURATION = 60 * 60 * 1000
+    const RESTAURANTS_PER_LOAD = 10
 
     // Retrieves location data
     useEffect(() => {
@@ -51,6 +56,7 @@ const UserHome = () => {
             }
             console.log("Success Geolocation:", coords)
             setUserLocation(coords)
+            localStorage.setItem("userLocation", JSON.stringify(coords))
             setIsLoading(false)
         }
 
@@ -66,6 +72,7 @@ const UserHome = () => {
                 const coords = JSON.parse(cachedIPLocation)
                 console.log("Using cached IP location:", coords)
                 setUserLocation(coords)
+                localStorage.setItem("userLocation", JSON.stringify(coords))
                 setIsLoading(false)
                 return
             }
@@ -76,52 +83,77 @@ const UserHome = () => {
                     const fallbackCoords = { lat: data.latitude, lng: data.longitude}
                     console.log("Using IP fallback:", fallbackCoords)
                     setUserLocation(fallbackCoords)
+                    localStorage.setItem("userLocation", JSON.stringify(fallbackCoords))
                     console.log("IP location", data)
                     setIsLoading(false)
                 })
                 .catch(() => {
                     const nyc = { lat: 40.7128, lng: -74.0060 }
                     setUserLocation(nyc)
+                    localStorage.setItem("userLocation", JSON.stringify(nyc))
                     setIsLoading(false)
                 })
         }
     }, [])
 
+    // normalize cache key
+    const getCacheKey = (location, genres) => {
+        if (!location || typeof location.lat !== "number" || typeof location.lng !== "number") {
+            console.warn("Invalid location passed to getCacheKey:", location)
+            return null
+        }
+
+        const roundedLoc = {
+            lat: Number(location.lat.toFixed(3)),
+            lng: Number(location.lng.toFixed(3))
+        }
+        const sortedGenres = [...genres].sort()
+        return JSON.stringify({ location: roundedLoc, genres: sortedGenres })
+    }
+
     // Deals with loading restaurant data
     useEffect(() => {
-        console.count("useEffect ran")
-        console.log("Loaded count:", loadedCount)
-        console.log("Current userLocation:", userLocation)
+        // console.count("useEffect ran")
+        // console.log("Loaded count:", loadedCount)
+        // console.log("Current userLocation:", userLocation)
 
         if (!userLocation || genreFilter.length === 0) return
 
-        const cacheKey = JSON.stringify({ location: userLocation, genres: genreFilter })
+        const cacheKey = getCacheKey(userLocation, genreFilter)
         const cachedData = localStorage.getItem("restaurantCache")
-        // console.log("Genre filter before fetching:", genreFilter)
 
         if (cachedData) {
             const parsed = JSON.parse(cachedData)
-            if(parsed.key === cacheKey) {
+            const isExpired = Date.now() - parsed.timestamp > CACHE_DURATION
+
+            if(parsed.key === cacheKey && !isExpired) {
                 console.log("Loading from restaurantCache")
                 setRestaurants(parsed.restaurants)
                 console.log("Parsed restaurants", parsed.restaurants)
                 setHasFetchedRestaurants(true)
                 setIsLoading(false)
+                setLoadedCount(parsed.restaurants.length)
                 return
             }
         }
 
         if (!hasFetchedRestaurants) {
             setIsLoading(true)
-            getNearbyRestoByMusic(userLocation.lat, userLocation.lng, genreFilter)
+            getNearbyRestoByMusic(userLocation.lat, userLocation.lng, genreFilter, 0)
                 .then((data) => {
                     if (data && Array.isArray(data.restaurants)) {
-                        setRestaurants(data.restaurants)
+                        const newRestaurants = [...data.restaurants]
+                        setAllRestaurants(newRestaurants)
+                        setVisibleRestaurants(newRestaurants.slice(0, RESTAURANTS_PER_LOAD))
+                        setLoadedCount(RESTAURANTS_PER_LOAD)
+
                         localStorage.setItem("restaurantCache", JSON.stringify({
                             key: cacheKey,
-                            restaurants: data.restaurants
+                            timestamp: Date.now(),
+                            restaurants: newRestaurants
                         }))
                     }
+                    setHasFetchedRestaurants(true)
                     setIsLoading(false)
                     console.log("Restaurants loaded:", data.restaurants)
                 })
@@ -132,6 +164,11 @@ const UserHome = () => {
                 })
         }
     }, [userLocation, genreFilter, hasFetchedRestaurants])
+
+    // reset genreFilter changes
+    useEffect(() => {
+        setHasFetchedRestaurants(false)
+    }, [genreFilter])
 
     // Gets Genres
     useEffect(() => {
@@ -214,7 +251,37 @@ const UserHome = () => {
 
     // Assists with load more button
     const handleLoadMore = () => {
-        setLoadedCount(prevCount => prevCount + 4)
+        const nextOffset = loadedCount + RESTAURANTS_PER_LOAD
+        const totalCached = allRestaurants.length
+
+        if(nextOffset <= totalCached) {
+            setVisibleRestaurants(allRestaurants.slice(0, nextOffset))
+            setLoadedCount(nextOffset)
+        } else {
+            getNearbyRestoByMusic(userLocation.lat, userLocation.lng, genreFilter, totalCached)
+                .then((data) => {
+                    if (data && Array.isArray(data.restaurants)) {
+                        const updatedCache = [...allRestaurants, ...data.restaurants]
+                        setAllRestaurants(updatedCache)
+
+                        const updatedVisible = updatedCache.slice(0, nextOffset)
+                        setVisibleRestaurants(updatedVisible)
+                        setLoadedCount(updatedVisible.length)
+
+                        const cacheKey = getCacheKey(userLocation, genreFilter)
+                        localStorage.setItem("restaurantCache", JSON.stringify({
+                            key: cacheKey,
+                            timestamp: Date.now(),
+                            restaurants: updatedCache
+                        }))
+                    }
+                })
+                .catch((err) => {
+                    console.error("Error loading more restaurants:", err)
+                    setError(err.message)
+                })
+        }
+
     }
 
     // Helps with storing selected location
@@ -239,14 +306,35 @@ const UserHome = () => {
                             />
                         </div>
                         <div className="flex-1 overflow-y-auto mt-4">
-                            <RestaurantList 
-                                restaurants={restaurants} 
-                                handleLoadMore={handleLoadMore} 
-                                hasMore={hasMore}
-                                handleLocationClick={handleLocationClick}
-                                savedIds={savedIds}
-                                bookmarkToggle={bookmarkToggle}
-                            />
+                            <Box sx={{ maxHeight: '75%', overflowY: 'auto'}}>
+                                <RestaurantList 
+                                    restaurants={visibleRestaurants} 
+                                    handleLocationClick={handleLocationClick}
+                                    savedIds={savedIds}
+                                    bookmarkToggle={bookmarkToggle}
+                                />
+                            </Box>
+                            <Box
+                                display="flex"
+                                justifyContent="center"
+                                alignItems="center"
+                                marginTop="2rem"
+                            >
+                                <Button variant="outlined" color="mainRed" 
+                                sx={{
+                                    borderRadius: "36px",
+                                    border: "2px solid",
+                                    backgroundColor: "white",
+                                    fontSize: "20px",
+                                    textTransform: "none",
+                                    width: "260px",
+                                    "&:hover": {
+                                        backgroundColor: "#EF233C20",
+                                    }
+                                }}
+                                onClick={handleLoadMore}
+                                >Load More</Button>
+                            </Box>
                         </div>
                     </div>
                     {/* Right side: map */}
