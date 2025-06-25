@@ -27,7 +27,7 @@ const UserHome = () => {
     const [selectedLocation, setSelectedLocation] = useState(null)
     const [savedIds, setSavedIds] = useState([])
 
-    const CACHE_DURATION = 60 * 60 * 1000
+    const CACHE_DURATION = 60 * 60 * 1000 * 24
     const RESTAURANTS_PER_LOAD = 10
 
     // Retrieves location data
@@ -129,6 +129,7 @@ const UserHome = () => {
             if(parsed.key === cacheKey && !isExpired) {
                 console.log("Loading from restaurantCache")
                 setRestaurants(parsed.restaurants)
+                setVisibleRestaurants(parsed.restaurants)
                 console.log("Parsed restaurants", parsed.restaurants)
                 setHasFetchedRestaurants(true)
                 setIsLoading(false)
@@ -156,6 +157,7 @@ const UserHome = () => {
                     setHasFetchedRestaurants(true)
                     setIsLoading(false)
                     console.log("Restaurants loaded:", data.restaurants)
+                    console.log("Loading resto, resto: ", restaurants)
                 })
                 .catch((err) => {
                     console.error("Error fetching restaurants:", err)

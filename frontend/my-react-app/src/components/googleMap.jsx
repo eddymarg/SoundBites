@@ -5,7 +5,6 @@ import { useState, useEffect } from "react"
 import { Map, AdvancedMarker, Pin, InfoWindow } from "@vis.gl/react-google-maps"
 import '../css/googleModal.css'
 import { Box, Typography, Rating, Divider, Stack, IconButton } from "@mui/material"
-import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LanguageIcon from '@mui/icons-material/Language';
 import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
@@ -13,10 +12,14 @@ import CloseIcon from '@mui/icons-material/Close';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import BookmarkAddedIcon from '@mui/icons-material/BookmarkAdded';
+import { rest } from "lodash"
 
 const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocation, setSelectedLocation, savedIds, bookmarkToggle }) => {
     const [showAllHours, setShowAllHours] = useState(false)
+    const [hoveredPinID, setHoveredPinID] = useState(null)
     const fallbackLocation = { lat: 40.7128, lng: -74.0060 }
+
+    console.log("Restaurant in map", restaurants)
 
     const showInMapClicked = () => {
         if (selectedLocation?.place_id) {
@@ -35,6 +38,10 @@ const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocati
         return weekdayText?.[dayIndex] || "No hours available"
     }
 
+    const handlePinClick = (location) => {
+        setSelectedLocation(location)
+    }
+ 
     return (
         <>
             {isLoading ? (
@@ -50,9 +57,7 @@ const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocati
                     >
                         {/* user's location */}
                         {userLocation && (
-                            <AdvancedMarker position={userLocation}>
-                                {/* <Pin background="grey"/> this customizes the pin*/}
-                            </AdvancedMarker>
+                            <AdvancedMarker position={userLocation}/>
                         )}
 
                         {/* recommended restaurants pins */}
@@ -64,10 +69,14 @@ const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocati
                                         lat: resto.geometry.location.lat,
                                         lng: resto.geometry.location.lng,
                                     }}
+                                    onMouseEnter={() => setHoveredPinID(resto.place_id)}
+                                    onMouseLeave={() => setHoveredPinID(null)}
+                                    onClick={() => handlePinClick(resto)}
                                 >
                                     <Pin 
                                         background="orange" borderColor="darkOrange" 
                                         glyphColor="darkOrange"
+                                        scale={hoveredPinID === resto.place_id ? 1.2 : 1}
                                     />
                                 </AdvancedMarker>
                             )

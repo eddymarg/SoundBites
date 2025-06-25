@@ -1,6 +1,6 @@
 // Displays the top 3 genres as buttons
 import { useState, useEffect } from "react";
-import { Button, Box, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar } from "@mui/material"
+import { Button, Box, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Portal } from "@mui/material"
 import ClearIcon from '@mui/icons-material/Clear';
 import { motion } from "motion/react"
 
@@ -104,17 +104,19 @@ const GenreDisplay = ({ topGenres, setTopGenres }) => {
         </Dialog>
 
         {/* UNDO DELETE */}
-        <Snackbar
-            open={snackbarOpen}
-            autoHideDuration={4000}
-            onClose={() => setSnackbarOpen(false)}
-            message={`Removed "${lastDeletedGenre}"`}
-            action={
-                <Button color="primary" size="small" onClick={handleUndo}>
-                    UNDO
-                </Button>
-            }
-        />
+        <Portal>
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={4000}
+                onClose={() => setSnackbarOpen(false)}
+                message={`Removed "${lastDeletedGenre}"`}
+                action={
+                    <Button color="primary" size="small" onClick={handleUndo}>
+                        UNDO
+                    </Button>
+                }
+            />
+        </Portal>
     </>
     )
 }

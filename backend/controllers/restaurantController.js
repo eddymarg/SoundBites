@@ -32,14 +32,14 @@ async function getPlaceDetails(placeId) {
 exports.getNearbyRestoByMusic = async (req, res) => {
     console.log("Received request:", req.body)
     const { lat, lng, genreFilter } = req.body
-    const radius = 5000
+    const radius = 1000
 
     console.log("lat:", lat, "lng:", lng)
     if (!lat || !lng) {
         return res.status(400).json({ message: "Missing required parameters."})
     }
 
-    const genreQuery = genreFilter && genreFilter.length > 0 ? `with live music ${genreFilter.join(' ')}` : "with live music"
+    const genreQuery = genreFilter && genreFilter.length > 0 ? `for people who have a ${genreFilter.join(' ')} vibe` : "for people with vibe"
     const query = `restaurant ${genreQuery}`
 
 

@@ -13,7 +13,6 @@ const RestaurantList = ({ restaurants, handleLocationClick, savedIds, bookmarkTo
 
     return (
         <>
-            {/* <h2 className="text-xl font-bold">Nearby {genre} Restaurants</h2> */}
             {restaurants.length === 0 && <p>No restaurants found.</p>}
             <ul>
                 {restaurants.map((resto, index) => (
