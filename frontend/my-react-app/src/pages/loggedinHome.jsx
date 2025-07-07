@@ -9,6 +9,7 @@ import RestaurantList from "../components/restaurantList"
 import GenreDisplay from "../components/genreDisplay"
 import "../css/loggedin.css"
 import { cache } from "react"
+import LoadingScreen from "../components/LoadingScreen"
 
 const UserHome = () => {
     const [userLocation, setUserLocation] = useState(null)
@@ -26,12 +27,28 @@ const UserHome = () => {
     // for full info modal
     const [selectedLocation, setSelectedLocation] = useState(null)
     const [savedIds, setSavedIds] = useState([])
+    // for loading screen
+    const [loadStartTime, setLoadStartTime] = useState(null)
+    const [loadingStage, setLoadingStage] = useState(0)
 
     const CACHE_DURATION = 60 * 60 * 1000 * 24
     const RESTAURANTS_PER_LOAD = 10
 
+    const delayMinLoadTime = (start, callback, min = 600) => {
+        const elapsed = Date.now() - start
+        console.log(`🕒 Actual load duration: ${elapsed}ms`)
+        // change to max later; it's only min for testing purposes
+        const remaining = Math.max(0, min - elapsed)
+        setTimeout(() => {
+            console.log("✅ Hiding loading screen now.")
+            callback
+        }, remaining)
+    }
+
     // Retrieves location data
     useEffect(() => {
+        setLoadStartTime(Date.now())
+
         if("permissions" in navigator && "geolocation" in navigator) {
             navigator.permissions.query({ name: "geolocation" }).then((result) => {
                 if (result.state === "granted" || result.state === "prompt") {
@@ -57,7 +74,7 @@ const UserHome = () => {
             console.log("Success Geolocation:", coords)
             setUserLocation(coords)
             localStorage.setItem("userLocation", JSON.stringify(coords))
-            setIsLoading(false)
+            delayMinLoadTime(loadStartTime, () => setIsLoading(false))
         }
 
         function errorCallback(error) {
@@ -73,7 +90,7 @@ const UserHome = () => {
                 console.log("Using cached IP location:", coords)
                 setUserLocation(coords)
                 localStorage.setItem("userLocation", JSON.stringify(coords))
-                setIsLoading(false)
+                delayMinLoadTime(loadStartTime, () => setIsLoading(false))
                 return
             }
 
@@ -85,13 +102,13 @@ const UserHome = () => {
                     setUserLocation(fallbackCoords)
                     localStorage.setItem("userLocation", JSON.stringify(fallbackCoords))
                     console.log("IP location", data)
-                    setIsLoading(false)
+                    delayMinLoadTime(loadStartTime, () => setIsLoading(false))
                 })
                 .catch(() => {
                     const nyc = { lat: 40.7128, lng: -74.0060 }
                     setUserLocation(nyc)
                     localStorage.setItem("userLocation", JSON.stringify(nyc))
-                    setIsLoading(false)
+                    delayMinLoadTime(loadStartTime, () => setIsLoading(false))
                 })
         }
     }, [])
@@ -132,7 +149,7 @@ const UserHome = () => {
                 setVisibleRestaurants(parsed.restaurants)
                 console.log("Parsed restaurants", parsed.restaurants)
                 setHasFetchedRestaurants(true)
-                setIsLoading(false)
+                delayMinLoadTime(loadStartTime, () => setIsLoading(false))
                 setLoadedCount(parsed.restaurants.length)
                 return
             }
@@ -155,14 +172,17 @@ const UserHome = () => {
                         }))
                     }
                     setHasFetchedRestaurants(true)
-                    setIsLoading(false)
+                    delayMinLoadTime(loadStartTime, () => {
+                        setIsLoading(false)
+                        setLoadingStage(prev => Math.max(prev, 2))
+                    })
                     console.log("Restaurants loaded:", data.restaurants)
                     console.log("Loading resto, resto: ", restaurants)
                 })
                 .catch((err) => {
                     console.error("Error fetching restaurants:", err)
                     setError(err.message)
-                    setIsLoading(false)
+                    delayMinLoadTime(loadStartTime, () => setIsLoading(false))
                 })
         }
     }, [userLocation, genreFilter, hasFetchedRestaurants])
@@ -205,6 +225,7 @@ const UserHome = () => {
                 console.log("Top extracted genres:", topGenres)
                 setTopGenres(topGenres)
                 setGenreFilter(topGenres)
+                setLoadingStage(1)
             } catch (err) {
                 console.error("Error loading top artists:", err)
             }
@@ -292,69 +313,73 @@ const UserHome = () => {
     }
 
     return(
-        <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAP_API_KEY}>
-            <div>
-                <LoggedInHeader />
-                <div className="flex h-screen">
-                    {/* Left Side: Recommendations */}
-                    <div className="w-1/2 p-8 flex flex-col">
-                        <div className="sticky top-0">
-                            <GenreDisplay 
-                                topGenres={topGenres}
-                                setTopGenres={(updated) => {
-                                    setGenreFilter(updated)
-                                    setTopGenres(updated)
-                                }}
+        <>
+            {isLoading && <LoadingScreen loadingStage={loadingStage}/>} 
+            
+            <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAP_API_KEY}>
+                <div style={{ filter: isLoading ? 'blur(25px)' : 'none'}}>
+                    <LoggedInHeader />
+                    <div className="flex h-screen">
+                        {/* Left Side: Recommendations */}
+                        <div className="w-1/2 p-8 flex flex-col">
+                            <div className="sticky top-0">
+                                <GenreDisplay 
+                                    topGenres={topGenres}
+                                    setTopGenres={(updated) => {
+                                        setGenreFilter(updated)
+                                        setTopGenres(updated)
+                                    }}
+                                />
+                            </div>
+                            <div className="flex-1 overflow-y-auto mt-4">
+                                <Box sx={{ maxHeight: '75%', overflowY: 'auto'}}>
+                                    <RestaurantList 
+                                        restaurants={visibleRestaurants} 
+                                        handleLocationClick={handleLocationClick}
+                                        savedIds={savedIds}
+                                        bookmarkToggle={bookmarkToggle}
+                                    />
+                                </Box>
+                                <Box
+                                    display="flex"
+                                    justifyContent="center"
+                                    alignItems="center"
+                                    marginTop="2rem"
+                                >
+                                    <Button variant="outlined" color="mainRed" 
+                                    sx={{
+                                        borderRadius: "36px",
+                                        border: "2px solid",
+                                        backgroundColor: "white",
+                                        fontSize: "20px",
+                                        textTransform: "none",
+                                        width: "260px",
+                                        "&:hover": {
+                                            backgroundColor: "#EF233C20",
+                                        }
+                                    }}
+                                    onClick={handleLoadMore}
+                                    >Load More</Button>
+                                </Box>
+                            </div>
+                        </div>
+                        {/* Right side: map */}
+                        <div className="w-1/2 p-8">
+                            <GoogleMap 
+                                userLocation={userLocation} 
+                                restaurants={restaurants}
+                                error={error} 
+                                isLoading={isLoading}
+                                selectedLocation={selectedLocation}
+                                setSelectedLocation={setSelectedLocation}
+                                savedIds={savedIds}
+                                bookmarkToggle={bookmarkToggle}
                             />
                         </div>
-                        <div className="flex-1 overflow-y-auto mt-4">
-                            <Box sx={{ maxHeight: '75%', overflowY: 'auto'}}>
-                                <RestaurantList 
-                                    restaurants={visibleRestaurants} 
-                                    handleLocationClick={handleLocationClick}
-                                    savedIds={savedIds}
-                                    bookmarkToggle={bookmarkToggle}
-                                />
-                            </Box>
-                            <Box
-                                display="flex"
-                                justifyContent="center"
-                                alignItems="center"
-                                marginTop="2rem"
-                            >
-                                <Button variant="outlined" color="mainRed" 
-                                sx={{
-                                    borderRadius: "36px",
-                                    border: "2px solid",
-                                    backgroundColor: "white",
-                                    fontSize: "20px",
-                                    textTransform: "none",
-                                    width: "260px",
-                                    "&:hover": {
-                                        backgroundColor: "#EF233C20",
-                                    }
-                                }}
-                                onClick={handleLoadMore}
-                                >Load More</Button>
-                            </Box>
-                        </div>
-                    </div>
-                    {/* Right side: map */}
-                    <div className="w-1/2 p-8">
-                        <GoogleMap 
-                            userLocation={userLocation} 
-                            restaurants={restaurants}
-                            error={error} 
-                            isLoading={isLoading}
-                            selectedLocation={selectedLocation}
-                            setSelectedLocation={setSelectedLocation}
-                            savedIds={savedIds}
-                            bookmarkToggle={bookmarkToggle}
-                        />
                     </div>
                 </div>
-            </div>
-        </APIProvider>
+            </APIProvider>
+        </>
     )
 }
 

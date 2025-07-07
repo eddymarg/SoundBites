@@ -140,7 +140,7 @@ const EmailSignup = () => {
                     />
                     <CustomTextField 
                         id="outlined-basic email" 
-                        label="Email" 
+                        label="Spotify Email" 
                         variant="outlined" 
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
