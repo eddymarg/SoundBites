@@ -314,6 +314,502 @@ const genreMappings = {
     "Azonto": {
         settings: ["BBQ Joints", "Dance Lounge Restaurants", "Night Market Eateries"],
         adjectives: ["Intricate", "Energetic"]
+    },
+    "Bachata": {
+        settings: ["Dessert Lounges", "Tapas Bars", "Artisan Bakeries"],
+        adjectives: ["Bittersweet", "Sensual"]
+    },
+    "Baile Funk": {
+        settings: ["Food Trucks", "Open-air Joints", "Restaurant Bars"],
+        adjectives: ["Powerful", "High-energy"]
+    },
+    "Balearic": {
+        settings: ["Beach Cafes", "Outdoor Patios", "Mediterranean Cafes"],
+        adjectives: ["Relaxed", "Vibrant"]
+    },
+    "Balkan Brass": {
+        settings: ["Taverns", "Balkan Restaurants", "Beer Gardens"],
+        adjectives: ["High-energy", "Fast"]
+    },
+    "Banda": {
+        settings: ["Taquerias", "Open-air Plazas", "Cantinas"],
+        adjectives: ["Upbeat", "Celebrational"]
+    },
+    "Bangla": {
+        settings: ["Quiet Cafes", "Bengali Eateries", "Sweet Shops"],
+        adjectives: ["Romantic", "Dynamic"]
+    },
+    "Barbershop": {
+        settings: ["Retro Diners", "Ice cream Parlors", "Americana-style Cafes"],
+        adjectives: ["Harmonious", "Community"]
+    },
+    "Barnemusikk": {
+        settings: ["Kid-friendly Cafes", "Themed Restaurants", "Pancake Houses"],
+        adjectives: ["Cheerful", "Entertaining"]
+    },
+    "Barnmusik": {
+        settings: ["Kid-friendly Cafes", "Themed Restaurants", "Pancake Houses"],
+        adjectives: ["Cheerful", "Entertaining"]
+    },
+    "Baroque": {
+        settings: ["Fine Dining", "European Tea Rooms", "Historic Mansion Cafes"],
+        adjectives: ["Ornate", "Dramatic"]
+    },
+    "Baroque Ensemble": {
+        settings: ["Opera House", "Museum Cafes", "European Fine Dining"],
+        adjectives: ["Ornate", "Complex"]
+    },
+    "Basque Rock": {
+        settings: ["Taverns", "Late-night Pizza Joints", "Food Trucks"],
+        adjectives: ["Punk", "Rebellious"]
+    },
+    "Bass House": {
+        settings: ["Late-night Street Food", "Urban fast-casual", "Cocktail Lounges"],
+        adjectives: ["Groovy", "Explosive"]
+    },
+    "Bass Music": {
+        settings: ["Urban Fusion Restaurants", "Speakeasies", "Underground Burger Joints"],
+        adjectives: ["Dark", "Heavy"]
+    },
+    "Bass Trip": {
+        settings: ["Fusion Lounge", "Underground Tasting Room", "Multi-course Meal"],
+        adjectives: ["Hypnotic", "Immersive"]
+    },
+    "Bassline": {
+        settings: ["Urban Cafes", "Street Food Courts", "Pop-up Kitchens"],
+        adjectives: ["Energetic", "Friendly"]
+    },
+    "Bay Area Hip Hop": {
+        settings: ["Community-owned Eateries", "Underground pop-ups", "Rotating Menu Concepts"],
+        adjectives: ["Innovative", "Socially Conscious"]
+    }, 
+    "Beach Music": {
+        settings: ["Seaside Shacks", "Tropical-themed restaurants", "Tiki Bars"],
+        adjectives: ["Upbeat", "Party"]
+    },
+    "Beatdown": {
+        settings: ["Tattoo-parlor Takeout", "BBQ Joints", "All-vegan Punk Cafe"],
+        adjectives: ["Hardcore", "Punk"]
+    },
+    "Beats & Rhymes": {
+        settings: ["Hip-hop Cafes", "Juice Bars", "Experimental Kitchens"],
+        adjectives: ["Funky", "Unique"]
+    },
+    "Bebop": {
+        settings: ["Jazz Lounges", "Speakeasy Bars", "Upscale Bistros"],
+        adjectives: ["Complex", "Fast"]
+    },
+    "Belgian Indie": {
+        settings: ["Indie Bakeries", "Family-owned Restaurants", "Collaborative Cafe"],
+        adjectives: ["Independent Spirit", "Innovative"]
+    },
+    "Belgian Rock": {
+        settings: ["Neighborhood Pubs", "Food Markets", "Small Batch Breweries"],
+        adjectives: ["Diversity", "Local"]
+    },
+    "Belly Dance": {
+        settings: ["Middle Eastern Restaurants", "Rustic Cafes", "Family-style eateries"],
+        adjectives: ["Traditional", "Contemporary"]
+    },
+    "Belorush": {
+        settings: ["Cozy Taverns", "Traditional Bakeries", "Urban Spots"],
+        adjectives: ["Blend", "Modern"]
+    },
+    "Bemani": {
+        settings: ["Arcade-themed Cafes", "Retro-futuristic diners", "Quick Bites"],
+        adjectives: ["Electronic", "Video Games"]
+    },
+    "Benga": {
+        settings: ["Dance-friendly Bars", "African Outdoor Patios", "Shareable Plates"],
+        adjectives: ["Vibrant", "Upbeat"]
+    },
+    "Bhangra": {
+        settings: ["Punjabi Dhabas", "Cultural Food Markets", "Contemporary Restaurants"],
+        adjectives: ["Pop", "Fusion"]
+    },
+    "Big Band": {
+        settings: ["Classic American Diners", "Cocktail Lounges", "Supper Clubs"],
+        adjectives: ["Graceful", "Joyous"]
+    },
+    "Big Beat": {
+        settings: ["Urban Fusion Spots", "Party Brunches", "Clubs"],
+        adjectives: ["High-energy", "Party-oriented"]
+    },
+    "Big Room": {
+        settings: ["Open-air Rooftops", "Cocktail Bars", "Trendy Restaurants"],
+        adjectives: ["Commercial", "High-energy"]
+    },
+    "Black Death": {
+        settings: ["Dive Bars", "Food Trucks", "Industrial-styled Restaurants"],
+        adjectives: ["Aggressive", "Chaotic"]
+    },
+    "Black Metal": {
+        settings: ["Dimly lit Metal Bars", "Avant-garde Cafes", "Mom & Pop Restaurants"],
+        adjectives: ["Distorted", "Unconventional"]
+    },
+    "Black Sludge": {
+        settings: ["BBQ Joints", "Craft Beer Bars", "Urban Diners"],
+        adjectives: ["Slow", "Heavy"]
+    },
+    "Black Thrash": {
+        settings: ["Metal-themed Food Trucks", "Industrial Beer Halls", "Late-night Taco Spot"],
+        adjectives: ["Aggressive", "Harsh"]
+    },
+    "Blackgaze": {
+        settings: ["Minimalist Cafes", "Experimental Kitchens", "Tea Lounges"],
+        adjectives: ["Dreamy", "Dark"]
+    },
+    "Blaskapelle": {
+        settings: ["Beer Gardens", "Traditional Eateries", "Open-air Markets"],
+        adjectives: ["Lively", "Social"]
+    },
+    "Bluegrass": {
+        settings: ["Farm-to-table Southern Restaurants", "Countryside Diners", "Rustic-chic Cafes"],
+        adjectives: ["Harmony", "Intricate"]
+    },
+    "Blues": {
+        settings: ["Southen Soul-food", "Juke Joints", "Neighborhood Cafes"],
+        adjectives: ["Resilient", "Soulful"]
+    },
+    "Blues-Rock": {
+        settings: ["Live-music Restaurants", "Food Halls", "Fine-casual Restaurants"],
+        adjectives: ["Electric", "Jazzy"]
+    },
+    "Blues-rock Guitar": {
+        settings: ["Live-music Restaurants", "Food Halls", "Fine-casual Restaurants"],
+        adjectives: ["Electric", "Jazzy"]
+    },
+    "Bmore": {
+        settings: ["Neighborhood Joints", "Diners", "Family-friendly Spots"],
+        adjectives: ["High-energy", "Easy-going"]
+    },
+    "Bolero": {
+        settings: ["Tapas-style Wine Bars", "Candlelit Patios", "Dessert Cafes"],
+        adjectives: ["Melodic", "Romantic"]
+    },
+    "Boogaloo": {
+        settings: ["Latin Fusion Restaurants", "Salsa Bars", "Casual Eateries"],
+        adjectives: ["Blend", "Soulful"]
+    },
+    "Boogie-woogie": {
+        settings: ["Retro Diners", "Bars with Live Piano", "Outdoor Patio Restaurants"],
+        adjectives: ["Energetic", "Improvised"]
+    },
+    "Bossa Nova": {
+        settings: ["Wine Bars", "Brazilian Restaurants", "Beachfront Restaurant"],
+        adjectives: ["Relaxed", "Sophisticated"]
+    },
+    "Bossa Nova Jazz": {
+        settings: ["Jazz Lounge", "Wine Bars", "Garden Restaurants"],
+        adjectives: ["Mellow", "Melodic"]
+    },
+    "Boston Rock": {
+        settings: ["Classic American Grills", "Sports Bars", "Casual Joints"],
+        adjectives: ["Energetic", "Addictive"]
+    },
+    "Bounce": {
+        settings: ["Late-night Eateries", "Buffet-style", "Casual Neighborhood Joint"],
+        adjectives: ["Party", "Energetic"]
+    },
+    "Bouncy House": {
+        settings: ["Trendy Eateries", "Social Bars", "Pop-up Joints"],
+        adjectives: ["Energetic", "Playful"]
+    },
+    "Bow Pop": {
+        settings: ["Kawaii Cafes", "Asian-Fusion Spots", "Food Halls"],
+        adjectives: ["Catchy", "Electronic"]
+    },
+    "Boy Band": {
+        settings: ["Themed Cafes", "Instagrammable Restaurant", "Bakeries"],
+        adjectives: ["Harmonious", "Infatuated"]
+    },
+    "Brass Band": {
+        settings: ["Family-style Eateries", "Brunch Cafes", "Picnic-style Restaurants"],
+        adjectives: ["Uplifting", "Communal"]
+    },
+    "Brass Ensemble": {
+        settings: ["Family-style Eateries", "Brunch Cafes", "Picnic-style Restaurants"],
+        adjectives: ["Uplifting", "Communal"]
+    },
+    "Brazilian Composition": {
+        settings: ["Brazilian Restaurants", "Churrasco-style Dining", "Shared Dining Spaces"],
+        adjectives: ["Diverse", "Vibrant"]
+    },
+    "Brazilian Gospel": {
+        settings: ["Christian Cafes", "Brunch Spots", "Family-style Restaurants"],
+        adjectives: ["Vibrant", "Soulful"]
+    },
+    "Brazilian Hip Hop": {
+        settings: ["Brazilian Fusion Restaurants", "Open Mic Cafes", "Dance Bars"],
+        adjectives: ["Socially Conscious", "Party-oriented"]
+    },
+    "Brazilian Indie": {
+        settings: ["Intimate Cafes", "Rooftop Restaurants", "Chef-curated Menus"],
+        adjectives: ["Romantic", "Melodic"]
+    },
+    "Brazilian Pop Music": {
+        settings: ["Brazilian Cafes", "Lively Fusion Spots", "Open-air Patios"],
+        adjectives: ["Vibrant", "Rooted"]
+    },
+    "Brazilian Punk": {
+        settings: ["Late-night Snack Bars", "Local Bars", "Concept Eateries"],
+        adjectives: ["Raw", "Unique"]
+    },
+    "Breakbeat": {
+        settings: ["Trendy Eateries", "Small Joints", "Experimental Cafes"],
+        adjectives: ["Processed", "Unique"]
+    },
+    "Breakcore": {
+        settings: ["Underground Eateries", "Art Cafes", "Invite-only Food Nights"],
+        adjectives: ["Complex", "Experimental"]
+    },
+    "Breaks": {
+        settings: ["Urban DJ Cafes", "Food Trucks", "Cult Favorite Restaurants"],
+        adjectives: ["Broken", "Influential"]
+    },
+    "Brega": {
+        settings: ["Cozy Cafes", "Juice Bars", "Dessert Bars"],
+        adjectives: ["Upbeat", "Romantic"]
+    },
+    "Breton Folk": {
+        settings: ["Heritage Restaurants", "Regional Eateries", "Folk Cafes"],
+        adjectives: ["Lively", "Traditional"]
+    },
+    "Brill Building Pop": {
+        settings: ["Retro-modern Cafes", "Art Cafes", "Bistros"],
+        adjectives: ["Sophisticated", "Friendly"]
+    },
+    "British Alternative Rock": {
+        settings: ["Indie Cafes", "Music Restaurants", "Seasonal Menus"],
+        adjectives: ["Introspective", "Distinct"]
+    },
+    "British Blues": {
+        settings: ["Modern Pubs", "Vinyl Cafes", "Gastropubs"],
+        adjectives: ["Powerful", "Innovative"]
+    },
+    "British Brass Band": {
+        settings: ["Tearooms", "Seasonal Menus", "Minimalist Cafe"],
+        adjectives: ["Dynamic", "Mellow"]
+    },
+    "British Dance Band": {
+        settings: ["Art Deco Cocktail Bar", "Vintage Tea Rooms", "Upscale Restaurants"],
+        adjectives: ["Smooth", "Jazzy"]
+    },
+    "British Folk": {
+        settings: ["Countryside Cafes", "Farm-to-table Restaurants", "Sunday Roast Eateries"],
+        adjectives: ["Traditional", "Rooted"]
+    },
+    "British Indie Rock": {
+        settings: ["Record Store Cafes", "Pop-up Food Stalls", "Natural Wine Bar"],
+        adjectives: ["Independent", "Introspective"]
+    },
+    "British Invasion": {
+        settings: ["Rock-inspired Restaurants", "British Restaurants", "Retro-futurist Diner"],
+        adjectives: ["Youthful", "Experimental"]
+    },
+    "Britpop": {
+        settings: ["British-themed Diners", "Food Stalls", "Old-school Restaurants"],
+        adjectives: ["Upbeat", "Nostalgic"]
+    },
+    "Broadway": {
+        settings: ["Musical Restaurants", "Bright Bakeries", "Themed Cafes"],
+        adjectives: ["Dynamic", "Uplifting"]
+    },
+    "Broken Beat": {
+        settings: ["Trendy Urban Eateries", "Experimental Kitchens", "Minimalist Cafes"],
+        adjectives: ["Abstract", "Bold"]
+    },
+    "Brooklyn Indie": {
+        settings: ["Coffee Shops", "Small Plates Eateries", "Food Markets"],
+        adjectives: ["Introspective", "Eclectic"]
+    },
+    "Brostep": {
+        settings: ["Late-night Food Trucks", "Club Restaurants", "Rustic Eateries"],
+        adjectives: ["Intense", "Distorted"]
+    },
+    "Brutal Death Metal": {
+        settings: ["Metal-themed Food Joints", "Dive Bars", "BBQ Counters"],
+        adjectives: ["Extreme", "Speedy"]
+    },
+    "Brutal Deathcore": {
+        settings: ["Metal-themed Food Joints", "Dive Bars", "BBQ Counters"],
+        adjectives: ["Extreme", "Speedy"]
+    },
+    "Bubble Trance": {
+        settings: ["Futuristic Cafes", "Bakeries", "Fusion Restaurants"],
+        adjectives: ["Upbeat", "Progressive"]
+    },
+    "Bubblegum Dance": {
+        settings: ["Dessert Cafes", "Instagrammable Restaurants", "Interactive Food Spots"],
+        adjectives: ["Upbeat", "Playful"]
+    },
+    "Bubblegum Pop": {
+        settings: ["Neon Diners", "Dessert Cafes", "Food Courts"], 
+        adjectives: ["Youthful", "Simplistic"]
+    },
+    "Bulgarian Rock": {
+        settings: ["Balkan Restaurants", "Global Bistros", "Urban Eateries"],
+        adjectives: ["Eclectic", "Energetic"]
+    },
+    "Byzantine": {
+        settings: ["Monastic-style Dining", "Quiet Tea Rooms", "Ceremonial Restaurants"],
+        adjectives: ["Religious", "Traditional"]
+    },
+    "C-pop": {
+        settings: ["Pan-Asian Bistro", "Upscale Cafes", "Tea Lounges"],
+        adjectives: ["Diverse", "Polished"]
+    },
+    "C64": {
+        settings: ["Retro Arcade Cafe", "Themed Diners", "High-tech Restaurants"],
+        adjectives: ["Unique", "Electronic"]
+    },
+    "C86": {
+        settings: ["Indie Coffee Shop", "Vegetarian Restaurant", "Independent Diners"],
+        adjectives: ["Jangly", "DIY"]
+    },
+    "Cabaret": {
+        settings: ["Burlesque-style Lounges", "Vintage Cocktail Bars", "Supper Clubs"],
+        adjectives: ["Playful", "Theatrical"]
+    },
+    "Cajun": {
+        settings: ["Cajun Kitchens", "Family-style Spots", "Restaurant with Live Music"],
+        adjectives: ["Lively", "Distinct"]
+    },
+    "Calypso": {
+        settings: ["Beachside Food Shacks", "Food Pop-ups", "Food Trucks"],
+        adjectives: ["Witty", "Upbeat"]
+    },
+    "Canadian Country": {
+        settings: ["Mountain Lodge Restaurant", "Family-run Diners", "Farm-to-table Spots"],
+        adjectives: ["Rustic", "Folk"]
+    },
+    "Canadian Hip Hop": {
+        settings: ["Urban Cafes", "Multicultural Food Courts", "Street Food"],
+        adjectives: ["Authentic", "Diverse"]
+    },
+    "Canadian Indie": {
+        settings: ["Vinyl Coffee Shop", "Neighborhood Bistros", "Candlelit Restaurant"],
+        adjectives: ["Eclectic", "Atmospheric"]
+    },
+    "Canadian Metal": {
+        settings: ["Underground Bars", "Food Trucks", "Vegan Punk Cafes"],
+        adjectives: ["Experimental", "Punk"]
+    },
+    "Canadian Pop": {
+        settings: ["Instagrammable Cafes", "Fast-casual Chains", "Dessert Bars"],
+        adjectives: ["Catchy", "Accesible"]
+    },
+    "Candy Pop": {
+        settings: ["Dessert Cafes", "Family-friendly Restaurants", "Juice Bars"],
+        adjectives: ["Cheerful", "Bright"]
+    },
+    "Cantautor": {
+        settings: ["European Restaurants", "Intimate Cafes", "Tapas Bars"],
+        adjectives: ["Poetic", "Introspective"]
+    },
+    "Cante Flamenco": {
+        settings: ["Spanish Taverns", "Flamenco Tablaos", "Candlelit Restaurants"],
+        adjectives: ["Deep", "Unique"]
+    },
+    "Canterbury Scene": {
+        settings: ["European Bistro", "Garden Cafes", "Themed Cafes"],
+        adjectives: ["Quirky", "Whimsical"]
+    },
+    "Cantopop": {
+        settings: ["Hong Kong Cafes", "Tea Houses", "Trendy Brunch Spots"],
+        adjectives: ["Catchy, Complex"]
+    },
+    "Canzone Napoletana": {
+        settings: ["Family-run Trattorias", "Nonna-style Restaurants", "Coastal Cafes"],
+        adjectives: ["Traditional", "Expressive"]
+    },
+    "Capoeira": {
+        settings: ["Afro-Brazilian Cafes", "Open-air Street Food", "Tapas-style Dining"],
+        adjectives: ["Rhythmic", "Energetic"]
+    },
+    "Carnatic": {
+        settings: ["South Indian Vegetarian Spots", "Family-run Kitchens", "Thali-style"],
+        adjectives: ["Intricate", "Devotional"]
+    }, 
+    "Catstep": {
+        settings: ["Ramen Bars", "Food Trucks", "Late-night Restaurants"],
+        adjectives: ["Loud", "Heavy"]
+    },
+    "Caucasian Folk": {
+        settings: ["Open-fire Grills", "Communal Tables", "Old-world Kitchens"],
+        adjectives: ["Traditional", "Diverse"]
+    },
+    "Ccm": {
+        settings: ["Christian Cafe", "Community-focused Diners", "Bakeries"],
+        adjectives: ["Faithful", "Uplifting"]
+    },
+    "Ceilidh": {
+        settings: ["Traditional Pubs", "Outdoor Beer Gardens", "Family-style Eateries"],
+        adjectives: ["Lively", "Communal"]
+    },
+    "Cello": {
+        settings: ["Intimate Bistros", "Slow Dining", "Fireside Dining Rooms"],
+        adjectives: ["Deep", "Warm"]
+    },
+    "Celtic": {
+        settings: ["Rustic Pubs", "Festival Restaurants", "Celtic Eateries"],
+        adjectives: ["Lively", "Melancholic"]
+    },
+    "Celtic Christmas": {
+        settings: ["Rustic Inns", "Family-style Dinners", "Holiday Markets"],
+        adjectives: ["Festive", "Melancholic"]
+    },
+    "Celtic Punk": {
+        settings: ["Dive Bars", "Colorful Cafes", "Celtic Bars"],
+        adjectives: ["Energetic", "Rebellious"]
+    },
+    "Celtic Rock": {
+        settings: ["Music Venue Pubs", "Cozy Cafes", "Folk Restaurants"],
+        adjectives: ["Folk", "Energetic"]
+    },
+    "Central Asian Folk": {
+        settings: ["Family-run Eateries", "Nomadic Heritage Eateries", "Traditional Central Asian Restaurant"],
+        adjectives: ["Intricate", "Melodic"]
+    },
+    "Chalga": {
+        settings: ["Late-night Lounges", "Live Music Restaurants", "Finger Foods"],
+        adjectives: ["Energetic", "Fast"]
+    },
+    "Chamber Pop": {
+        settings: ["Upscale Bistros", "Art Cafes", "Botanical Restaurants"],
+        adjectives: ["Lush", "Intricate"]
+    },
+    "Chanson": {
+        settings: ["French Cafes", "Intimate Dining Rooms", "Vintage Restaurants"],
+        adjectives: ["Emotional", "Intimate"]
+    },
+    "Chanson Quebecois": {
+        settings: ["Rustic Quebecois Bistros", "Farm-to-table Eateries", "Seasonal Menus"],
+        adjectives: ["Nature", "Poetic"]
+    },
+    "Chaotic Black Metal": {
+        settings: ["Industrial Eateries", "Avant-garde Restaurants", "Dense Menu Spots"],
+        adjectives: ["Dissonant", "Overwhelming"]
+    },
+    "Chaotic Hardcore": {
+        settings: ["Underground Punk Dives", "No-frills Food Joints", "Grab-and-go"],
+        adjectives: ["Fast", "Unpredictable"]
+    },
+    "Charred Death": {
+        settings: ["Blackened Grill", "Industrial Restaurants", "Metal-inspired Kitchens"],
+        adjectives: ["Destructive", "Chaotic"]
+    },
+    "Chicago Blues": {
+        settings: ["BBQ Joints", "Blues Bars", "Comfort Food"],
+        adjectives: ["Amplified", "Expressive"]
+    },
+    "Chicago House": {
+        settings:["Supper Clubs", "Comfort Menus", "Cocktail Dining Room"],
+        adjectives: ["Soulful", "Hypnotic"]
+    },
+    "Chicago Indie": {
+        settings: ["Indie Cafes", "Artsy Food Spots", "Neighborhood Cafes"],
+        adjectives: ["Eclectic", "DIY"]
     }
 }
 
