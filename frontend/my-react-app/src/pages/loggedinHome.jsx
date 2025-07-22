@@ -314,10 +314,11 @@ const UserHome = () => {
 
     return(
         <>
-            {isLoading && <LoadingScreen loadingStage={loadingStage}/>} 
+            {/* {isLoading && <LoadingScreen loadingStage={loadingStage}/>}  */}
             
             <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAP_API_KEY}>
-                <div style={{ filter: isLoading ? 'blur(25px)' : 'none'}}>
+                {/* style={{ filter: isLoading ? 'blur(25px)' : 'none'}} */}
+                <div>
                     <LoggedInHeader />
                     <div className="flex h-screen">
                         {/* Left Side: Recommendations */}
