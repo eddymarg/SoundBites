@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { APIProvider } from "@vis.gl/react-google-maps"
 import { Box, Button } from "@mui/material"
 import getNearbyRestoByMusic from "../services/locationService"
@@ -28,26 +28,27 @@ const UserHome = () => {
     const [selectedLocation, setSelectedLocation] = useState(null)
     const [savedIds, setSavedIds] = useState([])
     // for loading screen
-    const [loadStartTime, setLoadStartTime] = useState(null)
     const [loadingStage, setLoadingStage] = useState(0)
+    const [showLoadingScreen, setShowLoadingScreen] = useState(true)
 
     const CACHE_DURATION = 60 * 60 * 1000 * 24
     const RESTAURANTS_PER_LOAD = 10
+    const loadStartTime = useRef(Date.now())
 
-    const delayMinLoadTime = (start, callback, min = 5) => {
+    const delayMinLoadTime = (start, callback, min = 3000) => {
         const elapsed = Date.now() - start
         console.log(`🕒 Actual load duration: ${elapsed}ms`)
         // change to max later; it's only min for testing purposes
         const remaining = Math.max(0, min - elapsed)
         setTimeout(() => {
             console.log("✅ Hiding loading screen now.")
-            callback
+            callback()
         }, remaining)
     }
 
     // Retrieves location data
     useEffect(() => {
-        setLoadStartTime(Date.now())
+        loadStartTime.current = Date.now()
 
         if("permissions" in navigator && "geolocation" in navigator) {
             navigator.permissions.query({ name: "geolocation" }).then((result) => {
@@ -75,6 +76,7 @@ const UserHome = () => {
             setUserLocation(coords)
             localStorage.setItem("userLocation", JSON.stringify(coords))
             setIsLoading(false)
+            delayMinLoadTime(loadStartTime.current, () => setShowLoadingScreen(false))
         }
 
         function errorCallback(error) {
@@ -91,6 +93,7 @@ const UserHome = () => {
                 setUserLocation(coords)
                 localStorage.setItem("userLocation", JSON.stringify(coords))
                 setIsLoading(false)
+                delayMinLoadTime(loadStartTime.current, () => setShowLoadingScreen(false))
                 return
             }
 
@@ -103,12 +106,14 @@ const UserHome = () => {
                     localStorage.setItem("userLocation", JSON.stringify(fallbackCoords))
                     console.log("IP location", data)
                     setIsLoading(false)
+                    delayMinLoadTime(loadStartTime.current, () => setShowLoadingScreen(false))
                 })
                 .catch(() => {
                     const nyc = { lat: 40.7128, lng: -74.0060 }
                     setUserLocation(nyc)
                     localStorage.setItem("userLocation", JSON.stringify(nyc))
                     setIsLoading(false)
+                    delayMinLoadTime(loadStartTime.current, () => setShowLoadingScreen(false))
                 })
         }
     }, [])
@@ -314,11 +319,10 @@ const UserHome = () => {
 
     return(
         <>
-            {/* {isLoading && <LoadingScreen loadingStage={loadingStage}/>}  */}
+            {showLoadingScreen && <LoadingScreen loadingStage={loadingStage}/>} 
             
             <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAP_API_KEY}>
-                {/* style={{ filter: isLoading ? 'blur(25px)' : 'none'}} */}
-                <div>
+                <div style={{ filter: showLoadingScreen ? 'blur(25px)' : 'none'}}>
                     <LoggedInHeader />
                     <div className="flex h-screen">
                         {/* Left Side: Recommendations */}

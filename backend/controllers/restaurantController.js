@@ -52,6 +52,7 @@ exports.getNearbyRestoByMusic = async (req, res) => {
         }
 
         console.log("Making Google Places textsearch request...")
+        
         const response = await axios.get(
             'https://maps.googleapis.com/maps/api/place/textsearch/json',
             { params }
