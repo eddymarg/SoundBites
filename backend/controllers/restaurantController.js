@@ -51,10 +51,12 @@ exports.getNearbyRestoByMusic = async (req, res) => {
             key: GOOGLE_PLACES_API_KEY,
         }
 
+        console.log("Making Google Places textsearch request...")
         const response = await axios.get(
             'https://maps.googleapis.com/maps/api/place/textsearch/json',
             { params }
         )
+        console.log("Google Places response:", response.data)
 
         if (!response.data || !response.data.results) {
             throw new Error("Invalid response from Google Places API")

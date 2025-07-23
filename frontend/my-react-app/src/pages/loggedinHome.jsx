@@ -34,7 +34,7 @@ const UserHome = () => {
     const CACHE_DURATION = 60 * 60 * 1000 * 24
     const RESTAURANTS_PER_LOAD = 10
 
-    const delayMinLoadTime = (start, callback, min = 600) => {
+    const delayMinLoadTime = (start, callback, min = 5) => {
         const elapsed = Date.now() - start
         console.log(`🕒 Actual load duration: ${elapsed}ms`)
         // change to max later; it's only min for testing purposes
@@ -74,7 +74,7 @@ const UserHome = () => {
             console.log("Success Geolocation:", coords)
             setUserLocation(coords)
             localStorage.setItem("userLocation", JSON.stringify(coords))
-            delayMinLoadTime(loadStartTime, () => setIsLoading(false))
+            setIsLoading(false)
         }
 
         function errorCallback(error) {
@@ -90,7 +90,7 @@ const UserHome = () => {
                 console.log("Using cached IP location:", coords)
                 setUserLocation(coords)
                 localStorage.setItem("userLocation", JSON.stringify(coords))
-                delayMinLoadTime(loadStartTime, () => setIsLoading(false))
+                setIsLoading(false)
                 return
             }
 
@@ -102,13 +102,13 @@ const UserHome = () => {
                     setUserLocation(fallbackCoords)
                     localStorage.setItem("userLocation", JSON.stringify(fallbackCoords))
                     console.log("IP location", data)
-                    delayMinLoadTime(loadStartTime, () => setIsLoading(false))
+                    setIsLoading(false)
                 })
                 .catch(() => {
                     const nyc = { lat: 40.7128, lng: -74.0060 }
                     setUserLocation(nyc)
                     localStorage.setItem("userLocation", JSON.stringify(nyc))
-                    delayMinLoadTime(loadStartTime, () => setIsLoading(false))
+                    setIsLoading(false)
                 })
         }
     }, [])
@@ -133,6 +133,7 @@ const UserHome = () => {
         // console.count("useEffect ran")
         // console.log("Loaded count:", loadedCount)
         // console.log("Current userLocation:", userLocation)
+        // console.log("Restaurant retrieval useEffect called")
 
         if (!userLocation || genreFilter.length === 0) return
 
@@ -140,6 +141,7 @@ const UserHome = () => {
         const cachedData = localStorage.getItem("restaurantCache")
 
         if (cachedData) {
+            // console.log("caching data")
             const parsed = JSON.parse(cachedData)
             const isExpired = Date.now() - parsed.timestamp > CACHE_DURATION
 
@@ -149,7 +151,7 @@ const UserHome = () => {
                 setVisibleRestaurants(parsed.restaurants)
                 console.log("Parsed restaurants", parsed.restaurants)
                 setHasFetchedRestaurants(true)
-                delayMinLoadTime(loadStartTime, () => setIsLoading(false))
+                setIsLoading(false)
                 setLoadedCount(parsed.restaurants.length)
                 return
             }
@@ -157,6 +159,7 @@ const UserHome = () => {
 
         if (!hasFetchedRestaurants) {
             setIsLoading(true)
+            console.log("Fetching restaurants starting in frontend")
             getNearbyRestoByMusic(userLocation.lat, userLocation.lng, genreFilter, 0)
                 .then((data) => {
                     if (data && Array.isArray(data.restaurants)) {
@@ -172,17 +175,14 @@ const UserHome = () => {
                         }))
                     }
                     setHasFetchedRestaurants(true)
-                    delayMinLoadTime(loadStartTime, () => {
-                        setIsLoading(false)
-                        setLoadingStage(prev => Math.max(prev, 2))
-                    })
+                    setIsLoading(false)
                     console.log("Restaurants loaded:", data.restaurants)
                     console.log("Loading resto, resto: ", restaurants)
                 })
                 .catch((err) => {
                     console.error("Error fetching restaurants:", err)
                     setError(err.message)
-                    delayMinLoadTime(loadStartTime, () => setIsLoading(false))
+                    setIsLoading(false)
                 })
         }
     }, [userLocation, genreFilter, hasFetchedRestaurants])
