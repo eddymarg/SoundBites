@@ -11,6 +11,7 @@
 
 
 ## ERD
+This needs to be readjusted due to system changes
 ![SoundBitesERD drawio](https://github.com/user-attachments/assets/21976c3d-c485-4961-b564-2e3d47314492)
 
 ## Mockups
