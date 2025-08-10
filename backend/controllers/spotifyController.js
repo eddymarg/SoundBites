@@ -4,6 +4,7 @@ const { access } = require("fs")
 require("dotenv").config()
 const SpotifyUser = require("../models/SpotifyUser")
 const { em } = require("motion/react-client")
+const bcrypt = require("bcryptjs")
 
 const client_id = process.env.SPOTIFY_CLIENT_ID
 const client_secret = process.env.SPOTIFY_CLIENT_SECRET
@@ -20,6 +21,7 @@ const generateRandomString = (length) => {
     return text
 }
 
+// login with spotify
 exports.spotifyLogin = (req, res) => {
     const state = generateRandomString(16)
     res.cookie("spotify_auth_state", state) // stores state in cookies for later verification
@@ -38,6 +40,7 @@ exports.spotifyLogin = (req, res) => {
     )
 }
 
+// auth code to get access to spotify user data
 exports.spotifyCallback = async (req, res) => {
     // console.log("Spotify Callback Query:", req.query)
     const { code, state } = req.query
@@ -155,13 +158,64 @@ exports.updateSpotifyUser = async (req, res) => {
 
         if(!user) return res.status(404).json({ error: "User not found" })
 
-        res.json(user)
+        res.json({ message: "User updated" })
     } catch (err) {
         console.error("Failed to update user:", err.message)
         res.status(500).json({ error: "Server error"})
     }
 }
 
+// Checks for user password
+exports.checkForPassword = async (req, res) => {
+    try {
+        const access_token = req.cookies.spotify_access_token
+
+        const profileRes = await axios.get("https://api.spotify.com/v1/me", {
+            headers: { Authorization: `Bearer ${access_token}`},
+        })
+
+        const spotifyId = profileRes.data.id
+
+        const user = await SpotifyUser.findOne({ spotifyId })
+
+        if(!user) {
+            return res.status(404).json({ error: "User not found"})
+        }
+
+        const hasPassword = !!user.password
+
+        res.json({
+            isNewUser: !hasPassword,
+            spotifyId,
+        })
+    } catch (error) {
+        console.error("Error checking password:", error.message)
+        res.status(500).json({ error: "Internal server error" })
+    }
+}
+
+// updates password
+exports.setSpotifyUserPassword = async (req, res) => {
+    try {
+        const { spotifyId, password} = req.body
+        const hashedPassword = await bcrypt.hash(password, 10)
+
+        const user = await SpotifyUser.findOneAndUpdate(
+            { spotifyId },
+            { password: hashedPassword },
+            { new: true }
+        )
+
+        if(!user) return res.status(404).json({ error: "User not found"})
+        
+        res.json({ message: "Password set successfully" })
+    } catch (error) {
+        console.error("Error setting password:", error.message)
+        res.status(500).json({ error: "Server error"})
+    }
+}
+
+// retrieve top artist data
 exports.getTopArtists = async(req, res) => {
     let access_token = req.cookies.spotify_access_token
     const refresh_token = req.cookies.spotify_refresh_token

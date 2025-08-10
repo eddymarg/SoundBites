@@ -17,6 +17,9 @@ const SpotifyUser = new mongoose.Schema({
     avatar: {
         type: String,
         required: false,
+    },
+    password: {
+        type: String
     }
 })
 

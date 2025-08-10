@@ -1,5 +1,5 @@
 const express = require("express")
-const { login, signup, getCurrentUser } = require("../controllers/authController")
+const { login, signup, checkExistingUser } = require("../controllers/authController")
 const router = express.Router()
 
 router.post("/signup", (req, res, next) => {
@@ -7,5 +7,6 @@ router.post("/signup", (req, res, next) => {
     next()
 }, signup)
 router.post("/login", login)
+router.post("/check-existing-user", checkExistingUser)
 
 module.exports = router

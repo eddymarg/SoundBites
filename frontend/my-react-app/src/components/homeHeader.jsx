@@ -34,7 +34,7 @@ const HomeHeader = () => {
                     <Logo/>
                 </Box>
                 <Stack spacing={2} direction="row">
-                    <Button variant="outlined" color="mainRed"
+                    {/* <Button variant="outlined" color="mainRed"
                     onClick={() => document.getElementById('about-section').scrollIntoView({ behavior: 'smooth'})}
                     sx={{
                         width: "140px",
@@ -50,8 +50,8 @@ const HomeHeader = () => {
                     }}
                     >
                         About
-                    </Button>
-                    <Button variant="contained" color="mainRed" onClick={() => navigate("/emailSignup")}
+                    </Button> */}
+                    {/* <Button variant="contained" color="mainRed" onClick={() => navigate("/emailSignup")}
                         sx={{
                             color: "white",
                             width: "140px",
@@ -67,7 +67,7 @@ const HomeHeader = () => {
                         }}
                     >
                         Sign Up
-                    </Button>
+                    </Button> */}
                 </Stack>
             </Stack>
         </nav>

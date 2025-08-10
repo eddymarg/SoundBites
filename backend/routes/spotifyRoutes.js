@@ -1,7 +1,6 @@
 const express = require("express")
 const multer = require("multer")
 const spotifyController = require("../controllers/spotifyController")
-
 const router = express.Router()
 
 // 5MB max
@@ -15,6 +14,8 @@ router.get("/auth/spotify/callback", spotifyController.spotifyCallback)
 router.get("/spotify-user", spotifyController.getSpotifyUserFromDB)
 router.get("/top-artists", spotifyController.getTopArtists)
 router.put("/update-user", upload.single("avatar"), spotifyController.updateSpotifyUser)
+router.get("/check-for-password", spotifyController.checkForPassword)
+router.put("/set-spotify-user-password", spotifyController.setSpotifyUserPassword)
 
 
 module.exports = router

@@ -7,6 +7,7 @@ import LoggedInHeader from "../components/loggedinHeader"
 import GoogleMap from "../components/googleMap"
 import RestaurantList from "../components/restaurantList"
 import GenreDisplay from "../components/genreDisplay"
+import AddPassword from "../components/addPassword"
 import "../css/loggedin.css"
 import { cache } from "react"
 import LoadingScreen from "../components/LoadingScreen"
@@ -30,6 +31,9 @@ const UserHome = () => {
     // for loading screen
     const [loadingStage, setLoadingStage] = useState(0)
     const [showLoadingScreen, setShowLoadingScreen] = useState(true)
+    // for password addition
+    const [isNewUser, setIsNewUser] = useState(false)
+    const [spotifyId, setSpotifyId] = useState("")
 
     const CACHE_DURATION = 60 * 60 * 1000 * 24
     const RESTAURANTS_PER_LOAD = 10
@@ -42,6 +46,7 @@ const UserHome = () => {
         const remaining = Math.max(0, min - elapsed)
         setTimeout(() => {
             console.log("✅ Hiding loading screen now.")
+            checkForPassword()
             callback()
         }, remaining)
     }
@@ -187,7 +192,6 @@ const UserHome = () => {
                 .catch((err) => {
                     console.error("Error fetching restaurants:", err)
                     setError(err.message)
-                    setIsLoading(false)
                 })
         }
     }, [userLocation, genreFilter, hasFetchedRestaurants])
@@ -238,7 +242,22 @@ const UserHome = () => {
         fetchTopArtists()
     },[])
 
-    // retrieves Spotify user info
+    const checkForPassword = async () => {
+        try {
+            const res = await fetch("http://localhost:5001/check-for-password", {
+                credentials: "include"
+            })
+            .then((res) => res.json())
+            .then((data) => {
+                if(data.isNewUser) {
+                    setSpotifyId(data.spotifyId)
+                    setIsNewUser(true)
+                }
+            })
+        } catch (error) {
+            console.error("Password check failed", err)
+        }
+    }
 
     // helps to save locations
     const bookmarkToggle = async (restaurant) => {
@@ -320,6 +339,7 @@ const UserHome = () => {
     return(
         <>
             {showLoadingScreen && <LoadingScreen loadingStage={loadingStage}/>} 
+            <AddPassword open={isNewUser} onClose={() => setIsNewUser(false)} spotifyId={spotifyId} />
             
             <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAP_API_KEY}>
                 <div style={{ filter: showLoadingScreen ? 'blur(25px)' : 'none'}}>

@@ -1,4 +1,5 @@
 const User = require("../models/User")
+const spotifyUser = require("../models/SpotifyUser")
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 
@@ -80,5 +81,25 @@ exports.login = async (req, res) => {
         res.json({ user: { id: user._id, email: user.email }})
     } catch(err) {
         res.status(500).json({ msg: "Internal server error" })
+    }
+}
+
+exports.checkExistingUser = async (req, res) => {
+    const { email } = req.body
+    
+    if(!email ) {
+        return res.status(400).json({ message: "Email required"})
+    }
+
+    try {
+        const findUser = spotifyUser.findOne({ email })
+        if(findUser) {
+            return res.status(200).json({ exists: true })
+        } else {
+            return res.status(200).json({ exists: false })
+        }
+    } catch (error) {
+        console.error("Error checking if Spotify user exists:", error)
+        return res.status(500).json({ message: "Server error" })
     }
 }
