@@ -5,7 +5,6 @@ const jwt = require("jsonwebtoken")
 // Assists w/ login by checking for user and password
 exports.login = async (req, res) => {
     try {
-        console.log("Login hit")
         const { email, password } = req.body
 
         // find user by email
