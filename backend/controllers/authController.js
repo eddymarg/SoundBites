@@ -52,12 +52,13 @@ exports.signup = async (req, res) => {
     }
 }
 
+// Check later for redundant code
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body
 
         // find user by email
-        const user = await User.findOne({ email })
+        const user = await spotifyUser.findOne({ email })
         if (!user) return res.status(400).json({ msg: "Email not found" })
 
         // compare password

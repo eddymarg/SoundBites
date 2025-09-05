@@ -51,7 +51,7 @@ const HomeHeader = () => {
                     >
                         About
                     </Button> */}
-                    {/* <Button variant="contained" color="mainRed" onClick={() => navigate("/emailSignup")}
+                    <Button variant="contained" color="mainRed" onClick={() => navigate("/signin")}
                         sx={{
                             color: "white",
                             width: "140px",
@@ -66,8 +66,8 @@ const HomeHeader = () => {
                             }
                         }}
                     >
-                        Sign Up
-                    </Button> */}
+                        Sign In
+                    </Button>
                 </Stack>
             </Stack>
         </nav>

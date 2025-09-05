@@ -113,7 +113,7 @@ const SignIn = () => {
                     <Typography fontSize='36px' fontWeight={700}>Log In</Typography>
                     <CustomTextField 
                         id="outlined-basic email" 
-                        label="Email" 
+                        label="Spotify e-mail" 
                         variant="outlined" 
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
