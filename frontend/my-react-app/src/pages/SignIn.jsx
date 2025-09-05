@@ -47,6 +47,7 @@ const SignIn = () => {
         }
 
         try {
+            console.log("Trying login")
             const response = await axios.post("http://localhost:5001/api/auth/login", {
                 email,
                 password
@@ -113,7 +114,7 @@ const SignIn = () => {
                     <Typography fontSize='36px' fontWeight={700}>Log In</Typography>
                     <CustomTextField 
                         id="outlined-basic email" 
-                        label="Spotify e-mail" 
+                        label="Spotify email" 
                         variant="outlined" 
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
