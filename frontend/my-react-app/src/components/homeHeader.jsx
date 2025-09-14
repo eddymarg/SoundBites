@@ -23,7 +23,7 @@ const HomeHeader = () => {
             <Stack direction="row" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginRight: '1rem', marginLeft: '1rem'}}>
                 {/* NEED TO MAKE CLICKABLE ONCE PAGE EXPANDS */}
                 <Box
-                    onClick={window.scrollTo(0,0)}
+                    onClick={() => document.getElementById('top-section').scrollIntoView({ behavior: 'smooth'})}
                     sx={{
                         transition: "transform 0.3s ease-in-out",
                         "&:hover": {
@@ -34,7 +34,7 @@ const HomeHeader = () => {
                     <Logo/>
                 </Box>
                 <Stack spacing={2} direction="row">
-                    {/* <Button variant="outlined" color="mainRed"
+                    <Button variant="outlined" color="mainRed"
                     onClick={() => document.getElementById('about-section').scrollIntoView({ behavior: 'smooth'})}
                     sx={{
                         width: "140px",
@@ -50,7 +50,7 @@ const HomeHeader = () => {
                     }}
                     >
                         About
-                    </Button> */}
+                    </Button>
                     <Button variant="contained" color="mainRed" onClick={() => navigate("/signin")}
                         sx={{
                             color: "white",
