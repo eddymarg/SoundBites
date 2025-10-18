@@ -65,7 +65,7 @@ exports.getNearbyRestoByMusic = async (req, res) => {
 
         let restaurants = await Promise.all(
             response.data.results.map(async (resto) => {
-                let photoUrl = "https://via.placeholder.com/400"
+                let photoUrl = "https://source.unsplash.com/400x400/?restaurant"
                 if (resto.photos && resto.photos.length > 0) {
                     photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${resto.photos[0].photo_reference}&key=${GOOGLE_PLACES_API_KEY}`
                 }
