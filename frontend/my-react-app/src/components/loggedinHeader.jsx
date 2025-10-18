@@ -72,6 +72,17 @@ const HomeHeader = () => {
         }
     }
 
+    // logs user out when button is clicked
+    // clears current user cache for new location loading
+    const handleUserLogout = () => {
+        localStorage.removeItem("restaurantCache")
+        localStorage.removeItem("userLocation")
+
+        navigate("/")
+        console.log("navigating to home");
+    }
+
+
     // retrieves Spotify user info
     useEffect(() => {
         const fetchUserInfo = async () => {
@@ -102,7 +113,7 @@ const HomeHeader = () => {
                     <IconButton aria-label="bookmark" onClick={() => navigate("/loadingScreen")}>
                         <BookmarkIcon fontSize="large" color="mainRed"/>
                     </IconButton>
-                    <Button variant="contained" color="mainRed" onClick={() => navigate("/")}
+                    <Button variant="contained" color="mainRed" onClick={handleUserLogout}
                         sx={{
                             color: "white",
                             width: "140px",
