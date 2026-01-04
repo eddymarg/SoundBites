@@ -343,7 +343,7 @@ const UserHome = () => {
             
             <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAP_API_KEY}>
                 <div style={{ filter: showLoadingScreen ? 'blur(25px)' : 'none'}}>
-                    <LoggedInHeader/>
+                    <LoggedInHeader setHasFetchedRestaurants={setHasFetchedRestaurants} setRestaurants={setRestaurants} setVisibleRestaurants={setVisibleRestaurants}/>
                     <div className="flex h-screen">
                         {/* Left Side: Recommendations */}
                         <div className="w-1/2 p-8 flex flex-col">

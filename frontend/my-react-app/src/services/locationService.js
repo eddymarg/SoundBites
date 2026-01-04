@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const getNearbyRestoByMusic = async (lat, lng, genreFilter) => {
+const getNearbyRestoByMusic = async (lat, lng, genreFilter, next_page_token = null) => {
     console.log("Sending lat/lng to API:", lat, lng, genreFilter)
 
     try {
@@ -8,6 +8,7 @@ const getNearbyRestoByMusic = async (lat, lng, genreFilter) => {
             lat,
             lng,
             genreFilter,
+            next_page_token,
         })
         return res.data
     } catch (error) {

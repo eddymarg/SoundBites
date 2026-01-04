@@ -11,7 +11,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import "../css/home.css"
 import '@fontsource/roboto/500.css'
 
-const HomeHeader = () => {
+const HomeHeader = ({setHasFetchedRestaurants, setRestaurants, setVisibleRestaurants}) => {
     const [open, setOpen] = useState(false)
     const [avatarSrc, setAvatarSrc] = React.useState(undefined)
     const [avatarFile, setAvatarFile] = useState(null)
@@ -75,8 +75,13 @@ const HomeHeader = () => {
     // logs user out when button is clicked
     // clears current user cache for new location loading
     const handleUserLogout = () => {
+        console.log("setHasFetchedRestaurants type:", typeof setHasFetchedRestaurants)
         localStorage.removeItem("restaurantCache")
         localStorage.removeItem("userLocation")
+
+        if (typeof setHasFetchedRestaurants === "function")setHasFetchedRestaurants(false)
+        if (typeof setRestaurants === "function") setRestaurants([])
+        if (typeof setVisibleRestaurants === "function") setVisibleRestaurants([])
 
         navigate("/")
         console.log("navigating to home");
