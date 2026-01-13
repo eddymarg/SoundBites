@@ -207,7 +207,10 @@ const UserHome = () => {
             try {
                 const response = await fetch("http://localhost:5001/top-artists", {
                     method: 'GET',
-                    credentials: "include"
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('spotify_access_token')}`,
+                        'x-refresh-token': localStorage.getItem('spotify_refresh_token')
+                    }
                 })
 
                 if (!response.ok) {
@@ -242,10 +245,26 @@ const UserHome = () => {
         fetchTopArtists()
     },[])
 
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search)
+        const accessToken = params.get('access_token')
+        const refreshToken = params.get('refresh_token')
+
+        if (accessToken && refreshToken) {
+            localStorage.setItem('spotify_access_token', accessToken)
+            localStorage.setItem('spotify_refresh_token', refreshToken)
+
+            window.history.replaceState({}, '', '/userHome')
+        }
+    }, [])
+
     const checkForPassword = async () => {
         try {
             const res = await fetch("http://localhost:5001/check-for-password", {
-                credentials: "include"
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('spotify_access_token')}`
+                }
             })
             .then((res) => res.json())
             .then((data) => {

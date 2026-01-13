@@ -55,7 +55,7 @@ const HomeHeader = ({setHasFetchedRestaurants, setRestaurants, setVisibleRestaur
             }
 
             await axios.put("http://localhost:5001/update-user", formData, {
-                withCredentials: true,
+                'Authorization': `Bearer ${localStorage.getItem('spotify_access_token')}`,
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
@@ -93,7 +93,9 @@ const HomeHeader = ({setHasFetchedRestaurants, setRestaurants, setVisibleRestaur
         const fetchUserInfo = async () => {
             try {
                 const res = await axios.get("http://localhost:5001/spotify-user", {
-                    withCredentials: true,
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('spotify_access_token')}`
+                    }
                 })
                 setUserInfo(res.data)
                 setAvatarSrc(res.data.avatar)

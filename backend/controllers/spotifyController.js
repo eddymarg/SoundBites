@@ -5,7 +5,7 @@ require("dotenv").config()
 const SpotifyUser = require("../models/SpotifyUser")
 const { em } = require("motion/react-client")
 const bcrypt = require("bcryptjs")
-
+const { lte } = require("lodash")
 const client_id = process.env.SPOTIFY_CLIENT_ID
 const client_secret = process.env.SPOTIFY_CLIENT_SECRET
 const redirect_uri = process.env.SPOTIFY_REDIRECT_URI
@@ -42,6 +42,7 @@ exports.spotifyLogin = (req, res) => {
 
 // auth code to get access to spotify user data
 exports.spotifyCallback = async (req, res) => {
+    // console.log("Callback URL:", req.url)
     // console.log("Spotify Callback Query:", req.query)
     const { code, state } = req.query
 
@@ -85,17 +86,23 @@ exports.spotifyCallback = async (req, res) => {
             await user.save()
         }
 
-        // store tokens in a cookie (for frontend)
-        res.cookie("spotify_access_token", access_token, { 
-            httpOnly: true, 
-            secure: false,
-        })
-        res.cookie("spotify_refresh_token", refresh_token, { 
-            httpOnly: true, 
-            secure: false,
+        const params = new URLSearchParams({
+            access_token,
+            refresh_token,
+            spotify_id: spotifyId
         })
 
-        res.redirect("http://localhost:5173/userHome")
+        // store tokens in a cookie (for frontend)
+        // res.cookie("spotify_access_token", access_token, { 
+        //     httpOnly: true, 
+        //     secure: false,
+        // })
+        // res.cookie("spotify_refresh_token", refresh_token, { 
+        //     httpOnly: true, 
+        //     secure: false,
+        // })
+
+        res.redirect(`http://localhost:5173/userHome?${params.toString()}`)
     } catch (error) {
         console.error("Error fetching token:", error.response?.data || error.message)
         res.status(500).json({ error: "Failed to get tokens", details: error.message })
@@ -105,7 +112,11 @@ exports.spotifyCallback = async (req, res) => {
 // helps return spotify user info
 exports.getSpotifyUserFromDB = async (req, res) => {
     try {
-        const access_token = req.cookies.spotify_access_token
+        let access_token = req.headers.authorization?.replace('Bearer ', '')
+
+        if (!access_token) {
+            access_token = req.cookies.spotify_access_token
+        }
 
         const profileRes = await axios.get("https://api.spotify.com/v1/me", {
             headers: {
@@ -135,7 +146,7 @@ exports.getSpotifyUserFromDB = async (req, res) => {
 // updates the user info
 exports.updateSpotifyUser = async (req, res) => {
     try {
-        const access_token = req.cookies.spotify_access_token
+        const access_token = req.headers.authorization?.replace('Bearer ', '')
 
         const profileRes = await axios.get("https://api.spotify.com/v1/me", {
             headers: {Authorization: `Bearer ${access_token}` }
@@ -168,8 +179,9 @@ exports.updateSpotifyUser = async (req, res) => {
 // Checks for user password
 exports.checkForPassword = async (req, res) => {
     try {
-        const access_token = req.cookies.spotify_access_token
+        const access_token = req.headers.authorization?.replace('Bearer ', '')
 
+        console.log("access token for password", access_token)
         const profileRes = await axios.get("https://api.spotify.com/v1/me", {
             headers: { Authorization: `Bearer ${access_token}`},
         })
@@ -217,9 +229,15 @@ exports.setSpotifyUserPassword = async (req, res) => {
 
 // retrieve top artist data
 exports.getTopArtists = async(req, res) => {
-    let access_token = req.cookies.spotify_access_token
-    const refresh_token = req.cookies.spotify_refresh_token
+    let access_token = req.headers.authorization?.replace('Bearer ', '')
+    if(!access_token) {
+        access_token = req.cookies.spotify_access_token
+    }
 
+    let refresh_token = req.headers['x-refresh-token']
+    if (!refresh_token) {
+        refresh_token = req.cookies.spotify_refresh_token
+    }
 
     if(!access_token || !refresh_token) {
         return res.status(400).json({error: 'Tokens are required'})
