@@ -32,7 +32,7 @@ async function getPlaceDetails(placeId) {
 exports.getNearbyRestoByMusic = async (req, res) => {
     console.log("Received request:", req.body)
     const { lat, lng, genreFilter } = req.body
-    const radius = 1000
+    const radius = 500
 
     console.log("lat:", lat, "lng:", lng)
     if (!lat || !lng) {

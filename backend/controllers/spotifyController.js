@@ -42,8 +42,6 @@ exports.spotifyLogin = (req, res) => {
 
 // auth code to get access to spotify user data
 exports.spotifyCallback = async (req, res) => {
-    // console.log("Callback URL:", req.url)
-    // console.log("Spotify Callback Query:", req.query)
     const { code, state } = req.query
 
     if(!code) {
@@ -180,8 +178,7 @@ exports.updateSpotifyUser = async (req, res) => {
 exports.checkForPassword = async (req, res) => {
     try {
         const access_token = req.headers.authorization?.replace('Bearer ', '')
-
-        console.log("access token for password", access_token)
+        
         const profileRes = await axios.get("https://api.spotify.com/v1/me", {
             headers: { Authorization: `Bearer ${access_token}`},
         })
