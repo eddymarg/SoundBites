@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { Avatar, Stack, Typography, Button } from "@mui/material"
 import { useNavigate } from "react-router-dom"
 import { LogoWNote } from "../assets/logoWNote"
-import { motion } from "framer-motion"
+import { motion } from "motion/react"
 import HomeIcon from '@mui/icons-material/Home'
 import GoogleMap from "../components/googleMap"
 import { APIProvider } from "@vis.gl/react-google-maps"
