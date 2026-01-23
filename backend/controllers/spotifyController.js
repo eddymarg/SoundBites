@@ -1,11 +1,8 @@
 const querystring = require("querystring")
 const axios = require("axios")
-const { access } = require("fs")
 require("dotenv").config()
 const SpotifyUser = require("../models/SpotifyUser")
-const { em } = require("motion/react-client")
 const bcrypt = require("bcryptjs")
-const { lte } = require("lodash")
 const client_id = process.env.SPOTIFY_CLIENT_ID
 const client_secret = process.env.SPOTIFY_CLIENT_SECRET
 const redirect_uri = process.env.SPOTIFY_REDIRECT_URI
@@ -178,7 +175,7 @@ exports.updateSpotifyUser = async (req, res) => {
 exports.checkForPassword = async (req, res) => {
     try {
         const access_token = req.headers.authorization?.replace('Bearer ', '')
-        
+
         const profileRes = await axios.get("https://api.spotify.com/v1/me", {
             headers: { Authorization: `Bearer ${access_token}`},
         })

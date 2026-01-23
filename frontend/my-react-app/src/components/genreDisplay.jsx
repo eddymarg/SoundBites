@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Button, Box, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Portal } from "@mui/material"
 import ClearIcon from '@mui/icons-material/Clear';
-import { motion } from "motion/react"
+import { motion } from "framer-motion"
 
 const GenreDisplay = ({ topGenres, setTopGenres }) => {
     const [genreToDelete, setGenreToDelete] = useState(null)
