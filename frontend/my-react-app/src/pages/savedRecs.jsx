@@ -30,7 +30,7 @@ const savedRestaurantsPage = () => {
         }
         const fetchSaved = async () => {
             try {
-                const res = await fetch('http://localhost:5001/api/savedRestaurants')
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/savedRestaurants`)
                 const data = await res.json()
                 setSavedRestaurants(data)
                 setSavedIds(data.map((item) => item.place_id))
@@ -52,12 +52,12 @@ const savedRestaurantsPage = () => {
 
         if (isSaved) {
             setSavedIds(savedIds.filter(id => id !== restaurant.place_id))
-            await fetch('http://localhost:5001/api/remove/${restaurant.place_id}', {
+            await fetch(`${import.meta.env.VITE_API_URL}/api/remove/${restaurant.place_id}`, {
                 method: 'DELETE',
             })
         } else {
             setSavedIds([...savedIds, restaurant.place_id])
-            await fetch('http://localhost:5001/api/savedRestaurants', {
+            await fetch(`${import.meta.env.VITE_API_URL}/api/savedRestaurants`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

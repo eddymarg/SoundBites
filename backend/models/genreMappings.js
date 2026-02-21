@@ -810,7 +810,78 @@ const genreMappings = {
     "Chicago Indie": {
         settings: ["Indie Cafes", "Artsy Food Spots", "Neighborhood Cafes"],
         adjectives: ["Eclectic", "DIY"]
+    },
+    "Jazz": {
+        settings: ["Bars", "Speakeasies", "Dim Restaurants"],
+        adjectives: ["Intimate", "Cozy", "Vintage"]
+    },
+    "Classical": {
+        settings: ["Fine Dining", "Afternoon Tea", "Romantic Dinner"],
+        adjectives: ["Sweet", "Refined", "Slow"]
+    },
+    "Pop": {
+        settings: ["Quick-service", "Retro Diner", "Brunch"],
+        adjectives: ["Fast", "Casual", "Trendy"]
+    },
+    "Rock": {
+        settings: ["Themed Restaurants", "Retro Diners", "Decorated Restaurants"],
+        adjectives: ["High-energy", "Nostalgic", "Themed"]
+    },
+    "Hip Hop": {
+        settings: ["Cocktail Lounges", "Modern Eateries", "Specialized Cocktail Lounges"],
+        adjectives: ["Energetic", "Urban", "Trendy"]
+    },
+    "Indie": {
+        settings: ["Vegan Restaurants", "High-end Street Food", "Local Cafe"],
+        adjectives: ["Curated", "Aesthetic", "Artisanal"]
+    },
+    "Electronic": {
+        settings: ["Trendy Brunch", "Food Trucks", "Lounge"],
+        adjectives: ["High-tempo", "Modern", "Relaxed"]
+    },
+    "Country": {
+        settings: ["Saloons", "Southern Restaurants", "Comfort Restaurants"],
+        adjectives: ["Comfort", "Rustic", "Homemade"]
+    },
+    "R&B": {
+        settings: ["Lounge", "Casual Restaurants", "Cocktail Lounge"],
+        adjectives: ["Relaxed", "Intimate", "Soulful"]
+    },
+    "Latin": {
+        settings: ["Upscale Fusion", "Brunch", "Live Entertainment"],
+        adjectives: ["Vibrant", "High-energy", "Cultural"]
+    },
+    "Reggae": {
+        settings: ["Tropical Restaurants", "Festivals", "Food Trucks"],
+        adjectives: ["Casual", "Lively", "Energetic"]
+    },
+    "Blues": {
+        settings: ["Soul Food", "BBQ Restaurants", "Intimate Restaurants"],
+        adjectives: ["Hearty", "Nostalgic", "Intimate"]
     }
 }
 
-module.export = genreMappings
+function mapGenresToKeywords(genres) {
+    const keywords = new Set()
+    const adjectives = new Set()
+
+    genres.forEach(genre => {
+        const genreLower = genre.toLowerCase()
+
+        for(const [key, value] of Object.entries(genreMappings)) {
+            if(genreLower.includes(key.toLowerCase()) || key.toLowerCase().includes(genreLower)){
+                if(value.settings) {
+                    value.settings.forEach(setting => keywords.add(setting.toLowerCase()))
+                }
+                if(value.adjectives) {
+                    value.adjectives.forEach(adj => adjectives.add(adj.toLowerCase()))
+                }
+            }
+        }
+    })
+}
+
+module.exports = {
+    genreMappings,
+    mapGenresToKeywords
+}

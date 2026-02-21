@@ -54,7 +54,7 @@ const HomeHeader = ({setHasFetchedRestaurants, setRestaurants, setVisibleRestaur
                 formData.append("avatar", avatarFile)
             }
 
-            await axios.put("http://localhost:5001/update-user", formData, {
+            await axios.put(`${import.meta.env.VITE_API_URL}/update-user`, formData, {
                 'Authorization': `Bearer ${localStorage.getItem('spotify_access_token')}`,
                 headers: {
                     'Content-Type': 'multipart/form-data'
@@ -92,7 +92,7 @@ const HomeHeader = ({setHasFetchedRestaurants, setRestaurants, setVisibleRestaur
     useEffect(() => {
         const fetchUserInfo = async () => {
             try {
-                const res = await axios.get("http://localhost:5001/spotify-user", {
+                const res = await axios.get(`${import.meta.env.VITE_API_URL}/spotify-user`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('spotify_access_token')}`
                     }
@@ -117,9 +117,9 @@ const HomeHeader = ({setHasFetchedRestaurants, setRestaurants, setVisibleRestaur
                     <LogoWNote />
                 </Box>
                 <Stack spacing={2} direction="row">
-                    <IconButton aria-label="bookmark" onClick={() => navigate("/loadingScreen")}>
+                    {/* <IconButton aria-label="bookmark" onClick={() => navigate("/loadingScreen")}>
                         <BookmarkIcon fontSize="large" color="mainRed"/>
-                    </IconButton>
+                    </IconButton> */}
                     <Button variant="contained" color="mainRed" onClick={handleUserLogout}
                         sx={{
                             color: "white",

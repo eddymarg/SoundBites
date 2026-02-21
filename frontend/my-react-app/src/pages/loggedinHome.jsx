@@ -102,7 +102,7 @@ const UserHome = () => {
                 return
             }
 
-            fetch("http://localhost:5001/api/get-ip-location")
+            fetch(`${import.meta.env.VITE_API_URL}/api/get-ip-location`)
                 .then((res) => res.json())
                 .then((data) => {
                     const fallbackCoords = { lat: data.latitude, lng: data.longitude}
@@ -205,7 +205,7 @@ const UserHome = () => {
     useEffect(() => {
         const fetchTopArtists = async () => {
             try {
-                const response = await fetch("http://localhost:5001/top-artists", {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/top-artists`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('spotify_access_token')}`,
@@ -261,7 +261,7 @@ const UserHome = () => {
 
     const checkForPassword = async () => {
         try {
-            const res = await fetch("http://localhost:5001/check-for-password", {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/check-for-password`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('spotify_access_token')}`
                 }
@@ -284,13 +284,13 @@ const UserHome = () => {
 
         if (isSaved) {
             setSavedIds(savedIds.filter(id => id !== restaurant.place_id))
-            await fetch(`http://localhost:5001/api/remove/${restaurant.place_id}`, {
+            await fetch(`${import.meta.env.VITE_API_URL}/api/remove/${restaurant.place_id}`, {
                 method: 'DELETE',
             })
         } else {
             setSavedIds([...savedIds, restaurant.place_id])
 
-            await fetch('http://localhost:5001/api/save', {
+            await fetch(`${import.meta.env.VITE_API_URL}/api/save`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

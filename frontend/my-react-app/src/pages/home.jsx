@@ -74,7 +74,7 @@ const Home = () => {
                         }
                     }}
                     onClick={() => {
-                        window.location.href = "http://localhost:5001/auth/spotify/login"
+                        window.location.href = `${import.meta.env.VITE_API_URL}/auth/spotify/login`
                     }}
                     >
                         Continue with Spotify

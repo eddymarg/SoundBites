@@ -4,7 +4,7 @@ const getNearbyRestoByMusic = async (lat, lng, genreFilter, next_page_token = nu
     console.log("Sending lat/lng to API:", lat, lng, genreFilter)
 
     try {
-        const res = await axios.post('http://localhost:5001/api/nearby-restaurants', {
+        const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/nearby-restaurants`, {
             lat,
             lng,
             genreFilter,

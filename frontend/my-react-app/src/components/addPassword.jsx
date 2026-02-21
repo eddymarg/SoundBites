@@ -24,7 +24,7 @@ const AddPassword = ({ open, onClose, spotifyId }) => {
         setError("")
         
         try {
-            const res = await fetch("http://localhost:5001/set-spotify-user-password", {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/set-spotify-user-password`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ spotifyId, password})
