@@ -1,20 +1,20 @@
-"use client"
 import { useState, useEffect, useRef } from "react"
 import { APIProvider } from "@vis.gl/react-google-maps"
 import { Box, Button } from "@mui/material"
-import getNearbyRestoByMusic from "../services/locationService"
 import LoggedInHeader from "../components/loggedinHeader"
 import GoogleMap from "../components/googleMap"
 import RestaurantList from "../components/restaurantList"
 import GenreDisplay from "../components/genreDisplay"
 import AddPassword from "../components/addPassword"
 import "../css/loggedin.css"
-import { cache } from "react"
 import LoadingScreen from "../components/LoadingScreen"
+import getNearbyRestoByMusic from "../services/locationService"
+
+const CACHE_DURATION = 60 * 60 * 1000 * 24
+const RESTAURANTS_PER_LOAD = 3
 
 const UserHome = () => {
     const [userLocation, setUserLocation] = useState(null)
-    const [restaurants, setRestaurants] = useState([])
     const [error, setError] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
     const [hasFetchedRestaurants, setHasFetchedRestaurants] = useState(false)
@@ -25,6 +25,11 @@ const UserHome = () => {
     const [allRestaurants, setAllRestaurants] = useState([])
     const [visibleRestaurants, setVisibleRestaurants] = useState([])
     const [loadedCount, setLoadedCount] = useState(0)
+    const [pagetoken, setPagetoken] = useState(null)
+    const [isLoadingMore, setIsLoadingMore] = useState(false)
+    const [hasNoMoreResults, setHasNoMoreResults] = useState(false)
+    const [newRestaurantIds, setNewRestaurantIds] = useState(new Set())
+
     // for full info modal
     const [selectedLocation, setSelectedLocation] = useState(null)
     const [savedIds, setSavedIds] = useState([])
@@ -35,17 +40,13 @@ const UserHome = () => {
     const [isNewUser, setIsNewUser] = useState(false)
     const [spotifyId, setSpotifyId] = useState("")
 
-    const CACHE_DURATION = 60 * 60 * 1000 * 24
-    const RESTAURANTS_PER_LOAD = 10
     const loadStartTime = useRef(Date.now())
+    const listContainerRef = useRef(null)
 
     const delayMinLoadTime = (start, callback, min = 3000) => {
         const elapsed = Date.now() - start
-        console.log(`🕒 Actual load duration: ${elapsed}ms`)
-        // change to max later; it's only min for testing purposes
         const remaining = Math.max(0, min - elapsed)
         setTimeout(() => {
-            console.log("✅ Hiding loading screen now.")
             checkForPassword()
             callback()
         }, remaining)
@@ -77,7 +78,6 @@ const UserHome = () => {
                 lat: position.coords.latitude,
                 lng: position.coords.longitude,
             }
-            console.log("Success Geolocation:", coords)
             setUserLocation(coords)
             localStorage.setItem("userLocation", JSON.stringify(coords))
             setIsLoading(false)
@@ -94,7 +94,6 @@ const UserHome = () => {
 
             if (cachedIPLocation) {
                 const coords = JSON.parse(cachedIPLocation)
-                console.log("Using cached IP location:", coords)
                 setUserLocation(coords)
                 localStorage.setItem("userLocation", JSON.stringify(coords))
                 setIsLoading(false)
@@ -105,11 +104,9 @@ const UserHome = () => {
             fetch(`${import.meta.env.VITE_API_URL}/api/get-ip-location`)
                 .then((res) => res.json())
                 .then((data) => {
-                    const fallbackCoords = { lat: data.latitude, lng: data.longitude}
-                    console.log("Using IP fallback:", fallbackCoords)
+                    const fallbackCoords = { lat: data.latitude, lng: data.longitude }
                     setUserLocation(fallbackCoords)
                     localStorage.setItem("userLocation", JSON.stringify(fallbackCoords))
-                    console.log("IP location", data)
                     setIsLoading(false)
                     delayMinLoadTime(loadStartTime.current, () => setShowLoadingScreen(false))
                 })
@@ -140,66 +137,54 @@ const UserHome = () => {
 
     // Deals with loading restaurant data
     useEffect(() => {
-        // console.count("useEffect ran")
-        // console.log("Loaded count:", loadedCount)
-        // console.log("Current userLocation:", userLocation)
-        // console.log("Restaurant retrieval useEffect called")
-
         if (!userLocation || genreFilter.length === 0) return
 
         const cacheKey = getCacheKey(userLocation, genreFilter)
         const cachedData = localStorage.getItem("restaurantCache")
 
         if (cachedData) {
-            // console.log("caching data")
             const parsed = JSON.parse(cachedData)
             const isExpired = Date.now() - parsed.timestamp > CACHE_DURATION
 
-            if(parsed.key === cacheKey && !isExpired) {
-                console.log("Loading from restaurantCache")
-                setRestaurants(parsed.restaurants)
-                setVisibleRestaurants(parsed.restaurants)
-                console.log("Parsed restaurants", parsed.restaurants)
+            if (parsed.key === cacheKey && !isExpired) {
+                setAllRestaurants(parsed.restaurants)
+                setVisibleRestaurants(parsed.restaurants.slice(0, RESTAURANTS_PER_LOAD))
+                setLoadedCount(RESTAURANTS_PER_LOAD)
+                setPagetoken(parsed.pagetoken || null)
                 setHasFetchedRestaurants(true)
                 setIsLoading(false)
-                setLoadedCount(parsed.restaurants.length)
                 return
             }
         }
 
         if (!hasFetchedRestaurants) {
             setIsLoading(true)
-            console.log("Fetching restaurants starting in frontend")
-            getNearbyRestoByMusic(userLocation.lat, userLocation.lng, genreFilter, 0)
+            getNearbyRestoByMusic(userLocation.lat, userLocation.lng, genreFilter, pagetoken)
                 .then((data) => {
                     if (data && Array.isArray(data.restaurants)) {
                         const newRestaurants = [...data.restaurants]
                         setAllRestaurants(newRestaurants)
                         setVisibleRestaurants(newRestaurants.slice(0, RESTAURANTS_PER_LOAD))
                         setLoadedCount(RESTAURANTS_PER_LOAD)
+                        setPagetoken(data.pagetoken)
 
                         localStorage.setItem("restaurantCache", JSON.stringify({
                             key: cacheKey,
                             timestamp: Date.now(),
-                            restaurants: newRestaurants
+                            restaurants: newRestaurants,
+                            pagetoken: data.pagetoken
                         }))
                     }
                     setHasFetchedRestaurants(true)
                     setIsLoading(false)
-                    console.log("Restaurants loaded:", data.restaurants)
-                    console.log("Loading resto, resto: ", restaurants)
                 })
                 .catch((err) => {
                     console.error("Error fetching restaurants:", err)
                     setError(err.message)
+                    setIsLoading(false)
                 })
         }
     }, [userLocation, genreFilter, hasFetchedRestaurants])
-
-    // reset genreFilter changes
-    useEffect(() => {
-        setHasFetchedRestaurants(false)
-    }, [genreFilter])
 
     // Gets Genres
     useEffect(() => {
@@ -217,8 +202,12 @@ const UserHome = () => {
                     throw new Error("Failed to fetch top artists")
                 }
     
+                const newToken = response.headers.get('x-new-access-token')
+                if (newToken) {
+                    localStorage.setItem('spotify_access_token', newToken)
+                }
+
                 const data = await response.json()
-                console.log("Top artists loaded:", data)
 
                 const desiredGenreCount = 3
                 const genreSet = new Set()
@@ -234,7 +223,6 @@ const UserHome = () => {
                 }
 
                 const topGenres = Array.from(genreSet)
-                console.log("Top extracted genres:", topGenres)
                 setTopGenres(topGenres)
                 setGenreFilter(topGenres)
                 setLoadingStage(1)
@@ -263,92 +251,155 @@ const UserHome = () => {
         try {
             const res = await fetch(`${import.meta.env.VITE_API_URL}/check-for-password`, {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('spotify_access_token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('spotify_access_token')}`,
+                    'x-refresh-token': localStorage.getItem('spotify_refresh_token'),
                 }
             })
-            .then((res) => res.json())
-            .then((data) => {
-                if(data.isNewUser) {
-                    setSpotifyId(data.spotifyId)
-                    setIsNewUser(true)
-                }
-            })
+            const newToken = res.headers.get('x-new-access-token')
+            if (newToken) {
+                localStorage.setItem('spotify_access_token', newToken)
+            }
+            const data = await res.json()
+            if (data.isNewUser) {
+                setSpotifyId(data.spotifyId)
+                setIsNewUser(true)
+            }
         } catch (error) {
-            console.error("Password check failed", err)
+            console.error("Password check failed", error)
         }
     }
 
-    // helps to save locations
+    // Helps to save locations
     const bookmarkToggle = async (restaurant) => {
         const isSaved = savedIds.includes(restaurant.place_id)
 
         if (isSaved) {
             setSavedIds(savedIds.filter(id => id !== restaurant.place_id))
-            await fetch(`${import.meta.env.VITE_API_URL}/api/remove/${restaurant.place_id}`, {
-                method: 'DELETE',
-            })
+            try {
+                await fetch(`${import.meta.env.VITE_API_URL}/api/remove/${restaurant.place_id}`, {
+                    method: 'DELETE',
+                })
+            } catch (error) {
+                setSavedIds(prev => [...prev, restaurant.place_id])
+                console.error("Failed to remove bookmark:", error)
+            }
         } else {
             setSavedIds([...savedIds, restaurant.place_id])
-
-            await fetch(`${import.meta.env.VITE_API_URL}/api/save`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    place_id: restaurant.place_id,
-                    name: restaurant.name,
-                    photo: restaurant.photo,
-                    rating: restaurant.rating,
-                    address: restaurant.address,
-                    geometry: {
-                        location: {
-                            lat: restaurant.geometry?.location?.lat ?? restaurant.geometry?.location?.lat?.(),
-                            lng: restaurant.geometry?.location?.lng ?? restaurant.geometry?.location?.lng?.()
-                        },
-                        viewport: {
-                            northeast: restaurant.geometry?.viewport?.northeast,
-                            southeast: restaurant.geometry?.viewport?.southeast
+            try {
+                await fetch(`${import.meta.env.VITE_API_URL}/api/save`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        place_id: restaurant.place_id,
+                        name: restaurant.name,
+                        photo: restaurant.photo,
+                        rating: restaurant.rating,
+                        address: restaurant.address,
+                        geometry: {
+                            location: {
+                                lat: restaurant.geometry?.location?.lat ?? restaurant.geometry?.location?.lat?.(),
+                                lng: restaurant.geometry?.location?.lng ?? restaurant.geometry?.location?.lng?.()
+                            },
+                            viewport: {
+                                northeast: restaurant.geometry?.viewport?.northeast,
+                                southeast: restaurant.geometry?.viewport?.southeast
+                            }
                         }
-                    }
+                    })
                 })
-            })
-            console.log("saved into db")
+            } catch (error) {
+                setSavedIds(prev => prev.filter(id => id !== restaurant.place_id))
+                console.error("Failed to save bookmark:", error)
+            }
         }
     }
 
+    // Clears new pin highlight after animation completes
+    useEffect(() => {
+        if (newRestaurantIds.size === 0) return
+        const timeout = setTimeout(() => setNewRestaurantIds(new Set()), 2000)
+        return () => clearTimeout(timeout)
+    }, [newRestaurantIds])
+
+    // Scroll list down to reveal skeleton cards when loading more
+    useEffect(() => {
+        if (!isLoadingMore || !listContainerRef.current) return
+        // defer until React has rendered the skeleton cards into the DOM
+        const id = setTimeout(() => {
+            listContainerRef.current?.scrollBy({ top: 400, behavior: 'smooth' })
+        }, 50)
+        return () => clearTimeout(id)
+    }, [isLoadingMore])
+
     // Assists with load more button
-    const handleLoadMore = () => {
+    const handleLoadMore = async () => {
         const nextOffset = loadedCount + RESTAURANTS_PER_LOAD
         const totalCached = allRestaurants.length
 
-        if(nextOffset <= totalCached) {
+        if (nextOffset <= totalCached) {
+            const newSlice = allRestaurants.slice(loadedCount, nextOffset)
+            setNewRestaurantIds(new Set(newSlice.map(r => r.place_id)))
             setVisibleRestaurants(allRestaurants.slice(0, nextOffset))
             setLoadedCount(nextOffset)
+            if (nextOffset >= totalCached && !pagetoken) {
+                setHasNoMoreResults(true)
+            }
         } else {
-            getNearbyRestoByMusic(userLocation.lat, userLocation.lng, genreFilter, totalCached)
-                .then((data) => {
-                    if (data && Array.isArray(data.restaurants)) {
-                        const updatedCache = [...allRestaurants, ...data.restaurants]
-                        setAllRestaurants(updatedCache)
+            if (!pagetoken) {
+                setHasNoMoreResults(true)
+                return
+            }
 
-                        const updatedVisible = updatedCache.slice(0, nextOffset)
-                        setVisibleRestaurants(updatedVisible)
-                        setLoadedCount(updatedVisible.length)
+            setIsLoadingMore(true)
+            try {
+                const data = await getNearbyRestoByMusic(
+                    userLocation.lat,
+                    userLocation.lng,
+                    genreFilter,
+                    pagetoken
+                )
 
-                        const cacheKey = getCacheKey(userLocation, genreFilter)
-                        localStorage.setItem("restaurantCache", JSON.stringify({
-                            key: cacheKey,
-                            timestamp: Date.now(),
-                            restaurants: updatedCache
-                        }))
+                if (data && Array.isArray(data.restaurants)) {
+                    const newRestaurants = data.restaurants.filter(
+                        newResto => !allRestaurants.some(existing => existing.place_id === newResto.place_id)
+                    )
+
+                    setNewRestaurantIds(new Set(newRestaurants.map(r => r.place_id)))
+
+                    const updatedCache = [...allRestaurants, ...newRestaurants]
+                    setAllRestaurants(updatedCache)
+
+                    const updatedVisible = updatedCache.slice(0, nextOffset)
+                    setVisibleRestaurants(updatedVisible)
+                    setLoadedCount(updatedVisible.length)
+                    setPagetoken(data.pagetoken)
+
+                    if (!data.pagetoken && updatedVisible.length >= updatedCache.length) {
+                        setHasNoMoreResults(true)
                     }
-                })
-                .catch((err) => {
-                    console.error("Error loading more restaurants:", err)
-                    setError(err.message)
-                })
-        }
 
+                    const cacheKey = getCacheKey(userLocation, genreFilter)
+                    localStorage.setItem("restaurantCache", JSON.stringify({
+                        key: cacheKey,
+                        timestamp: Date.now(),
+                        restaurants: updatedCache,
+                        pagetoken: data.pagetoken
+                    }))
+                }
+            } catch (err) {
+                console.error("Error loading more restaurants:", err)
+                setError(err.message)
+            } finally {
+                setIsLoadingMore(false)
+            }
+        }
     }
+
+    useEffect(() => {
+        setHasFetchedRestaurants(false)
+        setPagetoken(null)
+        setHasNoMoreResults(false)
+    }, [genreFilter])
 
     // Helps with storing selected location
     const handleLocationClick = (location) => {
@@ -362,7 +413,7 @@ const UserHome = () => {
             
             <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAP_API_KEY}>
                 <div style={{ filter: showLoadingScreen ? 'blur(25px)' : 'none'}}>
-                    <LoggedInHeader setHasFetchedRestaurants={setHasFetchedRestaurants} setRestaurants={setRestaurants} setVisibleRestaurants={setVisibleRestaurants}/>
+                    <LoggedInHeader setHasFetchedRestaurants={setHasFetchedRestaurants} setVisibleRestaurants={setVisibleRestaurants}/>
                     <div className="flex h-screen">
                         {/* Left Side: Recommendations */}
                         <div className="w-1/2 p-8 flex flex-col">
@@ -376,12 +427,14 @@ const UserHome = () => {
                                 />
                             </div>
                             <div className="flex-1 overflow-y-auto mt-4">
-                                <Box sx={{ maxHeight: '75%', overflowY: 'auto'}}>
-                                    <RestaurantList 
-                                        restaurants={visibleRestaurants} 
+                                <Box ref={listContainerRef} sx={{ maxHeight: '75%', overflowY: 'auto'}}>
+                                    <RestaurantList
+                                        restaurants={visibleRestaurants}
                                         handleLocationClick={handleLocationClick}
                                         savedIds={savedIds}
                                         bookmarkToggle={bookmarkToggle}
+                                        isLoadingMore={isLoadingMore}
+                                        newRestaurantIds={newRestaurantIds}
                                     />
                                 </Box>
                                 <Box
@@ -389,35 +442,44 @@ const UserHome = () => {
                                     justifyContent="center"
                                     alignItems="center"
                                     marginTop="2rem"
+                                    marginBottom="1rem"
                                 >
-                                    <Button variant="outlined" color="mainRed" 
-                                    sx={{
-                                        borderRadius: "36px",
-                                        border: "2px solid",
-                                        backgroundColor: "white",
-                                        fontSize: "20px",
-                                        textTransform: "none",
-                                        width: "260px",
-                                        "&:hover": {
-                                            backgroundColor: "#EF233C20",
-                                        }
-                                    }}
-                                    onClick={handleLoadMore}
-                                    >Load More</Button>
+                                    {hasNoMoreResults ? (
+                                        <p style={{ color: "#888", fontSize: "15px" }}>
+                                            No more restaurants to load.
+                                        </p>
+                                    ) : (
+                                        <Button variant="outlined" color="mainRed"
+                                        disabled={isLoadingMore}
+                                        sx={{
+                                            borderRadius: "36px",
+                                            border: "2px solid",
+                                            backgroundColor: "white",
+                                            fontSize: "20px",
+                                            textTransform: "none",
+                                            width: "260px",
+                                            "&:hover": {
+                                                backgroundColor: "#EF233C20",
+                                            }
+                                        }}
+                                        onClick={handleLoadMore}
+                                        >Load More</Button>
+                                    )}
                                 </Box>
                             </div>
                         </div>
                         {/* Right side: map */}
                         <div className="w-1/2 p-8">
-                            <GoogleMap 
-                                userLocation={userLocation} 
-                                restaurants={restaurants}
-                                error={error} 
+                            <GoogleMap
+                                userLocation={userLocation}
+                                restaurants={visibleRestaurants}
+                                error={error}
                                 isLoading={isLoading}
                                 selectedLocation={selectedLocation}
                                 setSelectedLocation={setSelectedLocation}
                                 savedIds={savedIds}
                                 bookmarkToggle={bookmarkToggle}
+                                newRestaurantIds={newRestaurantIds}
                             />
                         </div>
                     </div>
