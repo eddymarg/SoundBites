@@ -115,7 +115,7 @@ exports.spotifyCallback = async (req, res) => {
         //     secure: false,
         // })
 
-        res.redirect(`${process.env.VITE_FRONTEND_URL}/userHome?${params.toString()}`)
+        res.redirect(`${process.env.FRONTEND_URL}/userHome?${params.toString()}`)
     } catch (error) {
         console.error("Error fetching token:", error.response?.data || error.message)
         res.status(500).json({ error: "Failed to get tokens", details: error.message })
