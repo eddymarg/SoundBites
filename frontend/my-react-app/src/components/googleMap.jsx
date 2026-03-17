@@ -2,7 +2,7 @@
 
 "use client"
 import { useState } from "react"
-import { Map, AdvancedMarker } from "@vis.gl/react-google-maps"
+import { Map, AdvancedMarker, useApiIsLoaded } from "@vis.gl/react-google-maps"
 import '../css/googleModal.css'
 import { Box, Typography, Rating, Divider, Stack, IconButton } from "@mui/material"
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -17,6 +17,7 @@ const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocati
     const [showAllHours, setShowAllHours] = useState(false)
     const [hoveredPinID, setHoveredPinID] = useState(null)
     const fallbackLocation = { lat: 40.7128, lng: -74.0060 }
+    const apiIsLoaded = useApiIsLoaded()
 
     console.log("Restaurant in map", restaurants)
 
@@ -55,12 +56,12 @@ const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocati
                         gestureHandling="auto"
                     >
                         {/* user's location */}
-                        {userLocation && (
+                        {apiIsLoaded && userLocation && (
                             <AdvancedMarker position={userLocation}/>
                         )}
 
                         {/* recommended restaurants pins */}
-                        {restaurants?.map((resto, index) => (
+                        {apiIsLoaded && restaurants?.map((resto, index) => (
                             resto.geometry?.location && (
                                 <AdvancedMarker
                                     key={index}
