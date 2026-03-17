@@ -2,16 +2,15 @@
 import axios from "axios"
 import React, { useEffect } from "react"
 import { useState } from "react";
-import { Button, Box, Stack, Avatar, IconButton, Modal, Typography, TextField, InputAdornment, Icon, Snackbar, Alert } from "@mui/material"
+import { Button, Box, Stack, Avatar, IconButton, Modal, Typography, TextField, InputAdornment, Snackbar, Alert } from "@mui/material"
 import { useNavigate } from "react-router-dom"
 import { LogoWNote } from "../assets/logoWNote"
-import BookmarkIcon from '@mui/icons-material/Bookmark';
 import ButtonBase from '@mui/material/ButtonBase';
 import EditIcon from '@mui/icons-material/Edit';
 import "../css/home.css"
 import '@fontsource/roboto/500.css'
 
-const HomeHeader = ({setHasFetchedRestaurants, setRestaurants, setVisibleRestaurants}) => {
+const HomeHeader = ({setHasFetchedRestaurants, setVisibleRestaurants}) => {
     const [open, setOpen] = useState(false)
     const [avatarSrc, setAvatarSrc] = React.useState(undefined)
     const [avatarFile, setAvatarFile] = useState(null)
@@ -75,16 +74,13 @@ const HomeHeader = ({setHasFetchedRestaurants, setRestaurants, setVisibleRestaur
     // logs user out when button is clicked
     // clears current user cache for new location loading
     const handleUserLogout = () => {
-        console.log("setHasFetchedRestaurants type:", typeof setHasFetchedRestaurants)
         localStorage.removeItem("restaurantCache")
         localStorage.removeItem("userLocation")
 
-        if (typeof setHasFetchedRestaurants === "function")setHasFetchedRestaurants(false)
-        if (typeof setRestaurants === "function") setRestaurants([])
+        if (typeof setHasFetchedRestaurants === "function") setHasFetchedRestaurants(false)
         if (typeof setVisibleRestaurants === "function") setVisibleRestaurants([])
 
         navigate("/")
-        console.log("navigating to home");
     }
 
 
@@ -94,9 +90,14 @@ const HomeHeader = ({setHasFetchedRestaurants, setRestaurants, setVisibleRestaur
             try {
                 const res = await axios.get(`${import.meta.env.VITE_API_URL}/spotify-user`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('spotify_access_token')}`
+                        'Authorization': `Bearer ${localStorage.getItem('spotify_access_token')}`,
+                        'x-refresh-token': localStorage.getItem('spotify_refresh_token'),
                     }
                 })
+                const newToken = res.headers['x-new-access-token']
+                if (newToken) {
+                    localStorage.setItem('spotify_access_token', newToken)
+                }
                 setUserInfo(res.data)
                 setAvatarSrc(res.data.avatar)
             } catch (err) {

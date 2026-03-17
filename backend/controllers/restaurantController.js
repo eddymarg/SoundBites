@@ -14,7 +14,6 @@ async function getPlaceDetails(placeId) {
                 }
             }
         )
-        // console.log(`Details for placeId ${placeId}:`, detailsResponse.data)
         if (detailsResponse.data.result) {
             return {
                 website: detailsResponse.data.result.website || "No website found",
@@ -30,18 +29,17 @@ async function getPlaceDetails(placeId) {
 }
 
 exports.getNearbyRestoByMusic = async (req, res) => {
-    console.log("Received request:", req.body)
-    const { lat, lng, genreFilter } = req.body
-    const radius = 500
+    const { lat, lng, genreFilter, pagetoken } = req.body
+    const radius = 1000
 
-    console.log("lat:", lat, "lng:", lng)
     if (!lat || !lng) {
-        return res.status(400).json({ message: "Missing required parameters."})
+        return res.status(400).json({ message: "Missing required parameters." })
     }
 
-    const genreQuery = genreFilter && genreFilter.length > 0 ? `for people who have a ${genreFilter.join(' ')} vibe` : "for people with vibe"
+    const genreQuery = genreFilter && genreFilter.length > 0
+        ? `for people who have a ${genreFilter.join(' ')} vibe`
+        : "for people with good vibes"
     const query = `restaurant ${genreQuery}`
-
 
     try {
         const params = {
@@ -51,19 +49,20 @@ exports.getNearbyRestoByMusic = async (req, res) => {
             key: GOOGLE_PLACES_API_KEY,
         }
 
-        console.log("Making Google Places textsearch request...")
-        
+        if (pagetoken) {
+            params.pagetoken = pagetoken
+        }
+
         const response = await axios.get(
             'https://maps.googleapis.com/maps/api/place/textsearch/json',
             { params }
         )
-        console.log("Google Places response:", response.data)
 
         if (!response.data || !response.data.results) {
             throw new Error("Invalid response from Google Places API")
         }
 
-        let restaurants = await Promise.all(
+        const restaurants = await Promise.all(
             response.data.results.map(async (resto) => {
                 let photoUrl = "https://source.unsplash.com/400x400/?restaurant"
                 if (resto.photos && resto.photos.length > 0) {
@@ -77,7 +76,7 @@ exports.getNearbyRestoByMusic = async (req, res) => {
                     name: resto.name,
                     address: resto.formatted_address,
                     rating: resto.rating || "No rating",
-                    user_ratings_total: resto.use_ratings_total || 0,
+                    user_ratings_total: resto.user_ratings_total || 0,
                     price_level: resto.price_level,
                     photo: photoUrl,
                     geometry: resto.geometry,
@@ -87,9 +86,12 @@ exports.getNearbyRestoByMusic = async (req, res) => {
                 }
             }) 
         )
-        const hasMore = response.data.next_page_token ? true : false
 
-        res.status(200).json({ restaurants, hasMore })
+        res.status(200).json({ 
+            restaurants, 
+            pagetoken: response.data.next_page_token || null,
+            hasMore: !!response.data.next_page_token
+        })
     } catch (error) {
         console.error('Error fetching restaurants:', error)
         res.status(500).json({message: 'Error fetching restaurants'})

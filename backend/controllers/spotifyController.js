@@ -7,6 +7,24 @@ const client_id = process.env.SPOTIFY_CLIENT_ID
 const client_secret = process.env.SPOTIFY_CLIENT_SECRET
 const redirect_uri = process.env.SPOTIFY_REDIRECT_URI
 
+// exchanges a refresh token for a new access token
+const refreshAccessToken = async (refresh_token) => {
+    const refreshResponse = await axios.post(
+        'https://accounts.spotify.com/api/token',
+        querystring.stringify({
+            grant_type: 'refresh_token',
+            refresh_token,
+        }),
+        {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Authorization: 'Basic ' + Buffer.from(`${client_id}:${client_secret}`).toString('base64'),
+            },
+        }
+    )
+    return refreshResponse.data.access_token
+}
+
 // for OAuth state param
 // prevents CSRF(Cross-Site Request Forgery) attacks
 const generateRandomString = (length) => {
@@ -108,16 +126,28 @@ exports.spotifyCallback = async (req, res) => {
 exports.getSpotifyUserFromDB = async (req, res) => {
     try {
         let access_token = req.headers.authorization?.replace('Bearer ', '')
+        const refresh_token = req.headers['x-refresh-token']
 
         if (!access_token) {
             access_token = req.cookies.spotify_access_token
         }
 
-        const profileRes = await axios.get("https://api.spotify.com/v1/me", {
-            headers: {
-                Authorization: `Bearer ${access_token}`,
-            },
-        })
+        let profileRes
+        try {
+            profileRes = await axios.get("https://api.spotify.com/v1/me", {
+                headers: { Authorization: `Bearer ${access_token}` },
+            })
+        } catch (err) {
+            if (err.response?.status === 401 && refresh_token) {
+                access_token = await refreshAccessToken(refresh_token)
+                res.setHeader('x-new-access-token', access_token)
+                profileRes = await axios.get("https://api.spotify.com/v1/me", {
+                    headers: { Authorization: `Bearer ${access_token}` },
+                })
+            } else {
+                throw err
+            }
+        }
 
         const spotifyId = profileRes.data.id
         const user = await SpotifyUser.findOne({ spotifyId })
@@ -126,12 +156,11 @@ exports.getSpotifyUserFromDB = async (req, res) => {
             return res.status(404).json({ error: "User not found" })
         }
 
-        const userData = ({
+        res.json({
             display_name: user.display_name,
             email: user.email,
             avatar: user.avatar,
         })
-        res.json(userData)
     } catch (error) {
         console.error("Error fetching Spotify user from DB:", error.message)
         res.status(500).json({ error: "Server error fetching user from DB" })
@@ -174,24 +203,35 @@ exports.updateSpotifyUser = async (req, res) => {
 // Checks for user password
 exports.checkForPassword = async (req, res) => {
     try {
-        const access_token = req.headers.authorization?.replace('Bearer ', '')
+        let access_token = req.headers.authorization?.replace('Bearer ', '')
+        const refresh_token = req.headers['x-refresh-token']
 
-        const profileRes = await axios.get("https://api.spotify.com/v1/me", {
-            headers: { Authorization: `Bearer ${access_token}`},
-        })
-
-        const spotifyId = profileRes.data.id
-
-        const user = await SpotifyUser.findOne({ spotifyId })
-
-        if(!user) {
-            return res.status(404).json({ error: "User not found"})
+        let profileRes
+        try {
+            profileRes = await axios.get("https://api.spotify.com/v1/me", {
+                headers: { Authorization: `Bearer ${access_token}` },
+            })
+        } catch (err) {
+            if (err.response?.status === 401 && refresh_token) {
+                access_token = await refreshAccessToken(refresh_token)
+                res.setHeader('x-new-access-token', access_token)
+                profileRes = await axios.get("https://api.spotify.com/v1/me", {
+                    headers: { Authorization: `Bearer ${access_token}` },
+                })
+            } else {
+                throw err
+            }
         }
 
-        const hasPassword = !!user.password
+        const spotifyId = profileRes.data.id
+        const user = await SpotifyUser.findOne({ spotifyId })
+
+        if (!user) {
+            return res.status(404).json({ error: "User not found" })
+        }
 
         res.json({
-            isNewUser: !hasPassword,
+            isNewUser: !user.password,
             spotifyId,
         })
     } catch (error) {
@@ -259,42 +299,15 @@ exports.getTopArtists = async(req, res) => {
         res.status(200).json(topArtists)
     } catch (err) {
         if (err.response?.status === 401) {
-            console.log('Access token expired. Refreshing...')
-
             try {
-                const refreshResponse = await axios.post('https://accounts.spotify.com/api/token', 
-                    querystring.stringify({
-                        grant_type: 'refresh_token',
-                        refresh_token: refresh_token,
-                    }),
-                    {
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                            Authorization:
-                                'Basic ' + 
-                                Buffer.from(`${client_id}:${client_secret}`).toString('base64'),
-                        },
-                    }
-                )
-                access_token = refreshResponse.data.access_token
+                access_token = await refreshAccessToken(refresh_token)
+                res.setHeader('x-new-access-token', access_token)
 
-                // updates cookie
-                res.cookie('spotify_access_token', access_token, {
-                    httpOnly: true,
-                    secure: false,
-                })
-
-                // retry original request
                 const retryResponse = await axios.get(
                     'https://api.spotify.com/v1/me/top/artists',
                     {
-                        headers: {
-                            Authorization: `Bearer ${access_token}`,
-                        },
-                        params: {
-                            limit: 10,
-                            time_range: 'short_term',
-                        },
+                        headers: { Authorization: `Bearer ${access_token}` },
+                        params: { limit: 10, time_range: 'short_term' },
                     }
                 )
 
@@ -313,6 +326,6 @@ exports.getTopArtists = async(req, res) => {
             }
         }
         console.error('Error fetching top artists:', err.response?.data || err.message)
-        res.status(500).json({ error: 'Failed to fetch top artists'})
+        res.status(500).json({ error: 'Failed to fetch top artists' })
     }
 }
