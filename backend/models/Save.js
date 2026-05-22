@@ -5,6 +5,7 @@ const SaveSchema = new mongoose.Schema({
     name: String,
     photo: String,
     rating: Number,
+    price_level: Number,
     address: String,
     geometry: {
         location: {

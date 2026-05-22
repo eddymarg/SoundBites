@@ -7,10 +7,12 @@ import { useNavigate } from "react-router-dom"
 import { LogoWNote } from "../assets/logoWNote"
 import ButtonBase from '@mui/material/ButtonBase';
 import EditIcon from '@mui/icons-material/Edit';
+import BookmarkIcon from '@mui/icons-material/Bookmark';
+import HomeIcon from '@mui/icons-material/Home';
 import "../css/home.css"
 import '@fontsource/roboto/500.css'
 
-const HomeHeader = ({setHasFetchedRestaurants, setVisibleRestaurants}) => {
+const HomeHeader = ({setHasFetchedRestaurants, setVisibleRestaurants, homeButton = false}) => {
     const [open, setOpen] = useState(false)
     const [avatarSrc, setAvatarSrc] = React.useState(undefined)
     const [avatarFile, setAvatarFile] = useState(null)
@@ -76,6 +78,7 @@ const HomeHeader = ({setHasFetchedRestaurants, setVisibleRestaurants}) => {
     const handleUserLogout = () => {
         localStorage.removeItem("restaurantCache")
         localStorage.removeItem("userLocation")
+        localStorage.removeItem("ipLocation")
 
         if (typeof setHasFetchedRestaurants === "function") setHasFetchedRestaurants(false)
         if (typeof setVisibleRestaurants === "function") setVisibleRestaurants([])
@@ -111,23 +114,29 @@ const HomeHeader = ({setHasFetchedRestaurants, setVisibleRestaurants}) => {
         <>
         <nav>
             <Stack direction="row" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: '1rem'}}>
-                <IconButton onClick={handleInfoOpen}>
-                    <Avatar src={avatarSrc || "/broken-image.jpg"} sx={{ width: 56, height: 56 }}/>
-                </IconButton>
+                {homeButton ? (
+                    <IconButton onClick={() => navigate("/userHome")}>
+                        <HomeIcon sx={{ width: 40, height: 40, color: '#EF233C' }} />
+                    </IconButton>
+                ) : (
+                    <IconButton onClick={handleInfoOpen}>
+                        <Avatar src={avatarSrc || "/broken-image.jpg"} sx={{ width: 56, height: 56 }}/>
+                    </IconButton>
+                )}
                 <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center'}}>
                     <LogoWNote />
                 </Box>
                 <Stack spacing={2} direction="row">
-                    {/* <IconButton aria-label="bookmark" onClick={() => navigate("/loadingScreen")}>
+                    <IconButton aria-label="bookmark" onClick={() => navigate("/savedRestaurantsPage")}>
                         <BookmarkIcon fontSize="large" color="mainRed"/>
-                    </IconButton> */}
+                    </IconButton>
                     <Button variant="contained" color="mainRed" onClick={handleUserLogout}
                         sx={{
                             color: "white",
-                            width: "140px",
-                            height: "50px",
+                            width: { xs: '90px', sm: '110px', md: '140px' },
+                            height: { xs: '40px', sm: '46px', md: '50px' },
                             borderRadius: "36px",
-                            fontSize: "20px",
+                            fontSize: { xs: '14px', sm: '17px', md: '20px' },
                             textTransform: "none",
                             boxShadow: 0,
                             "&:hover": {

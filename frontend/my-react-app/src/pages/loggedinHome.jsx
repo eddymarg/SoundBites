@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import { APIProvider } from "@vis.gl/react-google-maps"
-import { Box, Button } from "@mui/material"
+import { Box, Button, Snackbar, Portal } from "@mui/material"
 import LoggedInHeader from "../components/loggedinHeader"
 import GoogleMap from "../components/googleMap"
 import RestaurantList from "../components/restaurantList"
@@ -40,8 +40,12 @@ const UserHome = () => {
     const [isNewUser, setIsNewUser] = useState(false)
     const [spotifyId, setSpotifyId] = useState("")
 
+    const [refreshStatus, setRefreshStatus] = useState(null) // null | 'new' | 'same'
+
     const loadStartTime = useRef(Date.now())
     const listContainerRef = useRef(null)
+    const isRefreshRef = useRef(false)
+    const preRefreshRestaurantsRef = useRef([])
 
     const delayMinLoadTime = (start, callback, min = 3000) => {
         const elapsed = Date.now() - start
@@ -163,6 +167,24 @@ const UserHome = () => {
                 .then((data) => {
                     if (data && Array.isArray(data.restaurants)) {
                         const newRestaurants = [...data.restaurants]
+
+                        if (isRefreshRef.current) {
+                            const prevIds = new Set(preRefreshRestaurantsRef.current.map(r => r.place_id))
+                            const hasNew = newRestaurants.some(r => !prevIds.has(r.place_id))
+                            isRefreshRef.current = false
+
+                            if (!hasNew) {
+                                setRefreshStatus('same')
+                                setAllRestaurants(preRefreshRestaurantsRef.current)
+                                setVisibleRestaurants(preRefreshRestaurantsRef.current.slice(0, RESTAURANTS_PER_LOAD))
+                                setLoadedCount(Math.min(RESTAURANTS_PER_LOAD, preRefreshRestaurantsRef.current.length))
+                                setHasFetchedRestaurants(true)
+                                setIsLoading(false)
+                                return
+                            }
+                            setRefreshStatus('new')
+                        }
+
                         setAllRestaurants(newRestaurants)
                         setVisibleRestaurants(newRestaurants.slice(0, RESTAURANTS_PER_LOAD))
                         setLoadedCount(RESTAURANTS_PER_LOAD)
@@ -247,6 +269,20 @@ const UserHome = () => {
         }
     }, [])
 
+    useEffect(() => {
+        const loadSavedIds = async () => {
+            try {
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/savedRestaurants`)
+                if (!res.ok) return
+                const data = await res.json()
+                setSavedIds(data.map(r => r.place_id))
+            } catch (err) {
+                console.error("Failed to load saved IDs:", err)
+            }
+        }
+        loadSavedIds()
+    }, [])
+
     const checkForPassword = async () => {
         try {
             const res = await fetch(`${import.meta.env.VITE_API_URL}/check-for-password`, {
@@ -294,6 +330,7 @@ const UserHome = () => {
                         name: restaurant.name,
                         photo: restaurant.photo,
                         rating: restaurant.rating,
+                        price_level: restaurant.price_level,
                         address: restaurant.address,
                         geometry: {
                             location: {
@@ -401,6 +438,27 @@ const UserHome = () => {
         setHasNoMoreResults(false)
     }, [genreFilter])
 
+    const handleRefresh = () => {
+        isRefreshRef.current = true
+        preRefreshRestaurantsRef.current = [...allRestaurants]
+        setRefreshStatus(null)
+        localStorage.removeItem("restaurantCache")
+        setAllRestaurants([])
+        setVisibleRestaurants([])
+        setLoadedCount(0)
+        setPagetoken(null)
+        setHasNoMoreResults(false)
+        setHasFetchedRestaurants(false)
+    }
+
+    const handleRevertRefresh = () => {
+        const prev = preRefreshRestaurantsRef.current
+        setAllRestaurants(prev)
+        setVisibleRestaurants(prev.slice(0, RESTAURANTS_PER_LOAD))
+        setLoadedCount(Math.min(RESTAURANTS_PER_LOAD, prev.length))
+        setRefreshStatus(null)
+    }
+
     // Helps with storing selected location
     const handleLocationClick = (location) => {
         setSelectedLocation(location)
@@ -414,20 +472,21 @@ const UserHome = () => {
             <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAP_API_KEY}>
                 <div style={{ filter: showLoadingScreen ? 'blur(25px)' : 'none'}}>
                     <LoggedInHeader setHasFetchedRestaurants={setHasFetchedRestaurants} setVisibleRestaurants={setVisibleRestaurants}/>
-                    <div className="flex h-screen">
+                    <div className="flex flex-col md:flex-row md:h-screen">
                         {/* Left Side: Recommendations */}
-                        <div className="w-1/2 p-8 flex flex-col">
-                            <div className="sticky top-0">
-                                <GenreDisplay 
+                        <div className="w-full md:w-1/2 px-4 md:px-8 py-4 md:py-8 flex flex-col">
+                            <div className="sticky top-0 bg-white/80 backdrop-blur-sm pb-2 z-10">
+                                <GenreDisplay
                                     topGenres={topGenres}
                                     setTopGenres={(updated) => {
                                         setGenreFilter(updated)
                                         setTopGenres(updated)
                                     }}
+                                    onRefresh={handleRefresh}
                                 />
                             </div>
                             <div className="flex-1 overflow-y-auto mt-4">
-                                <Box ref={listContainerRef} sx={{ maxHeight: '75%', overflowY: 'auto'}}>
+                                <Box ref={listContainerRef} sx={{ maxHeight: { xs: 'none', md: '75%' }, overflowY: { xs: 'visible', md: 'auto' } }}>
                                     <RestaurantList
                                         restaurants={visibleRestaurants}
                                         handleLocationClick={handleLocationClick}
@@ -455,9 +514,9 @@ const UserHome = () => {
                                             borderRadius: "36px",
                                             border: "2px solid",
                                             backgroundColor: "white",
-                                            fontSize: "20px",
+                                            fontSize: { xs: '16px', md: '20px' },
                                             textTransform: "none",
-                                            width: "260px",
+                                            width: { xs: '200px', md: '260px' },
                                             "&:hover": {
                                                 backgroundColor: "#EF233C20",
                                             }
@@ -469,7 +528,7 @@ const UserHome = () => {
                             </div>
                         </div>
                         {/* Right side: map */}
-                        <div className="w-1/2 p-8">
+                        <div className="w-full md:w-1/2 px-4 md:px-8 pb-4 md:pb-8" style={{ minHeight: '400px' }}>
                             <GoogleMap
                                 userLocation={userLocation}
                                 restaurants={visibleRestaurants}
@@ -485,6 +544,28 @@ const UserHome = () => {
                     </div>
                 </div>
             </APIProvider>
+
+            <Portal>
+                <Snackbar
+                    open={refreshStatus === 'same'}
+                    autoHideDuration={4000}
+                    onClose={() => setRefreshStatus(null)}
+                    message="No new recommendations right now"
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                />
+                <Snackbar
+                    open={refreshStatus === 'new'}
+                    autoHideDuration={6000}
+                    onClose={() => setRefreshStatus(null)}
+                    message="New recommendations loaded!"
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                    action={
+                        <Button color="inherit" size="small" onClick={handleRevertRefresh}>
+                            Revert
+                        </Button>
+                    }
+                />
+            </Portal>
         </>
     )
 }

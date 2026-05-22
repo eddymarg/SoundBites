@@ -49,11 +49,11 @@ const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocati
             ) : userLocation && typeof userLocation.lat === 'number' && typeof userLocation.lng === 'number' ? (
                 // general map
                 <Box sx={{ height: '85%'}}>
-                    <Map 
+                    <Map
                         defaultZoom={9}
-                        center={userLocation} 
+                        defaultCenter={userLocation}
                         mapId={import.meta.env.VITE_GOOGLE_MAP_ID}
-                        gestureHandling="auto"
+                        gestureHandling="greedy"
                     >
                         {/* user's location */}
                         {apiIsLoaded && userLocation && (
@@ -95,8 +95,12 @@ const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocati
                         {selectedLocation && (
                             <div className="info-modal">
                                 {/* Top of info section w/ photo */}
-                                <Box sx={{ position: "relative", display: "inline-block"}}>
-                                    <img src={selectedLocation.photo} alt={selectedLocation.name} />
+                                <Box sx={{ position: "relative", display: "block", width: "100%" }}>
+                                    <img
+                                        src={selectedLocation.photo}
+                                        alt={selectedLocation.name}
+                                        onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='200'%3E%3Crect width='400' height='200' fill='%23FFECEE'/%3E%3Ctext x='200' y='118' font-size='80' text-anchor='middle' font-family='serif'%3E🍽%3C/text%3E%3C/svg%3E" }}
+                                    />
                                     <button onClick={() => setSelectedLocation(null)} style={{color: "white"}} className="close-btn"><CloseIcon/></button>
                                     <IconButton 
                                         onClick={() => bookmarkToggle(selectedLocation)}

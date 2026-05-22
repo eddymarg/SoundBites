@@ -46,6 +46,7 @@ exports.getNearbyRestoByMusic = async (req, res) => {
             query: query,
             location: `${lat}, ${lng}`,
             radius: radius,
+            type: 'food',
             key: GOOGLE_PLACES_API_KEY,
         }
 
@@ -62,8 +63,13 @@ exports.getNearbyRestoByMusic = async (req, res) => {
             throw new Error("Invalid response from Google Places API")
         }
 
+        const FOOD_TYPES = new Set(['restaurant', 'food', 'bar', 'cafe', 'meal_delivery', 'meal_takeaway', 'bakery', 'night_club', 'fast_food'])
+        const foodResults = response.data.results.filter(place =>
+            place.types && place.types.some(t => FOOD_TYPES.has(t))
+        )
+
         const restaurants = await Promise.all(
-            response.data.results.map(async (resto) => {
+            foodResults.map(async (resto) => {
                 let photoUrl = "https://source.unsplash.com/400x400/?restaurant"
                 if (resto.photos && resto.photos.length > 0) {
                     photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${resto.photos[0].photo_reference}&key=${GOOGLE_PLACES_API_KEY}`

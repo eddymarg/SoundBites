@@ -6,6 +6,8 @@ import '../css/googleModal.css'
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder'
 import BookmarkAddedIcon from '@mui/icons-material/BookmarkAdded';
 
+const IMG_FALLBACK = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Crect width='120' height='120' rx='20' fill='%23FFECEE'/%3E%3Ctext x='60' y='78' font-size='52' text-anchor='middle' font-family='serif'%3E🍽%3C/text%3E%3C/svg%3E"
+
 const RestaurantList = ({ restaurants, handleLocationClick, savedIds, bookmarkToggle, isLoadingMore, newRestaurantIds }) => {
     const priceLevels = ["$", "$$", "$$$", "$$$$"]
 
@@ -31,18 +33,20 @@ const RestaurantList = ({ restaurants, handleLocationClick, savedIds, bookmarkTo
                     }}
                     onClick={() => handleLocationClick(resto)}
                 >
-                    <Box sx={{ width: '120px', height: '120px', mr: 2}}>
+                    <Box sx={{ width: { xs: '80px', sm: '120px' }, height: { xs: '80px', sm: '120px' }, mr: 2, flexShrink: 0 }}>
                         <img
                             src={resto.photo}
                             alt={resto.name}
+                            onError={(e) => { e.target.onerror = null; e.target.src = IMG_FALLBACK }}
                             style={{
-                                width: "112px",
-                                height: "112px",
+                                width: "100%",
+                                height: "100%",
                                 borderRadius: "28px",
+                                objectFit: "cover",
                             }}
                         />
                     </Box>
-                    <Stack spacing={1} sx={{ flexGrow: 1}}>
+                    <Stack spacing={1} sx={{ flexGrow: 1, minWidth: 0 }}>
                         <Box display="flex" justifyContent="space-between" alignItems="start">
                             <Typography
                                 variant="h6"

@@ -15,10 +15,12 @@ connectDB()
 const app = express()
 
 app.use(cors({
-    origin: [
-        "http://localhost:5173",
-        process.env.FRONTEND_URL,
-    ],
+    origin: (origin, callback) => {
+        if (!origin || origin.startsWith("http://localhost") || origin === process.env.FRONTEND_URL) {
+            return callback(null, true)
+        }
+        callback(new Error("Not allowed by CORS"))
+    },
     credentials: true
 }))
 app.use(cookieParser())

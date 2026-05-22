@@ -4,10 +4,10 @@ import { Route, createBrowserRouter, createRoutesFromElements, RouterProvider} f
 import { createTheme, ThemeProvider } from '@mui/material'
 import Home from "./pages/home"
 import SignIn from "./pages/SignIn"
-import EmailSignup from "./pages/EmailSignUp"
 import UserHome from "./pages/loggedinHome"
 import SavedRestaurantsPage from "./pages/savedRecs"
 import LoadingScreen from "./components/LoadingScreen"
+import ResetPassword from "./pages/ResetPassword"
 
 const theme = createTheme({
   palette: {
@@ -30,10 +30,10 @@ const router = createBrowserRouter(
     <Route path="/">
       <Route index element={<Home />}/>
       <Route path="signin" element={<SignIn />}/>
-      <Route path="emailSignup" element={<EmailSignup />}/>
       <Route path="userHome" element={<UserHome />}/>
       <Route path="savedRestaurantsPage" element={<SavedRestaurantsPage />}/>
       <Route path="loadingScreen" element={<LoadingScreen />} />
+      <Route path="reset-password/:token" element={<ResetPassword />} />
     </Route>
   )
 )

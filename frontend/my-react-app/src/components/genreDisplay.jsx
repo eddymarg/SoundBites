@@ -1,10 +1,11 @@
 // Displays the top 3 genres as buttons
 import { useState, useEffect } from "react";
-import { Button, Box, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Portal } from "@mui/material"
+import { Button, Box, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Portal, Tooltip } from "@mui/material"
 import ClearIcon from '@mui/icons-material/Clear';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { motion } from "framer-motion"
 
-const GenreDisplay = ({ topGenres, setTopGenres }) => {
+const GenreDisplay = ({ topGenres, setTopGenres, onRefresh }) => {
     const [genreToDelete, setGenreToDelete] = useState(null)
     const [open, setOpen] = useState(false)
     const [lastDeletedGenre, setLastDeletedGenre] = useState(null)
@@ -38,7 +39,7 @@ const GenreDisplay = ({ topGenres, setTopGenres }) => {
 
     return (
     <>
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
             {topGenres.map((genre, index) => (
                 <motion.div
                     key={genre}
@@ -79,6 +80,21 @@ const GenreDisplay = ({ topGenres, setTopGenres }) => {
                     </Box>
                 </motion.div>
             ))}
+            {onRefresh && (
+                <Tooltip title="Refresh recommendations">
+                    <IconButton
+                        onClick={onRefresh}
+                        sx={{
+                            border: '2px solid #EF233C',
+                            borderRadius: '50%',
+                            color: '#EF233C',
+                            '&:hover': { backgroundColor: '#EF233C20' }
+                        }}
+                    >
+                        <RefreshIcon />
+                    </IconButton>
+                </Tooltip>
+            )}
         </Box>
 
         {/* Confirmation Dialog */}

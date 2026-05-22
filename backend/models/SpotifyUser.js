@@ -3,12 +3,13 @@ const mongoose = require("mongoose")
 const SpotifyUser = new mongoose.Schema({
     spotifyId: {
         type: String,
-        required: true,
+        required: false,
         unique: true,
+        sparse: true,
     },
     display_name: {
         type: String,
-        required: true,
+        required: false,
     },
     email: {
         type: String,
@@ -20,6 +21,12 @@ const SpotifyUser = new mongoose.Schema({
     },
     password: {
         type: String
+    },
+    resetPasswordToken: {
+        type: String
+    },
+    resetPasswordExpires: {
+        type: Date
     }
 })
 

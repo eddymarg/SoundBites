@@ -18,54 +18,48 @@ const Home = () => {
             </Box>
             {/* Sign up stuff */}
             <Box id='top-section' sx={{ position: 'relative', minHeight: '100vh', scrollMarginTop: '10rem'}}>
-                <Box sx={{ top: 0, left: 0, width: '100%', zIndex: -1}}>
+                <Box sx={{ top: 0, left: 0, width: '100%', zIndex: -1, display: { xs: 'none', md: 'block' } }}>
                     <Box>
-                        <img 
-                            src={foodBowl1} 
-                            style={{ width: '26vw', position: 'absolute',top: 10, left: -100, zIndex: 1,}}
+                        <img
+                            src={foodBowl1}
+                            style={{ width: '26vw', position: 'absolute', top: 10, left: -100, zIndex: 1 }}
                         />
-                        <img 
-                            src={foodBowl2} 
-                            style={{ width: '40vw', position: 'absolute', top: 150, left: -250, zIndex: 0,
-                            }}
+                        <img
+                            src={foodBowl2}
+                            style={{ width: '40vw', position: 'absolute', top: 150, left: -250, zIndex: 0 }}
                         />
-                        <img 
-                            src={foodBowl3} 
-                            style={{ width: '18vw', position: 'absolute', top: 350, left: '-40px', zIndex: -1,
-                            }}
+                        <img
+                            src={foodBowl3}
+                            style={{ width: '18vw', position: 'absolute', top: 350, left: '-40px', zIndex: -1 }}
                         />
                     </Box>
                     {/* mirrored side */}
                     <Box sx={{ position: 'relative', top: 0, right: 0, transform: 'scaleX(-1)'}}>
-                        <img 
-                            src={foodBowl3} 
-                            style={{ width: '18vw', position: 'absolute', top: 350, left: -100, zIndex: -1,
-                            }}
+                        <img
+                            src={foodBowl3}
+                            style={{ width: '18vw', position: 'absolute', top: 350, left: -100, zIndex: -1 }}
                         />
-                        <img 
-                            src={foodBowl2} 
-                            style={{ width: '40vw', 
-                                position: 'absolute', top: 150, left: -250, zIndex: 0,
-                            }}
+                        <img
+                            src={foodBowl2}
+                            style={{ width: '40vw', position: 'absolute', top: 150, left: -250, zIndex: 0 }}
                         />
-                        <img 
-                            src={foodBowl1} 
-                            style={{ width: '26vw', position: 'absolute', top: 10, left: '-40px', zIndex: 1,
-                            }}
+                        <img
+                            src={foodBowl1}
+                            style={{ width: '26vw', position: 'absolute', top: 10, left: '-40px', zIndex: 1 }}
                         />
                     </Box>
                 </Box>
-                <Stack direction="column" spacing={3} alignItems={"center"}>
+                <Stack direction="column" spacing={3} alignItems={"center"} sx={{ px: { xs: 2, sm: 4 } }}>
                     <NoteLogo/>
-                    <Typography fontSize='44px' textAlign={"center"}>
+                    <Typography fontSize={{ xs: '28px', sm: '36px', md: '44px' }} textAlign={"center"}>
                         Join for <span style={{ fontFamily: "'Tinos', serif", fontWeight: 700, fontStyle:'italic', color: '#EF233C'}}>food</span> that's truly <br /><span style={{ fontFamily: "'Tinos', serif", fontWeight: 700, fontStyle:'italic', color: '#EF233C'}}>music to your ears</span>
                     </Typography>
                     <Button variant="contained" color="basic" startIcon={<Avatar src={'https://storage.googleapis.com/pr-newsroom-wp/1/2023/05/Spotify_Primary_Logo_RGB_Green.png'} sx={{ width: 24, height: 24  }}/>}
                     sx={{
-                        width: '525px',
-                        height: '70px',
+                        width: { xs: '90vw', sm: '420px', md: '525px' },
+                        height: { xs: '56px', sm: '64px', md: '70px' },
                         color: '#0D1B2A',
-                        fontSize: '24px',
+                        fontSize: { xs: '18px', sm: '20px', md: '24px' },
                         borderRadius: '36px',
                         boxShadow: '-8px 8px 0 #EF233C',
                         textTransform: "none",
@@ -81,16 +75,16 @@ const Home = () => {
                     </Button>
                 </Stack>
             </Box>
-                <Box id='about-section' sx={{marginTop: '5rem', scrollMarginTop: '5rem', minHeight: '100vh'}}>
-                    <Stack direction="row" sx={{ padding: '1rem', justifyContent: 'center', alignItems: 'center'}}>
+                <Box id='about-section' sx={{ marginTop: { xs: '3rem', md: '5rem' }, scrollMarginTop: '5rem', minHeight: '100vh' }}>
+                    <Stack direction={{ xs: 'column', md: 'row' }} sx={{ padding: { xs: '1rem', md: '2rem' }, justifyContent: 'center', alignItems: 'center', gap: { xs: 2, md: 0 } }}>
                         <AboutImgs />
-                        <Stack>
+                        <Stack sx={{ alignItems: { xs: 'center', md: 'flex-start' } }}>
                             <AboutSubtitle />
-                            <Typography sx={{ maxWidth: '30vw', padding: '1rem', marginLeft: '3rem'}}>
-                                We believe food tastes even better when it’s paired with the right vibe. That’s why we created a platform that blends two of life’s greatest joys: music and meals. <br />
-                                Whether you’re in the mood for a cozy jazz bar, a high-energy spot that matches your EDM playlists, or a laid-back café with acoustic vibes, SoundBites serves up restaurant recommendations that match your taste in both food and sound. <br />
+                            <Typography sx={{ maxWidth: { xs: '90vw', sm: '70vw', md: '30vw' }, padding: '1rem', marginLeft: { xs: 0, md: '3rem' }, textAlign: { xs: 'center', md: 'left' } }}>
+                                We believe food tastes even better when it's paired with the right vibe. That's why we created a platform that blends two of life's greatest joys: music and meals. <br />
+                                Whether you're in the mood for a cozy jazz bar, a high-energy spot that matches your EDM playlists, or a laid-back café with acoustic vibes, SoundBites serves up restaurant recommendations that match your taste in both food and sound. <br />
                                 Think of it as your personal DJ and food guide rolled into one. <br />
-                                Hungry? Let’s find your flavor in harmony.
+                                Hungry? Let's find your flavor in harmony.
                             </Typography>
                         </Stack>
                     </Stack>

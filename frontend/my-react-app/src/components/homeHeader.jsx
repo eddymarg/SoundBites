@@ -33,14 +33,14 @@ const HomeHeader = () => {
                 >
                     <Logo/>
                 </Box>
-                <Stack spacing={2} direction="row">
+                <Stack spacing={{ xs: 1, sm: 2 }} direction="row">
                     <Button variant="outlined" color="mainRed"
                     onClick={() => document.getElementById('about-section').scrollIntoView({ behavior: 'smooth'})}
                     sx={{
-                        width: "140px",
-                        height: "50px",
+                        width: { xs: '80px', sm: '110px', md: '140px' },
+                        height: { xs: '40px', sm: '46px', md: '50px' },
                         borderRadius: "36px",
-                        fontSize: "20px",
+                        fontSize: { xs: '14px', sm: '17px', md: '20px' },
                         textTransform: "none",
                         "&:hover": {
                             backgroundColor: "mainRed.light",
@@ -54,10 +54,10 @@ const HomeHeader = () => {
                     <Button variant="contained" color="mainRed" onClick={() => navigate("/signin")}
                         sx={{
                             color: "white",
-                            width: "140px",
-                            height: "50px",
+                            width: { xs: '80px', sm: '110px', md: '140px' },
+                            height: { xs: '40px', sm: '46px', md: '50px' },
                             borderRadius: "36px",
-                            fontSize: "20px",
+                            fontSize: { xs: '14px', sm: '17px', md: '20px' },
                             textTransform: "none",
                             boxShadow: 0,
                             "&:hover": {

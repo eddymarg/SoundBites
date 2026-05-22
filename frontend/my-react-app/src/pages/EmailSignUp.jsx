@@ -58,12 +58,10 @@ const EmailSignup = () => {
         if (password) {
             if(password.length < 8) {
                 setPasswordError("Password must be at least 8 characters long")
-            }
-            if(!/[A-Z]/.test(password)) {
+            } else if(!/[A-Z]/.test(password)) {
                 setPasswordError("Password must contain at least one uppercase letter")
-            }
-            if(!/[!@#$%&*,.?:]/.test(password)) {
-                setPasswordError("Password must include at least one special character")
+            } else if(!/[a-z]/.test(password)) {
+                setPasswordError("Password must contain at least one lowercase letter")
             }
         }
 
@@ -91,12 +89,12 @@ const EmailSignup = () => {
 
     return(
         <Box sx={{ position: "relative", height: "100vh" }}>
-            <Box 
+            <Box
                 onClick={() => navigate("/")}
-                sx={{ 
-                    position: "absolute", 
-                    top: "10px", 
-                    right: "10px", 
+                sx={{
+                    position: "absolute",
+                    top: "10px",
+                    right: "10px",
                     zIndex: 10,
                     cursor: "pointer",
                     transition: "transform 0.3s ease-in-out",
@@ -107,49 +105,46 @@ const EmailSignup = () => {
             >
                 <Logo />
             </Box>
-            <Stack direction="row" spacing={2} alignItems="center" justifyContent="center" sx={{ height: "100vh"}}>
-                <img 
-                    src={signupImage} 
-                    alt="signup image" 
-                    style={{ 
-                        width: "auto", 
-                        height: "95vh",
-                        objectFit: "cover",
-                        margin: "2px 0 2px 2px",
-                        flexShrink: 0
-                    }}
-                />
-                <Stack direction="column" spacing={2} sx={{ width: "50%"}}>
-                    <Typography 
-                        fontSize='52px'
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="center" justifyContent="center" sx={{ height: "100vh", px: { xs: 2, sm: 4, md: 0 } }}>
+                <Box sx={{ display: { xs: 'none', md: 'block' }, flexShrink: 0 }}>
+                    <img
+                        src={signupImage}
+                        alt="signup image"
+                        style={{
+                            width: "auto",
+                            height: "95vh",
+                            objectFit: "cover",
+                            margin: "2px 0 2px 2px",
+                        }}
+                    />
+                </Box>
+                <Stack direction="column" spacing={2} sx={{ width: { xs: '100%', sm: '80%', md: '50%' }, maxWidth: '520px' }}>
+                    <Typography
+                        fontSize={{ xs: '36px', sm: '44px', md: '52px' }}
                         sx={{
-                            fontFamily: "'Tinos', serif", fontWeight: 700, 
+                            fontFamily: "'Tinos', serif", fontWeight: 700,
                             color: '#EF233C'
                         }}
                     >Welcome to the <br /> community!</Typography>
-                    <Typography fontSize='36px' fontWeight={700}>Sign Up</Typography>
-                    <CustomTextField 
-                        id="outlined-basic name" 
-                        label="Name" 
-                        variant="outlined" 
+                    <Typography fontSize={{ xs: '26px', sm: '32px', md: '36px' }} fontWeight={700}>Sign Up</Typography>
+                    <CustomTextField
+                        id="outlined-basic name"
+                        label="Name"
+                        variant="outlined"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        sx={{
-                            width: '428px',
-                        }}
+                        sx={{ width: '100%' }}
                     />
-                    <CustomTextField 
-                        id="outlined-basic email" 
-                        label="Spotify Email" 
-                        variant="outlined" 
+                    <CustomTextField
+                        id="outlined-basic email"
+                        label="Spotify Email"
+                        variant="outlined"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        sx={{
-                            width: '428px',
-                        }}
+                        sx={{ width: '100%' }}
                     />
                     {emailError && <Typography color="error"
-                        sx={{ 
+                        sx={{
                             whiteSpace: 'pre-line',
                             fontSize: '12px',
                             pl: 3,
@@ -158,12 +153,12 @@ const EmailSignup = () => {
                         {emailError}
                     </Typography>}
                     <CustomTextField
-                        id="outlined-basic password" 
-                        label="Password" 
-                        variant="outlined" 
+                        id="outlined-basic password"
+                        label="Password"
+                        variant="outlined"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        sx={{ width: '428px' }}
+                        sx={{ width: '100%' }}
                         type={showPassword ? "text" : "password"}
                         InputProps={{
                             endAdornment: (
@@ -182,7 +177,7 @@ const EmailSignup = () => {
                         }}
                     />
                     {passwordError && <Typography color="error"
-                        sx={{ 
+                        sx={{
                             whiteSpace: 'pre-line',
                             fontSize: '12px',
                             pl: 3,
@@ -192,21 +187,21 @@ const EmailSignup = () => {
                     </Typography>}
 
                     {error && <Typography color="error"
-                        sx={{ 
+                        sx={{
                             whiteSpace: 'pre-line',
                         }}
                     >
                         {error}
                     </Typography>}
 
-                    <Button 
+                    <Button
                         onClick={handleSignUp} variant="contained"
                         color="basic"
                         sx={{
-                            width: '428px',
-                            height: '49px',
+                            width: '100%',
+                            height: { xs: '48px', md: '56px' },
                             color: '#0D1B2A',
-                            fontSize: '24px',
+                            fontSize: { xs: '18px', sm: '20px', md: '24px' },
                             borderRadius: '36px',
                             boxShadow: '-8px 8px 0 #EF233C',
                             textTransform: "none",

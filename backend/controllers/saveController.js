@@ -29,12 +29,12 @@ exports.removeRestaurant = async (req, res) => {
     }
 }
 
-// exports.getSavedRestaurant = async (req, res) => {
-//     try {
-//         const savedRestaurants = await SaveSchema.find()
-//         res.status(200).json(savedRestaurants)
-//     } catch (error) {
-//         console.error("Error getting saved restaurants:", error)
-//         res.status(500).json({ error: error.message })
-//     }
-// }
+exports.getSavedRestaurants = async (req, res) => {
+    try {
+        const savedRestaurants = await SaveSchema.find()
+        res.status(200).json(savedRestaurants)
+    } catch (error) {
+        console.error("Error getting saved restaurants:", error)
+        res.status(500).json({ error: error.message })
+    }
+}
