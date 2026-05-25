@@ -38,3 +38,20 @@ exports.getSavedRestaurants = async (req, res) => {
         res.status(500).json({ error: error.message })
     }
 }
+
+exports.toggleVisited = async (req, res) => {
+    try {
+        const { place_id } = req.params
+        let restaurant = await SaveSchema.findOne({ place_id })
+        if (!restaurant) {
+            restaurant = new SaveSchema({ ...req.body, place_id, visited: true })
+            await restaurant.save()
+            return res.status(201).json(restaurant)
+        }
+        restaurant.visited = !restaurant.visited
+        await restaurant.save()
+        res.json(restaurant)
+    } catch (error) {
+        res.status(500).json({ error: error.message })
+    }
+}

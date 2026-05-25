@@ -1,10 +1,7 @@
-// Deals with logic and displaying of all
-// restaurant recommendations
-
 import { Box, Typography, Stack, Rating, IconButton, Skeleton } from "@mui/material"
 import '../css/googleModal.css'
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder'
-import BookmarkAddedIcon from '@mui/icons-material/BookmarkAdded';
+import BookmarkAddedIcon from '@mui/icons-material/BookmarkAdded'
 
 const IMG_FALLBACK = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Crect width='120' height='120' rx='20' fill='%23FFECEE'/%3E%3Ctext x='60' y='78' font-size='52' text-anchor='middle' font-family='serif'%3E🍽%3C/text%3E%3C/svg%3E"
 
@@ -33,7 +30,7 @@ const RestaurantList = ({ restaurants, handleLocationClick, savedIds, bookmarkTo
                     }}
                     onClick={() => handleLocationClick(resto)}
                 >
-                    <Box sx={{ width: { xs: '80px', sm: '120px' }, height: { xs: '80px', sm: '120px' }, mr: 2, flexShrink: 0 }}>
+                    <Box sx={{ width: { xs: '80px', md: '120px' }, height: { xs: '80px', md: '120px' }, mr: { xs: 1, md: 2 }, flexShrink: 0 }}>
                         <img
                             src={resto.photo}
                             alt={resto.name}
@@ -46,12 +43,12 @@ const RestaurantList = ({ restaurants, handleLocationClick, savedIds, bookmarkTo
                             }}
                         />
                     </Box>
-                    <Stack spacing={1} sx={{ flexGrow: 1, minWidth: 0 }}>
-                        <Box display="flex" justifyContent="space-between" alignItems="start">
+                    <Stack spacing={0.5} sx={{ flexGrow: 1, minWidth: 0 }}>
+                        <Box display="flex" justifyContent="space-between" alignItems="center">
                             <Typography
                                 variant="h6"
                                 component="strong"
-                                style={{ fontFamily: "'Tinos', serif", fontWeight: "700" }}
+                                sx={{ fontFamily: "'Tinos', serif", fontWeight: 700, lineHeight: 1.25, fontSize: { xs: '1rem', md: '1.25rem' } }}
                             >
                                 {resto.name}
                             </Typography>
@@ -66,8 +63,8 @@ const RestaurantList = ({ restaurants, handleLocationClick, savedIds, bookmarkTo
                                 )}
                             </IconButton>
                         </Box>
-                        <Box display="flex" alignItems="center">
-                            <Typography variant="body1" marginRight={1}>
+                        <Box display="flex" alignItems="center" sx={{ flexWrap: 'nowrap', gap: 0.5 }}>
+                            <Typography variant="body2" sx={{ flexShrink: 0 }}>
                                 {resto.rating}
                             </Typography>
                             <Rating
@@ -75,13 +72,15 @@ const RestaurantList = ({ restaurants, handleLocationClick, savedIds, bookmarkTo
                                 readOnly
                                 value={Number(resto.rating)}
                                 precision={0.1}
+                                size="small"
+                                sx={{ '& .MuiRating-icon': { fontSize: { xs: '14px', md: '18px' } } }}
                             />
-                            <Typography variant="body1" marginLeft={2}>{priceLevels[resto.price_level]}</Typography>
+                            <Typography variant="body2" sx={{ flexShrink: 0, ml: { xs: 0.5, sm: 1 } }}>{priceLevels[resto.price_level]}</Typography>
                         </Box>
                         <Typography
                             variant="body2"
-                            overflow="hidden"
-                            textOverflow="ellipsis"
+                            noWrap
+                            sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
                         >
                             {resto.address}
                         </Typography>

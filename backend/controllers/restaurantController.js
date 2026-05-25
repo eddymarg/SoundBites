@@ -2,6 +2,39 @@ const axios = require('axios')
 
 const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY
 
+const GENRE_VENUE_MAP = [
+    { keywords: ['jazz', 'bebop', 'swing', 'blues', 'jazz rap', 'soul jazz', 'jazz fusion'],                                                                                                     query: 'jazz bar' },
+    { keywords: ['hip hop', 'hip-hop', 'rap', 'trap', 'drill', 'r&b', 'soul', 'funk', 'neo soul', 'motown', 'urban contemporary', 'contemporary r&b', 'alternative r&b'],                        query: 'soul food restaurant' },
+    { keywords: ['indie', 'alternative', 'folk', 'acoustic', 'lo-fi', 'singer-songwriter', 'bedroom pop', 'chillwave', 'dream pop', 'shoegaze', 'slowcore'],                                      query: 'gastropub' },
+    { keywords: ['classical', 'orchestra', 'opera', 'piano', 'baroque', 'chamber', 'symphonic', 'ambient classical'],                                                                            query: 'fine dining restaurant' },
+    { keywords: ['country', 'americana', 'bluegrass', 'western', 'outlaw', 'southern rock', 'texas country'],                                                                                    query: 'BBQ restaurant' },
+    { keywords: ['electronic', 'edm', 'techno', 'house', 'dance', 'trance', 'dubstep', 'electronica', 'synthwave', 'vaporwave'],                                                                 query: 'cocktail bar' },
+    { keywords: ['rock', 'metal', 'punk', 'grunge', 'hard rock', 'hardcore', 'post-rock', 'progressive rock', 'math rock', 'emo'],                                                               query: 'pub' },
+    { keywords: ['pop', 'teen pop', 'synth pop', 'dance pop', 'bubblegum pop', 'hyperpop', 'electropop'],                                                                                        query: 'brunch restaurant' },
+    { keywords: ['k-pop', 'kpop', 'korean', 'j-pop', 'jpop', 'j-rock', 'jrock', 'japanese', 'mandopop', 'c-pop'],                                                                              query: 'Asian fusion restaurant' },
+    { keywords: ['latin', 'reggaeton', 'salsa', 'bossa nova', 'flamenco', 'cumbia', 'latin pop', 'latin trap', 'bachata', 'merengue', 'spanish'],                                                query: 'Latin restaurant' },
+    { keywords: ['reggae', 'caribbean', 'dancehall', 'tropical', 'ska', 'afrobeats', 'afropop', 'highlife', 'soca'],                                                                             query: 'Caribbean restaurant' },
+    { keywords: ['gospel', 'christian', 'worship', 'spiritual', 'ccm'],                                                                                                                          query: 'soul food restaurant' },
+]
+
+function mapGenresToVenueQueries(genres) {
+    if (!genres || genres.length === 0) return ['restaurant']
+
+    const counts = {}
+    for (const genre of genres) {
+        const lower = genre.toLowerCase()
+        for (const entry of GENRE_VENUE_MAP) {
+            if (entry.keywords.some(k => lower.includes(k))) {
+                counts[entry.query] = (counts[entry.query] || 0) + 1
+                break
+            }
+        }
+    }
+
+    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([q]) => q)
+    return sorted.length > 0 ? sorted.slice(0, 2) : ['restaurant']
+}
+
 async function getPlaceDetails(placeId) {
     try {
         const detailsResponse = await axios.get(
@@ -36,40 +69,54 @@ exports.getNearbyRestoByMusic = async (req, res) => {
         return res.status(400).json({ message: "Missing required parameters." })
     }
 
-    const genreQuery = genreFilter && genreFilter.length > 0
-        ? `for people who have a ${genreFilter.join(' ')} vibe`
-        : "for people with good vibes"
-    const query = `restaurant ${genreQuery}`
+    const venueQueries = mapGenresToVenueQueries(genreFilter)
+    // When paginating, only use the primary query (pagetoken is tied to a specific search)
+    const queriesToRun = pagetoken ? [venueQueries[0]] : venueQueries
 
     try {
-        const params = {
-            query: query,
-            location: `${lat}, ${lng}`,
-            radius: radius,
-            type: 'food',
-            key: GOOGLE_PLACES_API_KEY,
-        }
-
-        if (pagetoken) {
-            params.pagetoken = pagetoken
-        }
-
-        const response = await axios.get(
-            'https://maps.googleapis.com/maps/api/place/textsearch/json',
-            { params }
-        )
-
-        if (!response.data || !response.data.results) {
-            throw new Error("Invalid response from Google Places API")
-        }
-
         const FOOD_TYPES = new Set(['restaurant', 'food', 'bar', 'cafe', 'meal_delivery', 'meal_takeaway', 'bakery', 'night_club', 'fast_food'])
-        const foodResults = response.data.results.filter(place =>
-            place.types && place.types.some(t => FOOD_TYPES.has(t))
-        )
+        const allFoodResults = []
+        const seenIds = new Set()
+        let nextPageToken = null
+
+        for (const venueQuery of queriesToRun) {
+            const params = {
+                query: venueQuery,
+                location: `${lat}, ${lng}`,
+                radius: radius,
+                type: 'food',
+                key: GOOGLE_PLACES_API_KEY,
+            }
+
+            if (pagetoken) {
+                params.pagetoken = pagetoken
+            }
+
+            const response = await axios.get(
+                'https://maps.googleapis.com/maps/api/place/textsearch/json',
+                { params }
+            )
+
+            if (!response.data?.results) continue
+
+            const foodResults = response.data.results.filter(place =>
+                place.types && place.types.some(t => FOOD_TYPES.has(t))
+            )
+
+            for (const place of foodResults) {
+                if (!seenIds.has(place.place_id)) {
+                    seenIds.add(place.place_id)
+                    allFoodResults.push(place)
+                }
+            }
+
+            if (!nextPageToken && response.data.next_page_token) {
+                nextPageToken = response.data.next_page_token
+            }
+        }
 
         const restaurants = await Promise.all(
-            foodResults.map(async (resto) => {
+            allFoodResults.map(async (resto) => {
                 let photoUrl = "https://source.unsplash.com/400x400/?restaurant"
                 if (resto.photos && resto.photos.length > 0) {
                     photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${resto.photos[0].photo_reference}&key=${GOOGLE_PLACES_API_KEY}`
@@ -90,13 +137,13 @@ exports.getNearbyRestoByMusic = async (req, res) => {
                     website: details.website,
                     formatted_phone_number: details.formatted_phone_number,
                 }
-            }) 
+            })
         )
 
-        res.status(200).json({ 
-            restaurants, 
-            pagetoken: response.data.next_page_token || null,
-            hasMore: !!response.data.next_page_token
+        res.status(200).json({
+            restaurants,
+            pagetoken: nextPageToken || null,
+            hasMore: !!nextPageToken
         })
     } catch (error) {
         console.error('Error fetching restaurants:', error)

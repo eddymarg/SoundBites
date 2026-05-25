@@ -22,7 +22,11 @@ const SaveSchema = new mongoose.Schema({
                 lng: Number
             }
         }
-    }
+    },
+    visited: { type: Boolean, default: false },
+    opening_hours: { type: mongoose.Schema.Types.Mixed },
+    website: { type: String },
+    formatted_phone_number: { type: String }
 })
 
 module.exports =  mongoose.model("Save", SaveSchema)

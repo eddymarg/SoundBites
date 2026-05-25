@@ -1,11 +1,10 @@
 // Displays the top 3 genres as buttons
 import { useState, useEffect } from "react";
-import { Button, Box, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Portal, Tooltip } from "@mui/material"
+import { Button, Box, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Portal } from "@mui/material"
 import ClearIcon from '@mui/icons-material/Clear';
-import RefreshIcon from '@mui/icons-material/Refresh';
 import { motion } from "framer-motion"
 
-const GenreDisplay = ({ topGenres, setTopGenres, onRefresh }) => {
+const GenreDisplay = ({ topGenres, setTopGenres }) => {
     const [genreToDelete, setGenreToDelete] = useState(null)
     const [open, setOpen] = useState(false)
     const [lastDeletedGenre, setLastDeletedGenre] = useState(null)
@@ -56,22 +55,22 @@ const GenreDisplay = ({ topGenres, setTopGenres, onRefresh }) => {
                         sx={{
                             display: 'flex',
                             alignItems: 'center',
-                            gap: 1,
+                            gap: { xs: 0.5, md: 1 },
                             borderRadius: '50px',
                             textTransform: 'capitalize',
-                            fontSize: '15px',
+                            fontSize: { xs: '12px', md: '15px' },
                             fontWeight: '500',
-                            padding: '0.8rem 0.5rem 0.8rem 1rem',
+                            padding: { xs: '0.3rem 0.2rem 0.3rem 0.8rem', md: '0.8rem 0.5rem 0.8rem 1rem' },
                             borderColor: '#EF233C95',
                             color: 'white',
                             backgroundColor: '#EF233C',
                         }}
                     >
                         {genre}
-                        <IconButton onClick={() => handleOpenDialog(genre)}>
-                            <ClearIcon 
-                                sx={{ 
-                                    fontSize: 'large',
+                        <IconButton onClick={() => handleOpenDialog(genre)} sx={{ p: { xs: '2px', md: '8px' } }}>
+                            <ClearIcon
+                                sx={{
+                                    fontSize: { xs: '16px', md: '24px' },
                                     fontWeight: '700',
                                     color: 'white',
                                 }}
@@ -80,21 +79,6 @@ const GenreDisplay = ({ topGenres, setTopGenres, onRefresh }) => {
                     </Box>
                 </motion.div>
             ))}
-            {onRefresh && (
-                <Tooltip title="Refresh recommendations">
-                    <IconButton
-                        onClick={onRefresh}
-                        sx={{
-                            border: '2px solid #EF233C',
-                            borderRadius: '50%',
-                            color: '#EF233C',
-                            '&:hover': { backgroundColor: '#EF233C20' }
-                        }}
-                    >
-                        <RefreshIcon />
-                    </IconButton>
-                </Tooltip>
-            )}
         </Box>
 
         {/* Confirmation Dialog */}

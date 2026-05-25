@@ -52,7 +52,7 @@ const LoadingAnimation = () => {
     useEffect(() => {
         const interval = setInterval(() => {
             setIndex((prev) => (prev + 1) % frames.length)
-        }, 100)
+        }, 60)
 
         return () => clearInterval(interval)
     }, [])

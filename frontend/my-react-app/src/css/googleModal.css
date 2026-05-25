@@ -2,8 +2,9 @@
     position: absolute;
     top: 10px;
     left: 10px;
-    width: clamp(280px, 70%, 500px);
-    height: 75vh;
+    width: calc(100% - 20px);
+    max-width: 480px;
+    height: calc(100% - 20px);
     background: white;
     padding: 15px;
     border-radius: 36px;
@@ -20,12 +21,13 @@
     display: block;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 899px) {
     .info-modal {
         top: 0;
         left: 0;
         width: 100%;
-        height: 70vh;
+        height: 100%;
+        max-width: 100%;
         border-radius: 0 0 36px 36px;
     }
 }

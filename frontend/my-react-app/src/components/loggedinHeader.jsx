@@ -11,9 +11,11 @@ import BookmarkIcon from '@mui/icons-material/Bookmark';
 import HomeIcon from '@mui/icons-material/Home';
 import "../css/home.css"
 import '@fontsource/roboto/500.css'
+import LogoutScreen from "./LogoutScreen"
 
 const HomeHeader = ({setHasFetchedRestaurants, setVisibleRestaurants, homeButton = false}) => {
     const [open, setOpen] = useState(false)
+    const [loggingOut, setLoggingOut] = useState(false)
     const [avatarSrc, setAvatarSrc] = React.useState(undefined)
     const [avatarFile, setAvatarFile] = useState(null)
     const [editField, setEditField] = useState(null)
@@ -76,14 +78,17 @@ const HomeHeader = ({setHasFetchedRestaurants, setVisibleRestaurants, homeButton
     // logs user out when button is clicked
     // clears current user cache for new location loading
     const handleUserLogout = () => {
-        localStorage.removeItem("restaurantCache")
-        localStorage.removeItem("userLocation")
-        localStorage.removeItem("ipLocation")
+        setLoggingOut(true)
+        setTimeout(() => {
+            localStorage.removeItem("restaurantCache")
+            localStorage.removeItem("userLocation")
+            localStorage.removeItem("ipLocation")
 
-        if (typeof setHasFetchedRestaurants === "function") setHasFetchedRestaurants(false)
-        if (typeof setVisibleRestaurants === "function") setVisibleRestaurants([])
+            if (typeof setHasFetchedRestaurants === "function") setHasFetchedRestaurants(false)
+            if (typeof setVisibleRestaurants === "function") setVisibleRestaurants([])
 
-        navigate("/")
+            navigate("/")
+        }, 3600)
     }
 
 
@@ -112,6 +117,7 @@ const HomeHeader = ({setHasFetchedRestaurants, setVisibleRestaurants, homeButton
 
     return (
         <>
+        {loggingOut && <LogoutScreen />}
         <nav>
             <Stack direction="row" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: '1rem'}}>
                 {homeButton ? (

@@ -86,7 +86,11 @@ const SignIn = () => {
 
             localStorage.setItem("token", response.data.token)
 
-            console.log("Signin successful, navigating to /userHome")
+            if (window.PasswordCredential) {
+                const cred = new window.PasswordCredential({ id: email, password })
+                await navigator.credentials.store(cred)
+            }
+
             navigate("/userHome")
         } catch (err) {
             const errorMsg = err.response?.data?.msg || "Sign-up failed"
@@ -102,7 +106,7 @@ const SignIn = () => {
     }
 
     return(
-        <Box sx={{ position: "relative", minHeight: "100vh" }}>
+        <Box sx={{ position: "relative", minHeight: "100vh", background: 'linear-gradient(44deg, rgba(255, 191, 105, 0.3), rgba(255, 255, 255, 1) 70.71%)', backgroundRepeat: 'no-repeat', backgroundAttachment: 'fixed' }}>
             <Box
                 onClick={() => navigate("/")}
                 sx={{
@@ -119,8 +123,8 @@ const SignIn = () => {
             >
                 <Logo />
             </Box>
-            <Stack direction={{ xs: 'column', md: 'row' }} alignItems="stretch" sx={{ minHeight: "100vh" }}>
-                <Box sx={{ display: { xs: 'none', md: 'block' }, flex: '0 0 48%', p: '1.5rem', boxSizing: 'border-box' }}>
+            <Stack direction="row" alignItems="stretch" sx={{ minHeight: "100vh" }}>
+                <Box sx={{ display: { xs: 'none', sm: 'block' }, flex: { sm: '0 0 40%', md: '0 0 48%' }, p: '1.5rem', boxSizing: 'border-box' }}>
                     <img
                         src={signinImage}
                         alt="signin image"
@@ -133,43 +137,61 @@ const SignIn = () => {
                         }}
                     />
                 </Box>
-                <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', px: { xs: 3, sm: 5, md: 6 }, py: 4 }}>
-                <Stack direction="column" spacing={2} sx={{ width: '100%', maxWidth: '480px' }}>
+                <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', pl: { xs: 2, sm: 4, md: 6, lg: 10 }, pr: { xs: 3, sm: 7, md: 10, lg: 14 }, py: { xs: 3, md: 4 }, minWidth: 0 }}>
+                <Stack
+                    component="form"
+                    onSubmit={(e) => { e.preventDefault(); handleSignIn() }}
+                    direction="column"
+                    spacing={{ xs: 2, md: 3 }}
+                    sx={{ width: '100%' }}
+                >
                     {passwordWasReset && (
                         <Alert severity="success" sx={{ borderRadius: '12px' }}>
                             Password updated! Please log in with your new password.
                         </Alert>
                     )}
                     <Typography
-                        fontSize={{ xs: '36px', sm: '44px', md: '52px' }}
-                        sx={{
-                            fontFamily: "'Tinos', serif", fontWeight: 700,
-                            color: '#EF233C'
-                        }}
+                        fontSize={{ xs: '22px', sm: '32px', md: '38px', lg: '44px' }}
+                        sx={{ fontFamily: "'Tinos', serif", fontWeight: 700, color: '#EF233C' }}
                     >
                         Welcome Back!</Typography>
                     <NoteLogo />
-                    <Typography fontSize={{ xs: '26px', sm: '32px', md: '36px' }} fontWeight={700}>Log In</Typography>
+                    <Typography fontSize={{ xs: '18px', sm: '24px', md: '28px', lg: '32px' }} fontWeight={700}>Log In</Typography>
                     <CustomTextField
                         id="outlined-basic email"
                         label="Spotify email"
                         variant="outlined"
+                        type="email"
+                        name="email"
+                        autoComplete="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         error={!!emailError}
                         helperText={emailError}
-                        sx={{ width: '100%' }}
+                        sx={{
+                            width: '100%',
+                            '& .MuiInputBase-root': { fontSize: { md: '15px', lg: '17px' } },
+                            '& .MuiInputLabel-root': { fontSize: { md: '15px', lg: '17px' } },
+                            '& .MuiOutlinedInput-root': { height: { lg: '54px' } },
+                        }}
                     />
                     <CustomTextField
                         id="outlined-basic password"
                         label="Password"
                         variant="outlined"
+                        name="password"
+                        autoComplete="current-password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         error={!!passwordError}
                         helperText={passwordError}
-                        sx={{ width: '100%' }}
                         type={showPassword ? "text" : "password"}
+                        sx={{
+                            width: '100%',
+                            '& .MuiInputBase-root': { fontSize: { md: '15px', lg: '17px' } },
+                            '& .MuiInputLabel-root': { fontSize: { md: '15px', lg: '17px' } },
+                            '& .MuiOutlinedInput-root': { height: { lg: '54px' } },
+                        }}
                         InputProps={{
                             endAdornment: (
                                 <InputAdornment position="end">
@@ -191,21 +213,22 @@ const SignIn = () => {
                                 variant="text"
                                 size="small"
                                 onClick={() => { setForgotOpen(true); setForgotEmail(email); setForgotMsg(""); setForgotError(""); setSpotifyPrompt(false) }}
-                                sx={{ color: '#EF233C', textTransform: 'none', fontSize: '14px', p: 0 }}
+                                sx={{ color: '#EF233C', textTransform: 'none', fontSize: { xs: '14px', lg: '17px' }, p: 0 }}
                             >
                                 Forgot password?
                             </Button>
                         </Box>
                     )}
-                    {error && <Typography color="error" sx={{ whiteSpace: 'pre-line' }}>{error}</Typography>}
+                    {error && <Typography color="error" sx={{ whiteSpace: 'pre-line', fontSize: { lg: '17px' } }}>{error}</Typography>}
                     <Button
-                        onClick={handleSignIn} variant="contained"
+                        type="submit"
+                        variant="contained"
                         color="basic"
                         sx={{
                             width: '100%',
-                            height: { xs: '48px', md: '56px' },
+                            height: { xs: '48px', md: '52px', lg: '58px' },
                             color: '#0D1B2A',
-                            fontSize: { xs: '18px', sm: '20px', md: '24px' },
+                            fontSize: { xs: '18px', sm: '20px', md: '20px', lg: '22px' },
                             borderRadius: '36px',
                             boxShadow: '-8px 8px 0 #EF233C',
                             textTransform: "none",

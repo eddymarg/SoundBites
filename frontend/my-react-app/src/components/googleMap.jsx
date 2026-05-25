@@ -4,7 +4,7 @@
 import { useState } from "react"
 import { Map, AdvancedMarker, useApiIsLoaded } from "@vis.gl/react-google-maps"
 import '../css/googleModal.css'
-import { Box, Typography, Rating, Divider, Stack, IconButton } from "@mui/material"
+import { Box, Typography, Rating, Divider, Stack, IconButton, Button } from "@mui/material"
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LanguageIcon from '@mui/icons-material/Language';
 import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
@@ -12,8 +12,10 @@ import CloseIcon from '@mui/icons-material/Close';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import BookmarkAddedIcon from '@mui/icons-material/BookmarkAdded';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
-const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocation, setSelectedLocation, savedIds, bookmarkToggle, newRestaurantIds }) => {
+const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocation, setSelectedLocation, savedIds, bookmarkToggle, newRestaurantIds, visitedIds = [], visitedToggle }) => {
     const [showAllHours, setShowAllHours] = useState(false)
     const [hoveredPinID, setHoveredPinID] = useState(null)
     const fallbackLocation = { lat: 40.7128, lng: -74.0060 }
@@ -48,7 +50,7 @@ const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocati
                 <div className="text-center">Loading...</div>
             ) : userLocation && typeof userLocation.lat === 'number' && typeof userLocation.lng === 'number' ? (
                 // general map
-                <Box sx={{ height: '85%'}}>
+                <Box sx={{ height: '100%', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,0.10)' }}>
                     <Map
                         defaultZoom={9}
                         defaultCenter={userLocation}
@@ -139,8 +141,40 @@ const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocati
                                 </Box>
                                 <Typography sx={{marginBottom: "0.5rem"}}>{selectedLocation.address}</Typography>
                                 <Divider orientation="horizontal" flexItem sx={{ borderColor: 'mainYellow.main'}}/>
-                                {/* Description */}
-                                <Typography margin={1}>{selectedLocation.description || "No description available."}</Typography>
+                                {/* Description / visited toggle */}
+                                <Box sx={{ m: 1 }}>
+                                    {selectedLocation.description ? (
+                                        <Typography>{selectedLocation.description}</Typography>
+                                    ) : visitedToggle ? (
+                                        <Button
+                                            size="small"
+                                            disableElevation
+                                            startIcon={visitedIds.includes(selectedLocation.place_id)
+                                                ? <CheckCircleIcon sx={{ fontSize: '14px !important' }} />
+                                                : <CheckCircleOutlineIcon sx={{ fontSize: '14px !important' }} />
+                                            }
+                                            onClick={() => visitedToggle(selectedLocation)}
+                                            sx={{
+                                                borderRadius: '20px',
+                                                textTransform: 'none',
+                                                fontSize: '13px',
+                                                py: 0.5,
+                                                px: 1.5,
+                                                minHeight: 'unset',
+                                                fontWeight: 500,
+                                                border: '1.5px solid',
+                                                borderColor: visitedIds.includes(selectedLocation.place_id) ? '#4CAF50' : '#ddd',
+                                                color: visitedIds.includes(selectedLocation.place_id) ? '#4CAF50' : '#aaa',
+                                                backgroundColor: visitedIds.includes(selectedLocation.place_id) ? '#4CAF5010' : 'transparent',
+                                                '&:hover': { borderColor: '#4CAF50', color: '#4CAF50', backgroundColor: '#4CAF5010' },
+                                            }}
+                                        >
+                                            {visitedIds.includes(selectedLocation.place_id) ? "Visited" : "Mark as visited"}
+                                        </Button>
+                                    ) : (
+                                        <Typography color="text.secondary">No description available.</Typography>
+                                    )}
+                                </Box>
                                 <Divider orientation="horizontal" flexItem sx={{ borderColor: 'mainYellow.main'}}/>
                                 {/* Underneath middle info strip */}
                                 <Box margin={3} display="flex" flexDirection="column" gap={1.5}>

@@ -20,6 +20,23 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    filter: drop-shadow(0 2px 14px rgba(239, 35, 60, 0.30)) saturate(1.4);
+}
+
+.logout-screen-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .loading-text-container {

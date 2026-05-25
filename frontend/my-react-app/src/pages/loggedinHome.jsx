@@ -33,23 +33,33 @@ const UserHome = () => {
     // for full info modal
     const [selectedLocation, setSelectedLocation] = useState(null)
     const [savedIds, setSavedIds] = useState([])
+    const [visitedIds, setVisitedIds] = useState([])
     // for loading screen
     const [loadingStage, setLoadingStage] = useState(0)
-    const [showLoadingScreen, setShowLoadingScreen] = useState(true)
+    const [showLoadingScreen, setShowLoadingScreen] = useState(() => !localStorage.getItem("userLocation"))
     // for password addition
     const [isNewUser, setIsNewUser] = useState(false)
     const [spotifyId, setSpotifyId] = useState("")
 
     const [refreshStatus, setRefreshStatus] = useState(null) // null | 'new' | 'same'
+    const [mobileRecsOpen, setMobileRecsOpen] = useState(false)
 
     const loadStartTime = useRef(Date.now())
     const listContainerRef = useRef(null)
+
+    useEffect(() => {
+        localStorage.removeItem("restaurantCache")
+    }, [])
+    const mobileListContainerRef = useRef(null)
     const isRefreshRef = useRef(false)
     const preRefreshRestaurantsRef = useRef([])
+    const dragStartY = useRef(null)
+    const drawerRef = useRef(null)
 
-    const delayMinLoadTime = (start, callback, min = 3000) => {
+    const delayMinLoadTime = (start, callback, min = 5500) => {
         const elapsed = Date.now() - start
         const remaining = Math.max(0, min - elapsed)
+        setTimeout(() => setLoadingStage(2), Math.max(0, remaining - 1800))
         setTimeout(() => {
             checkForPassword()
             callback()
@@ -276,6 +286,7 @@ const UserHome = () => {
                 if (!res.ok) return
                 const data = await res.json()
                 setSavedIds(data.map(r => r.place_id))
+                setVisitedIds(data.filter(r => r.visited).map(r => r.place_id))
             } catch (err) {
                 console.error("Failed to load saved IDs:", err)
             }
@@ -332,6 +343,9 @@ const UserHome = () => {
                         rating: restaurant.rating,
                         price_level: restaurant.price_level,
                         address: restaurant.address,
+                        opening_hours: restaurant.opening_hours ?? null,
+                        website: restaurant.website ?? null,
+                        formatted_phone_number: restaurant.formatted_phone_number ?? null,
                         geometry: {
                             location: {
                                 lat: restaurant.geometry?.location?.lat ?? restaurant.geometry?.location?.lat?.(),
@@ -351,6 +365,52 @@ const UserHome = () => {
         }
     }
 
+    const visitedToggle = async (restaurant) => {
+        const isVisited = visitedIds.includes(restaurant.place_id)
+        const isSaved = savedIds.includes(restaurant.place_id)
+
+        setVisitedIds(prev => isVisited
+            ? prev.filter(id => id !== restaurant.place_id)
+            : [...prev, restaurant.place_id]
+        )
+        if (!isSaved && !isVisited) {
+            setSavedIds(prev => [...prev, restaurant.place_id])
+        }
+
+        try {
+            await fetch(`${import.meta.env.VITE_API_URL}/api/visited/${restaurant.place_id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    place_id: restaurant.place_id,
+                    name: restaurant.name,
+                    photo: restaurant.photo,
+                    rating: restaurant.rating,
+                    price_level: restaurant.price_level,
+                    address: restaurant.address,
+                    geometry: {
+                        location: {
+                            lat: restaurant.geometry?.location?.lat ?? restaurant.geometry?.location?.lat?.(),
+                            lng: restaurant.geometry?.location?.lng ?? restaurant.geometry?.location?.lng?.()
+                        },
+                        viewport: {
+                            northeast: restaurant.geometry?.viewport?.northeast,
+                            southeast: restaurant.geometry?.viewport?.southeast
+                        }
+                    }
+                })
+            })
+        } catch {
+            setVisitedIds(prev => isVisited
+                ? [...prev, restaurant.place_id]
+                : prev.filter(id => id !== restaurant.place_id)
+            )
+            if (!isSaved && !isVisited) {
+                setSavedIds(prev => prev.filter(id => id !== restaurant.place_id))
+            }
+        }
+    }
+
     // Clears new pin highlight after animation completes
     useEffect(() => {
         if (newRestaurantIds.size === 0) return
@@ -360,10 +420,10 @@ const UserHome = () => {
 
     // Scroll list down to reveal skeleton cards when loading more
     useEffect(() => {
-        if (!isLoadingMore || !listContainerRef.current) return
-        // defer until React has rendered the skeleton cards into the DOM
+        if (!isLoadingMore) return
         const id = setTimeout(() => {
             listContainerRef.current?.scrollBy({ top: 400, behavior: 'smooth' })
+            mobileListContainerRef.current?.scrollBy({ top: 400, behavior: 'smooth' })
         }, 50)
         return () => clearTimeout(id)
     }, [isLoadingMore])
@@ -464,29 +524,206 @@ const UserHome = () => {
         setSelectedLocation(location)
     }
 
+    const handleDrawerDragStart = (e) => {
+        dragStartY.current = e.touches[0].clientY
+    }
+
+    const handleDrawerDragMove = (e) => {
+        if (dragStartY.current === null || !drawerRef.current) return
+        const delta = e.touches[0].clientY - dragStartY.current
+        if (delta > 0) {
+            drawerRef.current.style.transition = 'none'
+            drawerRef.current.style.transform = `translateY(${delta}px)`
+        }
+    }
+
+    const handleDrawerDragEnd = (e) => {
+        if (dragStartY.current === null || !drawerRef.current) return
+        const delta = e.changedTouches[0].clientY - dragStartY.current
+        dragStartY.current = null
+        drawerRef.current.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+        if (delta > 80) {
+            drawerRef.current.style.transform = 'translateY(100%)'
+            setTimeout(() => {
+                setMobileRecsOpen(false)
+                if (drawerRef.current) drawerRef.current.style.transform = ''
+            }, 300)
+        } else {
+            drawerRef.current.style.transform = 'translateY(0)'
+            setTimeout(() => {
+                if (drawerRef.current) drawerRef.current.style.transform = ''
+            }, 300)
+        }
+    }
+
     return(
         <>
-            {showLoadingScreen && <LoadingScreen loadingStage={loadingStage}/>} 
+            {showLoadingScreen && <LoadingScreen loadingStage={loadingStage} topGenres={topGenres}/>}
             <AddPassword open={isNewUser} onClose={() => setIsNewUser(false)} spotifyId={spotifyId} />
-            
+
             <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAP_API_KEY}>
-                <div style={{ filter: showLoadingScreen ? 'blur(25px)' : 'none'}}>
+                <Box sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: '100vh',
+                    filter: showLoadingScreen ? 'blur(25px)' : 'none',
+                }}>
                     <LoggedInHeader setHasFetchedRestaurants={setHasFetchedRestaurants} setVisibleRestaurants={setVisibleRestaurants}/>
-                    <div className="flex flex-col md:flex-row md:h-screen">
-                        {/* Left Side: Recommendations */}
-                        <div className="w-full md:w-1/2 px-4 md:px-8 py-4 md:py-8 flex flex-col">
-                            <div className="sticky top-0 bg-white/80 backdrop-blur-sm pb-2 z-10">
-                                <GenreDisplay
-                                    topGenres={topGenres}
-                                    setTopGenres={(updated) => {
-                                        setGenreFilter(updated)
-                                        setTopGenres(updated)
-                                    }}
-                                    onRefresh={handleRefresh}
+
+                    <Box sx={{ flex: 1, minHeight: 0, position: 'relative' }}>
+
+                        {/* ── MOBILE / TABLET (xs–sm, < 900px) ── */}
+                        <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', height: '100%', position: 'relative' }}>
+
+                            {/* Map fills everything */}
+                            <Box sx={{ flex: 1, minHeight: 0, height: '100%' }}>
+                                <GoogleMap
+                                    userLocation={userLocation}
+                                    restaurants={visibleRestaurants}
+                                    error={error}
+                                    isLoading={isLoading}
+                                    selectedLocation={selectedLocation}
+                                    setSelectedLocation={setSelectedLocation}
+                                    savedIds={savedIds}
+                                    bookmarkToggle={bookmarkToggle}
+                                    newRestaurantIds={newRestaurantIds}
+                                    visitedIds={visitedIds}
+                                    visitedToggle={visitedToggle}
                                 />
-                            </div>
-                            <div className="flex-1 overflow-y-auto mt-4">
-                                <Box ref={listContainerRef} sx={{ maxHeight: { xs: 'none', md: '75%' }, overflowY: { xs: 'visible', md: 'auto' } }}>
+                            </Box>
+
+                            {/* Floating toggle pill */}
+                            {!selectedLocation && (
+                                <Box sx={{
+                                    position: 'absolute',
+                                    bottom: mobileRecsOpen ? 'calc(65% + 12px)' : '20px',
+                                    left: '50%',
+                                    transform: 'translateX(-50%)',
+                                    zIndex: 11,
+                                    transition: 'bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                }}>
+                                    <Button
+                                        onClick={() => setMobileRecsOpen(prev => !prev)}
+                                        disableElevation
+                                        sx={{
+                                            '@keyframes recsPulse': {
+                                                '0%':   { boxShadow: '0 2px 16px rgba(0,0,0,0.15), 0 0 0 0 rgba(239,35,60,0.40)' },
+                                                '65%':  { boxShadow: '0 2px 16px rgba(0,0,0,0.15), 0 0 0 12px rgba(239,35,60,0)' },
+                                                '100%': { boxShadow: '0 2px 16px rgba(0,0,0,0.15), 0 0 0 0 rgba(239,35,60,0)' },
+                                            },
+                                            borderRadius: '50px',
+                                            backgroundColor: 'white',
+                                            color: '#EF233C',
+                                            boxShadow: '0 2px 16px rgba(0,0,0,0.15)',
+                                            textTransform: 'none',
+                                            fontWeight: 700,
+                                            fontSize: '13px',
+                                            px: 2.5,
+                                            py: 0.9,
+                                            whiteSpace: 'nowrap',
+                                            border: '1.5px solid #EF233C30',
+                                            animation: mobileRecsOpen ? 'none' : 'recsPulse 2s ease-out infinite',
+                                            '&:hover': { backgroundColor: '#fff5f5' },
+                                        }}
+                                    >
+                                        {visibleRestaurants.length} recs nearby {mobileRecsOpen ? '▼' : '▲'}
+                                    </Button>
+                                </Box>
+                            )}
+
+                            {/* Slide-up recs drawer */}
+                            <Box ref={drawerRef} sx={{
+                                position: 'absolute',
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                height: '65%',
+                                backgroundColor: '#f2f2f2',
+                                borderRadius: '24px 24px 0 0',
+                                boxShadow: '0 -4px 24px rgba(0,0,0,0.12)',
+                                transform: mobileRecsOpen ? 'translateY(0)' : 'translateY(100%)',
+                                transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                zIndex: 10,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                overflow: 'hidden',
+                            }}>
+                                {/* Drag handle — touch to drag down and close */}
+                                <Box
+                                    onTouchStart={handleDrawerDragStart}
+                                    onTouchMove={handleDrawerDragMove}
+                                    onTouchEnd={handleDrawerDragEnd}
+                                    sx={{ pt: 1.5, pb: 1, display: 'flex', justifyContent: 'center', flexShrink: 0, cursor: 'grab', touchAction: 'none' }}
+                                >
+                                    <Box sx={{ width: 40, height: 4, borderRadius: 2, backgroundColor: '#c0c0c0' }} />
+                                </Box>
+                                {/* Genre bar */}
+                                <Box sx={{ px: 2, pb: 1, flexShrink: 0 }}>
+                                    <GenreDisplay
+                                        topGenres={topGenres}
+                                        setTopGenres={(updated) => {
+                                            setGenreFilter(updated)
+                                            setTopGenres(updated)
+                                        }}
+                                    />
+                                </Box>
+                                {/* Scrollable recs */}
+                                <Box ref={mobileListContainerRef} sx={{ flex: 1, minHeight: 0, overflowY: 'auto', px: 1 }}>
+                                    <RestaurantList
+                                        restaurants={visibleRestaurants}
+                                        handleLocationClick={(loc) => {
+                                            handleLocationClick(loc)
+                                            setMobileRecsOpen(false)
+                                        }}
+                                        savedIds={savedIds}
+                                        bookmarkToggle={bookmarkToggle}
+                                        isLoadingMore={isLoadingMore}
+                                        newRestaurantIds={newRestaurantIds}
+                                    />
+                                    <Box display="flex" justifyContent="center" alignItems="center" mt={2} mb={1.5}>
+                                        {hasNoMoreResults ? (
+                                            <p style={{ color: "#888", fontSize: "13px" }}>No new recommendations — check back tomorrow!</p>
+                                        ) : (
+                                            <Button variant="outlined" color="mainRed"
+                                                disabled={isLoadingMore}
+                                                sx={{
+                                                    borderRadius: "36px",
+                                                    border: "2px solid",
+                                                    backgroundColor: "white",
+                                                    fontSize: '13px',
+                                                    textTransform: "none",
+                                                    width: '140px',
+                                                    "&:hover": { backgroundColor: "#EF233C20" }
+                                                }}
+                                                onClick={handleLoadMore}
+                                            >Load More</Button>
+                                        )}
+                                    </Box>
+                                </Box>
+                            </Box>
+                        </Box>
+
+                        {/* ── DESKTOP (md+, ≥ 900px) ── */}
+                        <Box sx={{ display: { xs: 'none', md: 'flex' }, height: '100%' }}>
+                            {/* Left: genre bar + scrollable recs */}
+                            <Box sx={{
+                                width: '50%',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                minHeight: 0,
+                                px: 4,
+                                py: 2,
+                            }}>
+                                <Box sx={{ pb: 1, flexShrink: 0 }}>
+                                    <GenreDisplay
+                                        topGenres={topGenres}
+                                        setTopGenres={(updated) => {
+                                            setGenreFilter(updated)
+                                            setTopGenres(updated)
+                                        }}
+                                    />
+                                </Box>
+                                <Box ref={listContainerRef} sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
                                     <RestaurantList
                                         restaurants={visibleRestaurants}
                                         handleLocationClick={handleLocationClick}
@@ -495,54 +732,55 @@ const UserHome = () => {
                                         isLoadingMore={isLoadingMore}
                                         newRestaurantIds={newRestaurantIds}
                                     />
+                                    <Box display="flex" justifyContent="center" alignItems="center" marginTop="2rem" marginBottom="1rem">
+                                        {hasNoMoreResults ? (
+                                            <p style={{ color: "#888", fontSize: "15px" }}>No new recommendations — check back tomorrow!</p>
+                                        ) : (
+                                            <Button variant="outlined" color="mainRed"
+                                                disabled={isLoadingMore}
+                                                sx={{
+                                                    borderRadius: "36px",
+                                                    border: "2px solid",
+                                                    backgroundColor: "white",
+                                                    fontSize: '20px',
+                                                    textTransform: "none",
+                                                    width: '260px',
+                                                    "&:hover": { backgroundColor: "#EF233C20" }
+                                                }}
+                                                onClick={handleLoadMore}
+                                            >Load More</Button>
+                                        )}
+                                    </Box>
                                 </Box>
-                                <Box
-                                    display="flex"
-                                    justifyContent="center"
-                                    alignItems="center"
-                                    marginTop="2rem"
-                                    marginBottom="1rem"
-                                >
-                                    {hasNoMoreResults ? (
-                                        <p style={{ color: "#888", fontSize: "15px" }}>
-                                            No more restaurants to load.
-                                        </p>
-                                    ) : (
-                                        <Button variant="outlined" color="mainRed"
-                                        disabled={isLoadingMore}
-                                        sx={{
-                                            borderRadius: "36px",
-                                            border: "2px solid",
-                                            backgroundColor: "white",
-                                            fontSize: { xs: '16px', md: '20px' },
-                                            textTransform: "none",
-                                            width: { xs: '200px', md: '260px' },
-                                            "&:hover": {
-                                                backgroundColor: "#EF233C20",
-                                            }
-                                        }}
-                                        onClick={handleLoadMore}
-                                        >Load More</Button>
-                                    )}
-                                </Box>
-                            </div>
-                        </div>
-                        {/* Right side: map */}
-                        <div className="w-full md:w-1/2 px-4 md:px-8 pb-4 md:pb-8" style={{ minHeight: '400px' }}>
-                            <GoogleMap
-                                userLocation={userLocation}
-                                restaurants={visibleRestaurants}
-                                error={error}
-                                isLoading={isLoading}
-                                selectedLocation={selectedLocation}
-                                setSelectedLocation={setSelectedLocation}
-                                savedIds={savedIds}
-                                bookmarkToggle={bookmarkToggle}
-                                newRestaurantIds={newRestaurantIds}
-                            />
-                        </div>
-                    </div>
-                </div>
+                            </Box>
+
+                            {/* Right: map */}
+                            <Box sx={{
+                                width: '50%',
+                                pr: 4,
+                                pl: 2,
+                                py: 3,
+                                minHeight: 0,
+                                height: '100%',
+                            }}>
+                                <GoogleMap
+                                    userLocation={userLocation}
+                                    restaurants={visibleRestaurants}
+                                    error={error}
+                                    isLoading={isLoading}
+                                    selectedLocation={selectedLocation}
+                                    setSelectedLocation={setSelectedLocation}
+                                    savedIds={savedIds}
+                                    bookmarkToggle={bookmarkToggle}
+                                    newRestaurantIds={newRestaurantIds}
+                                    visitedIds={visitedIds}
+                                    visitedToggle={visitedToggle}
+                                />
+                            </Box>
+                        </Box>
+
+                    </Box>
+                </Box>
             </APIProvider>
 
             <Portal>

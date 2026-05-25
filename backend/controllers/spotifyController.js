@@ -105,16 +105,6 @@ exports.spotifyCallback = async (req, res) => {
             spotify_id: spotifyId
         })
 
-        // store tokens in a cookie (for frontend)
-        // res.cookie("spotify_access_token", access_token, { 
-        //     httpOnly: true, 
-        //     secure: false,
-        // })
-        // res.cookie("spotify_refresh_token", refresh_token, { 
-        //     httpOnly: true, 
-        //     secure: false,
-        // })
-
         res.redirect(`${process.env.FRONTEND_URL}/userHome?${params.toString()}`)
     } catch (error) {
         console.error("Error fetching token:", error.response?.data || error.message)
