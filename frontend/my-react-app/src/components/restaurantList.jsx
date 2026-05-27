@@ -5,12 +5,56 @@ import BookmarkAddedIcon from '@mui/icons-material/BookmarkAdded'
 
 const IMG_FALLBACK = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Crect width='120' height='120' rx='20' fill='%23FFECEE'/%3E%3Ctext x='60' y='78' font-size='52' text-anchor='middle' font-family='serif'%3E🍽%3C/text%3E%3C/svg%3E"
 
-const RestaurantList = ({ restaurants, handleLocationClick, savedIds, bookmarkToggle, isLoadingMore, newRestaurantIds }) => {
+const RestaurantList = ({ restaurants, handleLocationClick, savedIds, bookmarkToggle, isLoadingMore, newRestaurantIds, usingFallbackLocation }) => {
     const priceLevels = ["$", "$$", "$$$", "$$$$"]
 
     return (
         <>
-            {restaurants.length === 0 && !isLoadingMore && <p>No restaurants found.</p>}
+            {restaurants.length === 0 && !isLoadingMore && (
+                usingFallbackLocation ? (
+                    <Box sx={{ textAlign: 'center', mt: 6, px: 2 }}>
+                        <Typography sx={{ fontSize: '44px', mb: 1 }}>🎵</Typography>
+                        <Typography
+                            sx={{
+                                fontFamily: "'Tinos', serif",
+                                fontWeight: 700,
+                                fontSize: '20px',
+                                mb: 1,
+                            }}
+                        >
+                            We've got the vibe, just not the venue.
+                        </Typography>
+                        <Typography
+                            color="text.secondary"
+                            sx={{ fontSize: '14px', maxWidth: '260px', mx: 'auto', lineHeight: 1.7 }}
+                        >
+                            Drop your location pin so SoundBites can spin up the perfect bites near you 📍
+                        </Typography>
+                        <Typography
+                            sx={{ fontSize: '12px', color: '#bbb', mt: 1.5, fontStyle: 'italic' }}
+                        >
+                            Allow location access in your browser settings to get started.
+                        </Typography>
+                    </Box>
+                ) : (
+                    <Box sx={{ textAlign: 'center', mt: 6, px: 2 }}>
+                        <Typography sx={{ fontSize: '44px', mb: 1 }}>🍽️</Typography>
+                        <Typography
+                            sx={{
+                                fontFamily: "'Tinos', serif",
+                                fontWeight: 700,
+                                fontSize: '20px',
+                                mb: 1,
+                            }}
+                        >
+                            No spots found nearby.
+                        </Typography>
+                        <Typography color="text.secondary" sx={{ fontSize: '14px' }}>
+                            Try allowing location access in your browser settings.
+                        </Typography>
+                    </Box>
+                )
+            )}
             <ul>
                 {restaurants.map((resto, index) => (
                 <Box

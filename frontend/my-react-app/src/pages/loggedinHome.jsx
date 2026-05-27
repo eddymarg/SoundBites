@@ -41,7 +41,10 @@ const UserHome = () => {
     const [isNewUser, setIsNewUser] = useState(false)
     const [spotifyId, setSpotifyId] = useState("")
 
-    const [refreshStatus, setRefreshStatus] = useState(null) // null | 'new' | 'same'
+    const [refreshStatus, setRefreshStatus] = useState(null) // null | 'new' | 'same' | 'location'
+    const [awaitingLocation, setAwaitingLocation] = useState(false)
+    const [usingFallbackLocation, setUsingFallbackLocation] = useState(false)
+    const isFirstVisitRef = useRef(!localStorage.getItem("userLocation"))
     const [mobileRecsOpen, setMobileRecsOpen] = useState(false)
 
     const loadStartTime = useRef(Date.now())
@@ -69,25 +72,50 @@ const UserHome = () => {
     // Retrieves location data
     useEffect(() => {
         loadStartTime.current = Date.now()
+        let permResult = null
+        const gotGPS = { current: false }
 
-        if("permissions" in navigator && "geolocation" in navigator) {
-            navigator.permissions.query({ name: "geolocation" }).then((result) => {
-                if (result.state === "granted" || result.state === "prompt") {
-                    const options = {
-                        enableHighAccuracy: true,
-                        timeout: 10000,
-                        maximumAge: 0,
-                    }
-                    navigator.geolocation.getCurrentPosition(successCallback, errorCallback, options)
-                } else {
-                    fallbackToIP()
-                }
-            })
-        } else {
-            fallbackToIP()
+        const geoOptions = {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0,
+        }
+
+        // Called if the user grants location permission after we already fell back to IP
+        function onPermissionChange() {
+            if (permResult?.state === "granted" && !gotGPS.current) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        if (gotGPS.current) return
+                        gotGPS.current = true
+                        const coords = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude,
+                        }
+                        setUserLocation(coords)
+                        localStorage.setItem("userLocation", JSON.stringify(coords))
+                        setUsingFallbackLocation(false)
+                        // Clear cache and force a fresh restaurant fetch with real location
+                        localStorage.removeItem("restaurantCache")
+                        setAllRestaurants([])
+                        setVisibleRestaurants([])
+                        setLoadedCount(0)
+                        setPagetoken(null)
+                        setHasNoMoreResults(false)
+                        setHasFetchedRestaurants(false)
+                        setRefreshStatus("location")
+                        permResult?.removeEventListener("change", onPermissionChange)
+                    },
+                    () => {} // silently ignore — we already have a fallback location
+                )
+            }
         }
 
         function successCallback(position) {
+            if (gotGPS.current) return
+            gotGPS.current = true
+            setAwaitingLocation(false)
+            setUsingFallbackLocation(false)
             const coords = {
                 lat: position.coords.latitude,
                 lng: position.coords.longitude,
@@ -96,14 +124,18 @@ const UserHome = () => {
             localStorage.setItem("userLocation", JSON.stringify(coords))
             setIsLoading(false)
             delayMinLoadTime(loadStartTime.current, () => setShowLoadingScreen(false))
+            permResult?.removeEventListener("change", onPermissionChange)
         }
 
         function errorCallback(error) {
             console.warn("location error:", error.message)
+            setAwaitingLocation(false)
             fallbackToIP()
+            // Keep the permission listener alive — user may still grant after the timeout
         }
 
         function fallbackToIP() {
+            setUsingFallbackLocation(true)
             const cachedIPLocation = localStorage.getItem("ipLocation")
 
             if (cachedIPLocation) {
@@ -131,6 +163,25 @@ const UserHome = () => {
                     setIsLoading(false)
                     delayMinLoadTime(loadStartTime.current, () => setShowLoadingScreen(false))
                 })
+        }
+
+        if ("permissions" in navigator && "geolocation" in navigator) {
+            navigator.permissions.query({ name: "geolocation" }).then((result) => {
+                permResult = result
+                if (result.state === "granted" || result.state === "prompt") {
+                    if (result.state === "prompt") setAwaitingLocation(true)
+                    result.addEventListener("change", onPermissionChange)
+                    navigator.geolocation.getCurrentPosition(successCallback, errorCallback, geoOptions)
+                } else {
+                    fallbackToIP()
+                }
+            })
+        } else {
+            fallbackToIP()
+        }
+
+        return () => {
+            permResult?.removeEventListener("change", onPermissionChange)
         }
     }, [])
 
@@ -558,7 +609,7 @@ const UserHome = () => {
 
     return(
         <>
-            {showLoadingScreen && <LoadingScreen loadingStage={loadingStage} topGenres={topGenres}/>}
+            {showLoadingScreen && <LoadingScreen loadingStage={loadingStage} topGenres={topGenres} showLocationTip={awaitingLocation && isFirstVisitRef.current} />}
             <AddPassword open={isNewUser} onClose={() => setIsNewUser(false)} spotifyId={spotifyId} />
 
             <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAP_API_KEY}>
@@ -679,6 +730,7 @@ const UserHome = () => {
                                         bookmarkToggle={bookmarkToggle}
                                         isLoadingMore={isLoadingMore}
                                         newRestaurantIds={newRestaurantIds}
+                                        usingFallbackLocation={usingFallbackLocation}
                                     />
                                     <Box display="flex" justifyContent="center" alignItems="center" mt={2} mb={1.5}>
                                         {hasNoMoreResults ? (
@@ -731,6 +783,7 @@ const UserHome = () => {
                                         bookmarkToggle={bookmarkToggle}
                                         isLoadingMore={isLoadingMore}
                                         newRestaurantIds={newRestaurantIds}
+                                        usingFallbackLocation={usingFallbackLocation}
                                     />
                                     <Box display="flex" justifyContent="center" alignItems="center" marginTop="2rem" marginBottom="1rem">
                                         {hasNoMoreResults ? (
@@ -802,6 +855,13 @@ const UserHome = () => {
                             Revert
                         </Button>
                     }
+                />
+                <Snackbar
+                    open={refreshStatus === 'location'}
+                    autoHideDuration={4000}
+                    onClose={() => setRefreshStatus(null)}
+                    message="📍 Location updated! Refreshing recommendations..."
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
                 />
             </Portal>
         </>
