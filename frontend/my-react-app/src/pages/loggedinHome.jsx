@@ -13,6 +13,11 @@ import getNearbyRestoByMusic from "../services/locationService"
 const CACHE_DURATION = 60 * 60 * 1000 * 24
 const RESTAURANTS_PER_LOAD = 3
 
+const spotifyAuthHeaders = () => {
+    const token = localStorage.getItem("spotify_access_token")
+    return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
 const UserHome = () => {
     const [userLocation, setUserLocation] = useState(null)
     const [error, setError] = useState(null)
@@ -291,6 +296,7 @@ const UserHome = () => {
                 }
 
                 const data = await response.json()
+                if (!Array.isArray(data)) throw new Error("Unexpected response from top artists")
 
                 const desiredGenreCount = 3
                 const genreSet = new Set()
@@ -333,11 +339,12 @@ const UserHome = () => {
     useEffect(() => {
         const loadSavedIds = async () => {
             try {
-                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/savedRestaurants`, { credentials: 'include' })
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/savedRestaurants`, { credentials: 'include', headers: spotifyAuthHeaders() })
                 if (!res.ok) return
                 const data = await res.json()
-                setSavedIds(data.map(r => r.place_id))
-                setVisitedIds(data.filter(r => r.visited).map(r => r.place_id))
+                const safeData = Array.isArray(data) ? data : []
+                setSavedIds(safeData.map(r => r.place_id))
+                setVisitedIds(safeData.filter(r => r.visited).map(r => r.place_id))
             } catch (err) {
                 console.error("Failed to load saved IDs:", err)
             }
@@ -377,6 +384,7 @@ const UserHome = () => {
                 await fetch(`${import.meta.env.VITE_API_URL}/api/remove/${restaurant.place_id}`, {
                     method: 'DELETE',
                     credentials: 'include',
+                    headers: spotifyAuthHeaders(),
                 })
             } catch (error) {
                 setSavedIds(prev => [...prev, restaurant.place_id])
@@ -387,7 +395,7 @@ const UserHome = () => {
             try {
                 await fetch(`${import.meta.env.VITE_API_URL}/api/save`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', ...spotifyAuthHeaders() },
                     credentials: 'include',
                     body: JSON.stringify({
                         place_id: restaurant.place_id,
@@ -433,7 +441,7 @@ const UserHome = () => {
         try {
             await fetch(`${import.meta.env.VITE_API_URL}/api/visited/${restaurant.place_id}`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', ...spotifyAuthHeaders() },
                 credentials: 'include',
                 body: JSON.stringify({
                     place_id: restaurant.place_id,

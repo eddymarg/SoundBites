@@ -58,8 +58,8 @@ const HomeHeader = ({setHasFetchedRestaurants, setVisibleRestaurants, homeButton
             }
 
             await axios.put(`${import.meta.env.VITE_API_URL}/update-user`, formData, {
-                'Authorization': `Bearer ${localStorage.getItem('spotify_access_token')}`,
                 headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('spotify_access_token')}`,
                     'Content-Type': 'multipart/form-data'
                 }
             })

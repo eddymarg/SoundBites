@@ -48,6 +48,13 @@ const TAB_STYLES = {
     },
 }
 
+// Attach Spotify access token as Authorization header so the backend can
+// identify Spotify-authenticated users who don't yet have a JWT cookie.
+const spotifyAuthHeaders = () => {
+    const token = localStorage.getItem("spotify_access_token")
+    return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
 const SavedRestaurantsPage = () => {
     const navigate = useNavigate()
 
@@ -89,10 +96,15 @@ const SavedRestaurantsPage = () => {
 
         const fetchSaved = async () => {
             try {
-                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/savedRestaurants`, { credentials: 'include' })
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/savedRestaurants`, { credentials: 'include', headers: spotifyAuthHeaders() })
+                if (!res.ok) {
+                    if (res.status === 401) { navigate('/signin'); return }
+                    throw new Error(`Server error: ${res.status}`)
+                }
                 const data = await res.json()
-                setSavedRestaurants(data)
-                setSavedIds(data.map(item => item.place_id))
+                const safeData = Array.isArray(data) ? data : []
+                setSavedRestaurants(safeData)
+                setSavedIds(safeData.map(item => item.place_id))
             } catch (err) {
                 console.error("Failed to load saved restaurants", err)
                 setError(err.message)
@@ -106,9 +118,13 @@ const SavedRestaurantsPage = () => {
 
     const fetchLists = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/lists`, { credentials: 'include' })
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/lists`, { credentials: 'include', headers: spotifyAuthHeaders() })
+            if (!res.ok) {
+                if (res.status === 401) { navigate('/signin'); return }
+                throw new Error(`Server error: ${res.status}`)
+            }
             const data = await res.json()
-            setLists(data)
+            setLists(Array.isArray(data) ? data : [])
         } catch (err) {
             console.error("Failed to load lists", err)
         }
@@ -121,7 +137,7 @@ const SavedRestaurantsPage = () => {
             setSavedRestaurants(prev => prev.filter(r => r.place_id !== restaurant.place_id))
             if (selectedLocation?.place_id === restaurant.place_id) setSelectedLocation(null)
             try {
-                await fetch(`${import.meta.env.VITE_API_URL}/api/remove/${restaurant.place_id}`, { method: 'DELETE', credentials: 'include' })
+                await fetch(`${import.meta.env.VITE_API_URL}/api/remove/${restaurant.place_id}`, { method: 'DELETE', credentials: 'include', headers: spotifyAuthHeaders() })
             } catch {
                 setSavedIds(prev => [...prev, restaurant.place_id])
                 setSavedRestaurants(prev => [...prev, restaurant])
@@ -137,7 +153,7 @@ const SavedRestaurantsPage = () => {
         try {
             await fetch(`${import.meta.env.VITE_API_URL}/api/visited/${restaurant.place_id}`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', ...spotifyAuthHeaders() },
                 credentials: 'include',
                 body: JSON.stringify(restaurant)
             })
@@ -153,7 +169,7 @@ const SavedRestaurantsPage = () => {
         try {
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/lists`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', ...spotifyAuthHeaders() },
                 credentials: 'include',
                 body: JSON.stringify({ name: newListName.trim() })
             })
@@ -170,7 +186,7 @@ const SavedRestaurantsPage = () => {
         setLists(prev => prev.filter(l => l._id !== listId))
         if (selectedListId === listId) setSelectedListId(null)
         try {
-            await fetch(`${import.meta.env.VITE_API_URL}/api/lists/${listId}`, { method: 'DELETE', credentials: 'include' })
+            await fetch(`${import.meta.env.VITE_API_URL}/api/lists/${listId}`, { method: 'DELETE', credentials: 'include', headers: spotifyAuthHeaders() })
         } catch (err) {
             console.error("Failed to delete list", err)
             fetchLists()
@@ -193,7 +209,7 @@ const SavedRestaurantsPage = () => {
             const endpoint = isInList
                 ? `${import.meta.env.VITE_API_URL}/api/lists/${listId}/remove/${restaurant.place_id}`
                 : `${import.meta.env.VITE_API_URL}/api/lists/${listId}/add/${restaurant.place_id}`
-            await fetch(endpoint, { method: isInList ? 'DELETE' : 'POST', credentials: 'include' })
+            await fetch(endpoint, { method: isInList ? 'DELETE' : 'POST', credentials: 'include', headers: spotifyAuthHeaders() })
         } catch (err) {
             console.error("Failed to update list", err)
             fetchLists()

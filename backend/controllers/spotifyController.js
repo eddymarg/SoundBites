@@ -1,5 +1,6 @@
 const querystring = require("querystring")
 const axios = require("axios")
+const jwt = require("jsonwebtoken")
 require("dotenv").config()
 const SpotifyUser = require("../models/SpotifyUser")
 const bcrypt = require("bcryptjs")
@@ -80,6 +81,9 @@ exports.spotifyCallback = async (req, res) => {
         )
 
         const { access_token, refresh_token } = response.data
+        if (!access_token || !refresh_token) {
+            return res.redirect(`${process.env.FRONTEND_URL}/login?error=spotify_token_missing`)
+        }
 
         const profileRes = await axios.get("https://api.spotify.com/v1/me", {
             headers: {
@@ -98,6 +102,14 @@ exports.spotifyCallback = async (req, res) => {
             user = new SpotifyUser({ spotifyId, display_name, email, avatar })
             await user.save()
         }
+
+        // Issue a JWT so the user can access protected API routes (same as regular login)
+        const jwtToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" })
+        res.cookie("token", jwtToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+        })
 
         const params = new URLSearchParams({
             access_token,
@@ -233,7 +245,19 @@ exports.checkForPassword = async (req, res) => {
 // updates password
 exports.setSpotifyUserPassword = async (req, res) => {
     try {
-        const { spotifyId, password} = req.body
+        const { password } = req.body
+        if (!password) return res.status(400).json({ error: "Password is required" })
+
+        // Verify identity via Spotify — never trust spotifyId from the request body
+        const access_token = req.headers.authorization?.replace('Bearer ', '')
+        if (!access_token) return res.status(401).json({ error: "Authorization token required" })
+
+        const profileRes = await axios.get("https://api.spotify.com/v1/me", {
+            headers: { Authorization: `Bearer ${access_token}` }
+        })
+        const spotifyId = profileRes.data.id
+        if (!spotifyId) return res.status(401).json({ error: "Could not verify Spotify identity" })
+
         const hashedPassword = await bcrypt.hash(password, 10)
 
         const user = await SpotifyUser.findOneAndUpdate(
@@ -242,12 +266,12 @@ exports.setSpotifyUserPassword = async (req, res) => {
             { new: true }
         )
 
-        if(!user) return res.status(404).json({ error: "User not found"})
-        
+        if (!user) return res.status(404).json({ error: "User not found" })
+
         res.json({ message: "Password set successfully" })
     } catch (error) {
         console.error("Error setting password:", error.message)
-        res.status(500).json({ error: "Server error"})
+        res.status(500).json({ error: "Server error" })
     }
 }
 
@@ -278,12 +302,13 @@ exports.getTopArtists = async(req, res) => {
             }
         })
 
-        const topArtists = response.data.items.map(artist => ({
+        const items = Array.isArray(response.data?.items) ? response.data.items : []
+        const topArtists = items.map(artist => ({
             name: artist.name,
             genres: artist.genres,
-            image: artist.images[0]?.url,
+            image: (Array.isArray(artist.images) && artist.images.length > 0) ? artist.images[0].url : null,
             id: artist.id,
-            url: artist.external_urls.spotify
+            url: artist.external_urls?.spotify
         }))
 
         res.status(200).json(topArtists)
@@ -301,12 +326,13 @@ exports.getTopArtists = async(req, res) => {
                     }
                 )
 
-                const topArtists = retryResponse.data.items.map(artist => ({
+                const retryItems = Array.isArray(retryResponse.data?.items) ? retryResponse.data.items : []
+                const topArtists = retryItems.map(artist => ({
                     name: artist.name,
                     genres: artist.genres,
-                    image: artist.images[0]?.url,
+                    image: (Array.isArray(artist.images) && artist.images.length > 0) ? artist.images[0].url : null,
                     id: artist.id,
-                    url: artist.external_urls.spotify
+                    url: artist.external_urls?.spotify
                 }))
 
                 return res.status(200).json(topArtists)
