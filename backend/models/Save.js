@@ -1,7 +1,8 @@
 const mongoose = require("mongoose")
 
 const SaveSchema = new mongoose.Schema({
-    place_id: { type: String, required: true, unique: true },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    place_id: { type: String, required: true },
     name: String,
     photo: String,
     rating: Number,
@@ -28,5 +29,7 @@ const SaveSchema = new mongoose.Schema({
     website: { type: String },
     formatted_phone_number: { type: String }
 })
+
+SaveSchema.index({ userId: 1, place_id: 1 }, { unique: true })
 
 module.exports =  mongoose.model("Save", SaveSchema)

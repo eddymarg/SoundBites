@@ -89,7 +89,7 @@ const SavedRestaurantsPage = () => {
 
         const fetchSaved = async () => {
             try {
-                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/savedRestaurants`)
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/savedRestaurants`, { credentials: 'include' })
                 const data = await res.json()
                 setSavedRestaurants(data)
                 setSavedIds(data.map(item => item.place_id))
@@ -106,7 +106,7 @@ const SavedRestaurantsPage = () => {
 
     const fetchLists = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/lists`)
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/lists`, { credentials: 'include' })
             const data = await res.json()
             setLists(data)
         } catch (err) {
@@ -121,7 +121,7 @@ const SavedRestaurantsPage = () => {
             setSavedRestaurants(prev => prev.filter(r => r.place_id !== restaurant.place_id))
             if (selectedLocation?.place_id === restaurant.place_id) setSelectedLocation(null)
             try {
-                await fetch(`${import.meta.env.VITE_API_URL}/api/remove/${restaurant.place_id}`, { method: 'DELETE' })
+                await fetch(`${import.meta.env.VITE_API_URL}/api/remove/${restaurant.place_id}`, { method: 'DELETE', credentials: 'include' })
             } catch {
                 setSavedIds(prev => [...prev, restaurant.place_id])
                 setSavedRestaurants(prev => [...prev, restaurant])
@@ -138,6 +138,7 @@ const SavedRestaurantsPage = () => {
             await fetch(`${import.meta.env.VITE_API_URL}/api/visited/${restaurant.place_id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify(restaurant)
             })
         } catch {
@@ -153,6 +154,7 @@ const SavedRestaurantsPage = () => {
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/lists`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({ name: newListName.trim() })
             })
             const list = await res.json()
@@ -168,7 +170,7 @@ const SavedRestaurantsPage = () => {
         setLists(prev => prev.filter(l => l._id !== listId))
         if (selectedListId === listId) setSelectedListId(null)
         try {
-            await fetch(`${import.meta.env.VITE_API_URL}/api/lists/${listId}`, { method: 'DELETE' })
+            await fetch(`${import.meta.env.VITE_API_URL}/api/lists/${listId}`, { method: 'DELETE', credentials: 'include' })
         } catch (err) {
             console.error("Failed to delete list", err)
             fetchLists()
@@ -191,7 +193,7 @@ const SavedRestaurantsPage = () => {
             const endpoint = isInList
                 ? `${import.meta.env.VITE_API_URL}/api/lists/${listId}/remove/${restaurant.place_id}`
                 : `${import.meta.env.VITE_API_URL}/api/lists/${listId}/add/${restaurant.place_id}`
-            await fetch(endpoint, { method: isInList ? 'DELETE' : 'POST' })
+            await fetch(endpoint, { method: isInList ? 'DELETE' : 'POST', credentials: 'include' })
         } catch (err) {
             console.error("Failed to update list", err)
             fetchLists()

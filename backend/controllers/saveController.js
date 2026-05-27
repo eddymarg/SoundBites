@@ -4,10 +4,11 @@ const SaveSchema = require("../models/Save")
 exports.saveRestaurant = async (req, res) => {
     console.log("Incoming save req.body", JSON.stringify(req.body, null, 2))
     try {
-        const exists = await SaveSchema.findOne({ place_id: req.body.place_id })
+        const userId = req.user.id
+        const exists = await SaveSchema.findOne({ userId, place_id: req.body.place_id })
         if (exists) return res.status(409).json({ message: "Restaurant already saved" })
 
-        const newRestaurant = new SaveSchema(req.body)
+        const newRestaurant = new SaveSchema({ ...req.body, userId })
         const saved = await newRestaurant.save()
         res.status(201).json(saved)
     } catch (error) {
@@ -18,10 +19,11 @@ exports.saveRestaurant = async (req, res) => {
 
 exports.removeRestaurant = async (req, res) => {
     try {
+        const userId = req.user.id
         const place_id = req.params.place_id
-        console.log("Removing place_id:", place_id)
-        const removed = await SaveSchema.findOneAndDelete({ place_id })
-        if(!removed) return res.status(404).json({ message: "Not found" })
+        console.log("Removing place_id:", place_id, "for user:", userId)
+        const removed = await SaveSchema.findOneAndDelete({ userId, place_id })
+        if (!removed) return res.status(404).json({ message: "Not found" })
 
         res.status(200).json({ message: "Removed successfully" })
     } catch (error) {
@@ -31,7 +33,8 @@ exports.removeRestaurant = async (req, res) => {
 
 exports.getSavedRestaurants = async (req, res) => {
     try {
-        const savedRestaurants = await SaveSchema.find()
+        const userId = req.user.id
+        const savedRestaurants = await SaveSchema.find({ userId })
         res.status(200).json(savedRestaurants)
     } catch (error) {
         console.error("Error getting saved restaurants:", error)
@@ -41,10 +44,11 @@ exports.getSavedRestaurants = async (req, res) => {
 
 exports.toggleVisited = async (req, res) => {
     try {
+        const userId = req.user.id
         const { place_id } = req.params
-        let restaurant = await SaveSchema.findOne({ place_id })
+        let restaurant = await SaveSchema.findOne({ userId, place_id })
         if (!restaurant) {
-            restaurant = new SaveSchema({ ...req.body, place_id, visited: true })
+            restaurant = new SaveSchema({ ...req.body, userId, place_id, visited: true })
             await restaurant.save()
             return res.status(201).json(restaurant)
         }

@@ -333,7 +333,7 @@ const UserHome = () => {
     useEffect(() => {
         const loadSavedIds = async () => {
             try {
-                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/savedRestaurants`)
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/savedRestaurants`, { credentials: 'include' })
                 if (!res.ok) return
                 const data = await res.json()
                 setSavedIds(data.map(r => r.place_id))
@@ -376,6 +376,7 @@ const UserHome = () => {
             try {
                 await fetch(`${import.meta.env.VITE_API_URL}/api/remove/${restaurant.place_id}`, {
                     method: 'DELETE',
+                    credentials: 'include',
                 })
             } catch (error) {
                 setSavedIds(prev => [...prev, restaurant.place_id])
@@ -387,6 +388,7 @@ const UserHome = () => {
                 await fetch(`${import.meta.env.VITE_API_URL}/api/save`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
                     body: JSON.stringify({
                         place_id: restaurant.place_id,
                         name: restaurant.name,
@@ -432,6 +434,7 @@ const UserHome = () => {
             await fetch(`${import.meta.env.VITE_API_URL}/api/visited/${restaurant.place_id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({
                     place_id: restaurant.place_id,
                     name: restaurant.name,
