@@ -91,15 +91,19 @@ exports.spotifyCallback = async (req, res) => {
             },
         })
 
-        const { id: spotifyId, display_name, email, images } = profileRes.data
+        const { id: spotifyId, display_name, email, images, explicit_content } = profileRes.data
         const avatar = images?.[0]?.url || ""
+        const explicitContentFilter = explicit_content?.filter_enabled ?? false
 
         console.log("Saving user with:", { spotifyId, display_name, email, avatar })
 
         // save to DB
         let user = await SpotifyUser.findOne({ spotifyId })
         if (!user) {
-            user = new SpotifyUser({ spotifyId, display_name, email, avatar })
+            user = new SpotifyUser({ spotifyId, display_name, email, avatar, explicitContentFilter })
+            await user.save()
+        } else {
+            user.explicitContentFilter = explicitContentFilter
             await user.save()
         }
 
@@ -162,6 +166,7 @@ exports.getSpotifyUserFromDB = async (req, res) => {
             display_name: user.display_name,
             email: user.email,
             avatar: user.avatar,
+            explicitContentFilter: user.explicitContentFilter ?? false,
         })
     } catch (error) {
         console.error("Error fetching Spotify user from DB:", error.message)

@@ -3,21 +3,21 @@ const axios = require('axios')
 const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY
 
 const GENRE_VENUE_MAP = [
-    { keywords: ['jazz', 'bebop', 'swing', 'blues', 'jazz rap', 'soul jazz', 'jazz fusion'],                                                                                                     query: 'jazz bar' },
-    { keywords: ['hip hop', 'hip-hop', 'rap', 'trap', 'drill', 'r&b', 'soul', 'funk', 'neo soul', 'motown', 'urban contemporary', 'contemporary r&b', 'alternative r&b'],                        query: 'soul food restaurant' },
-    { keywords: ['indie', 'alternative', 'folk', 'acoustic', 'lo-fi', 'singer-songwriter', 'bedroom pop', 'chillwave', 'dream pop', 'shoegaze', 'slowcore'],                                      query: 'gastropub' },
-    { keywords: ['classical', 'orchestra', 'opera', 'piano', 'baroque', 'chamber', 'symphonic', 'ambient classical'],                                                                            query: 'fine dining restaurant' },
-    { keywords: ['country', 'americana', 'bluegrass', 'western', 'outlaw', 'southern rock', 'texas country'],                                                                                    query: 'BBQ restaurant' },
-    { keywords: ['electronic', 'edm', 'techno', 'house', 'dance', 'trance', 'dubstep', 'electronica', 'synthwave', 'vaporwave'],                                                                 query: 'cocktail bar' },
-    { keywords: ['rock', 'metal', 'punk', 'grunge', 'hard rock', 'hardcore', 'post-rock', 'progressive rock', 'math rock', 'emo'],                                                               query: 'pub' },
-    { keywords: ['pop', 'teen pop', 'synth pop', 'dance pop', 'bubblegum pop', 'hyperpop', 'electropop'],                                                                                        query: 'brunch restaurant' },
-    { keywords: ['k-pop', 'kpop', 'korean', 'j-pop', 'jpop', 'j-rock', 'jrock', 'japanese', 'mandopop', 'c-pop'],                                                                              query: 'Asian fusion restaurant' },
-    { keywords: ['latin', 'reggaeton', 'salsa', 'bossa nova', 'flamenco', 'cumbia', 'latin pop', 'latin trap', 'bachata', 'merengue', 'spanish'],                                                query: 'Latin restaurant' },
-    { keywords: ['reggae', 'caribbean', 'dancehall', 'tropical', 'ska', 'afrobeats', 'afropop', 'highlife', 'soca'],                                                                             query: 'Caribbean restaurant' },
-    { keywords: ['gospel', 'christian', 'worship', 'spiritual', 'ccm'],                                                                                                                          query: 'soul food restaurant' },
+    { keywords: ['jazz', 'bebop', 'swing', 'blues', 'jazz rap', 'soul jazz', 'jazz fusion'],                                                                                                     query: 'jazz bar',           safeQuery: 'jazz cafe' },
+    { keywords: ['hip hop', 'hip-hop', 'rap', 'trap', 'drill', 'r&b', 'soul', 'funk', 'neo soul', 'motown', 'urban contemporary', 'contemporary r&b', 'alternative r&b'],                        query: 'soul food restaurant', safeQuery: 'soul food restaurant' },
+    { keywords: ['indie', 'alternative', 'folk', 'acoustic', 'lo-fi', 'singer-songwriter', 'bedroom pop', 'chillwave', 'dream pop', 'shoegaze', 'slowcore'],                                      query: 'gastropub',           safeQuery: 'cafe bistro' },
+    { keywords: ['classical', 'orchestra', 'opera', 'piano', 'baroque', 'chamber', 'symphonic', 'ambient classical'],                                                                            query: 'fine dining restaurant', safeQuery: 'fine dining restaurant' },
+    { keywords: ['country', 'americana', 'bluegrass', 'western', 'outlaw', 'southern rock', 'texas country'],                                                                                    query: 'BBQ restaurant',      safeQuery: 'BBQ restaurant' },
+    { keywords: ['electronic', 'edm', 'techno', 'house', 'dance', 'trance', 'dubstep', 'electronica', 'synthwave', 'vaporwave'],                                                                 query: 'cocktail bar',        safeQuery: 'boba tea cafe' },
+    { keywords: ['rock', 'metal', 'punk', 'grunge', 'hard rock', 'hardcore', 'post-rock', 'progressive rock', 'math rock', 'emo'],                                                               query: 'pub',                 safeQuery: 'burger restaurant' },
+    { keywords: ['pop', 'teen pop', 'synth pop', 'dance pop', 'bubblegum pop', 'hyperpop', 'electropop'],                                                                                        query: 'brunch restaurant',   safeQuery: 'brunch restaurant' },
+    { keywords: ['k-pop', 'kpop', 'korean', 'j-pop', 'jpop', 'j-rock', 'jrock', 'japanese', 'mandopop', 'c-pop'],                                                                              query: 'Asian fusion restaurant', safeQuery: 'Asian fusion restaurant' },
+    { keywords: ['latin', 'reggaeton', 'salsa', 'bossa nova', 'flamenco', 'cumbia', 'latin pop', 'latin trap', 'bachata', 'merengue', 'spanish'],                                                query: 'Latin restaurant',    safeQuery: 'Latin restaurant' },
+    { keywords: ['reggae', 'caribbean', 'dancehall', 'tropical', 'ska', 'afrobeats', 'afropop', 'highlife', 'soca'],                                                                             query: 'Caribbean restaurant', safeQuery: 'Caribbean restaurant' },
+    { keywords: ['gospel', 'christian', 'worship', 'spiritual', 'ccm'],                                                                                                                          query: 'soul food restaurant', safeQuery: 'soul food restaurant' },
 ]
 
-function mapGenresToVenueQueries(genres) {
+function mapGenresToVenueQueries(genres, filterAlcohol = false) {
     if (!genres || genres.length === 0) return ['restaurant']
 
     const counts = {}
@@ -25,7 +25,8 @@ function mapGenresToVenueQueries(genres) {
         const lower = genre.toLowerCase()
         for (const entry of GENRE_VENUE_MAP) {
             if (entry.keywords.some(k => lower.includes(k))) {
-                counts[entry.query] = (counts[entry.query] || 0) + 1
+                const q = filterAlcohol ? entry.safeQuery : entry.query
+                counts[q] = (counts[q] || 0) + 1
                 break
             }
         }
@@ -62,14 +63,14 @@ async function getPlaceDetails(placeId) {
 }
 
 exports.getNearbyRestoByMusic = async (req, res) => {
-    const { lat, lng, genreFilter, pagetoken } = req.body
+    const { lat, lng, genreFilter, pagetoken, filterAlcohol } = req.body
     const radius = 1000
 
     if (!lat || !lng) {
         return res.status(400).json({ message: "Missing required parameters." })
     }
 
-    const venueQueries = mapGenresToVenueQueries(genreFilter)
+    const venueQueries = mapGenresToVenueQueries(genreFilter, filterAlcohol === true)
     // When paginating, only use the primary query (pagetoken is tied to a specific search)
     const queriesToRun = pagetoken ? [venueQueries[0]] : venueQueries
 

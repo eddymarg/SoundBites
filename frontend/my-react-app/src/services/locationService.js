@@ -1,12 +1,13 @@
 import axios from 'axios'
 
-const getNearbyRestoByMusic = async (lat, lng, genreFilter, pagetoken = null) => {
+const getNearbyRestoByMusic = async (lat, lng, genreFilter, pagetoken = null, filterAlcohol = false) => {
     try {
         const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/nearby-restaurants`, {
             lat,
             lng,
             genreFilter,
             pagetoken,
+            filterAlcohol,
         })
         return res.data
     } catch (error) {

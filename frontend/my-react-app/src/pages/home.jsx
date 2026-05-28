@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { Stack, Button, Typography, Avatar, Box } from "@mui/material"
 import HomeHeader from "../components/homeHeader"
 import { NoteLogo } from "../assets/noteLogo"
@@ -11,8 +11,24 @@ import foodBowl2 from "../assets/foodBowl2.png"
 import foodBowl3 from "../assets/foodBowl3.png"
 
 const Home = () => {
+    const [scrolling, setScrolling] = useState(false)
+    const scrollTimer = useRef(null)
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolling(true)
+            clearTimeout(scrollTimer.current)
+            scrollTimer.current = setTimeout(() => setScrolling(false), 300)
+        }
+        window.addEventListener('scroll', handleScroll, { passive: true })
+        return () => {
+            window.removeEventListener('scroll', handleScroll)
+            clearTimeout(scrollTimer.current)
+        }
+    }, [])
+
     return(
-        <div>
+        <div className={scrolling ? 'scrolling' : ''}>
             <Box sx={{ position: 'sticky', top: 0, zIndex: 1000}}>
                 <HomeHeader />
             </Box>
@@ -20,25 +36,25 @@ const Home = () => {
             <Box id='top-section' sx={{ position: 'relative', minHeight: '100vh', scrollMarginTop: '10rem'}}>
                 <Box sx={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
                     <Box>
-                        <Box component="img" src={foodBowl1}
+                        <Box component="img" src={foodBowl1} className="bowl-rock-1"
                             sx={{ width: { xs: '26vw', md: '26vw' }, position: 'absolute', top: { xs: 4, md: 10 }, left: { xs: '-43px', md: '-100px' }, zIndex: 1 }}
                         />
-                        <Box component="img" src={foodBowl2}
+                        <Box component="img" src={foodBowl2} className="bowl-rock-2"
                             sx={{ width: { xs: '40vw', md: '40vw' }, position: 'absolute', top: { xs: 64, md: 150 }, left: { xs: '-108px', md: '-250px' }, zIndex: 0 }}
                         />
-                        <Box component="img" src={foodBowl3}
+                        <Box component="img" src={foodBowl3} className="bowl-rock-3"
                             sx={{ width: { xs: '18vw', md: '18vw' }, position: 'absolute', top: { xs: 150, md: 350 }, left: { xs: '-17px', md: '-40px' }, zIndex: -1 }}
                         />
                     </Box>
                     {/* mirrored side */}
                     <Box sx={{ position: 'relative', top: 0, right: 0, transform: 'scaleX(-1)'}}>
-                        <Box component="img" src={foodBowl3}
+                        <Box component="img" src={foodBowl3} className="bowl-rock-3"
                             sx={{ width: { xs: '18vw', md: '18vw' }, position: 'absolute', top: { xs: 150, md: 350 }, left: { xs: '-43px', md: '-100px' }, zIndex: -1 }}
                         />
-                        <Box component="img" src={foodBowl2}
+                        <Box component="img" src={foodBowl2} className="bowl-rock-2"
                             sx={{ width: { xs: '40vw', md: '40vw' }, position: 'absolute', top: { xs: 64, md: 150 }, left: { xs: '-108px', md: '-250px' }, zIndex: 0 }}
                         />
-                        <Box component="img" src={foodBowl1}
+                        <Box component="img" src={foodBowl1} className="bowl-rock-1"
                             sx={{ width: { xs: '26vw', md: '26vw' }, position: 'absolute', top: { xs: 4, md: 10 }, left: { xs: '-17px', md: '-40px' }, zIndex: 1 }}
                         />
                     </Box>

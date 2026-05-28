@@ -27,6 +27,10 @@ const SpotifyUser = new mongoose.Schema({
     },
     resetPasswordExpires: {
         type: Date
+    },
+    explicitContentFilter: {
+        type: Boolean,
+        default: false
     }
 })
 

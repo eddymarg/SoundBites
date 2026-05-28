@@ -104,6 +104,7 @@ const UserHome = () => {
                         localStorage.removeItem("restaurantCache")
                         setAllRestaurants([])
                         setVisibleRestaurants([])
+                        setIsLoading(true)
                         setLoadedCount(0)
                         setPagetoken(null)
                         setHasNoMoreResults(false)
@@ -229,7 +230,8 @@ const UserHome = () => {
 
         if (!hasFetchedRestaurants) {
             setIsLoading(true)
-            getNearbyRestoByMusic(userLocation.lat, userLocation.lng, genreFilter, pagetoken)
+            const filterAlcohol = localStorage.getItem('explicitContentFilter') === 'true'
+            getNearbyRestoByMusic(userLocation.lat, userLocation.lng, genreFilter, pagetoken, filterAlcohol)
                 .then((data) => {
                     if (data && Array.isArray(data.restaurants)) {
                         const newRestaurants = [...data.restaurants]
@@ -555,6 +557,7 @@ const UserHome = () => {
     }
 
     useEffect(() => {
+        setIsLoading(true)
         setHasFetchedRestaurants(false)
         setPagetoken(null)
         setHasNoMoreResults(false)
@@ -567,6 +570,7 @@ const UserHome = () => {
         localStorage.removeItem("restaurantCache")
         setAllRestaurants([])
         setVisibleRestaurants([])
+        setIsLoading(true)
         setLoadedCount(0)
         setPagetoken(null)
         setHasNoMoreResults(false)
@@ -739,6 +743,7 @@ const UserHome = () => {
                                         }}
                                         savedIds={savedIds}
                                         bookmarkToggle={bookmarkToggle}
+                                        isLoading={isLoading}
                                         isLoadingMore={isLoadingMore}
                                         newRestaurantIds={newRestaurantIds}
                                         usingFallbackLocation={usingFallbackLocation}
@@ -792,6 +797,7 @@ const UserHome = () => {
                                         handleLocationClick={handleLocationClick}
                                         savedIds={savedIds}
                                         bookmarkToggle={bookmarkToggle}
+                                        isLoading={isLoading}
                                         isLoadingMore={isLoadingMore}
                                         newRestaurantIds={newRestaurantIds}
                                         usingFallbackLocation={usingFallbackLocation}

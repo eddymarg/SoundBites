@@ -99,7 +99,7 @@ const SavedRestaurantsPage = () => {
                 const res = await fetch(`${import.meta.env.VITE_API_URL}/api/savedRestaurants`, { credentials: 'include', headers: spotifyAuthHeaders() })
                 if (!res.ok) {
                     if (res.status === 401) { navigate('/signin'); return }
-                    throw new Error(`Server error: ${res.status}`)
+                    throw new Error("Failed to load saved restaurants")
                 }
                 const data = await res.json()
                 const safeData = Array.isArray(data) ? data : []
@@ -107,7 +107,7 @@ const SavedRestaurantsPage = () => {
                 setSavedIds(safeData.map(item => item.place_id))
             } catch (err) {
                 console.error("Failed to load saved restaurants", err)
-                setError(err.message)
+                setError("Something went wrong. Please try again.")
             } finally {
                 setIsLoading(false)
             }
@@ -121,7 +121,7 @@ const SavedRestaurantsPage = () => {
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/lists`, { credentials: 'include', headers: spotifyAuthHeaders() })
             if (!res.ok) {
                 if (res.status === 401) { navigate('/signin'); return }
-                throw new Error(`Server error: ${res.status}`)
+                throw new Error("Failed to load lists")
             }
             const data = await res.json()
             setLists(Array.isArray(data) ? data : [])

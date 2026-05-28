@@ -5,12 +5,12 @@ import BookmarkAddedIcon from '@mui/icons-material/BookmarkAdded'
 
 const IMG_FALLBACK = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Crect width='120' height='120' rx='20' fill='%23FFECEE'/%3E%3Ctext x='60' y='78' font-size='52' text-anchor='middle' font-family='serif'%3E🍽%3C/text%3E%3C/svg%3E"
 
-const RestaurantList = ({ restaurants, handleLocationClick, savedIds, bookmarkToggle, isLoadingMore, newRestaurantIds, usingFallbackLocation }) => {
+const RestaurantList = ({ restaurants, handleLocationClick, savedIds, bookmarkToggle, isLoading, isLoadingMore, newRestaurantIds, usingFallbackLocation }) => {
     const priceLevels = ["$", "$$", "$$$", "$$$$"]
 
     return (
         <>
-            {restaurants.length === 0 && !isLoadingMore && (
+            {restaurants.length === 0 && !isLoading && !isLoadingMore && (
                 usingFallbackLocation ? (
                     <Box sx={{ textAlign: 'center', mt: 6, px: 2 }}>
                         <Typography sx={{ fontSize: '44px', mb: 1 }}>🎵</Typography>

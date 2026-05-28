@@ -108,6 +108,7 @@ const HomeHeader = ({setHasFetchedRestaurants, setVisibleRestaurants, homeButton
                 }
                 setUserInfo(res.data)
                 setAvatarSrc(res.data.avatar)
+                localStorage.setItem('explicitContentFilter', res.data.explicitContentFilter ? 'true' : 'false')
             } catch (err) {
                 console.error("Failed to fetch user info from DB:", err)
             }

@@ -35,9 +35,10 @@ const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocati
     };
     
     // Retrieves the current day's info (for hours)
+    // Date.getDay() returns 0=Sun..6=Sat, but Google's weekday_text is 0=Mon..6=Sun
     const getTodayHours = (weekdayText) => {
-        const dayIndex = new Date().getDay()
-        return weekdayText?.[dayIndex] || "No hours available"
+        const googleDayIndex = (new Date().getDay() + 6) % 7
+        return weekdayText?.[googleDayIndex] || "No hours available"
     }
 
     const handlePinClick = (location) => {
@@ -200,14 +201,17 @@ const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocati
 
                                     {showAllHours && (
                                         <Box sx={{ pl: 4}}>
-                                            {selectedLocation.opening_hours?.weekday_text?.map((day, index) => (
-                                                <Typography
-                                                    key={index}
-                                                    style={{ fontSize: "14px", color: "#0D1B2A90", marginBottom: "2px"}}
-                                                >
-                                                    {day}
-                                                </Typography>
-                                            ))}
+                                            {selectedLocation.opening_hours?.weekday_text?.map((day, index) => {
+                                                const isToday = index === (new Date().getDay() + 6) % 7
+                                                return (
+                                                    <Typography
+                                                        key={index}
+                                                        style={{ fontSize: "14px", color: isToday ? "#0D1B2A" : "#0D1B2A90", fontWeight: isToday ? "600" : "normal", marginBottom: "2px"}}
+                                                    >
+                                                        {day}
+                                                    </Typography>
+                                                )
+                                            })}
                                         </Box>
                                     )}
                                     <Typography
@@ -251,7 +255,6 @@ const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocati
                     </AdvancedMarker>
                 </Map>
             )}
-            {error && <div className="text-red-500">Error: {error}</div>}
         </>
     )
 }
