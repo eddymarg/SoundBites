@@ -1,8 +1,23 @@
 const List = require("../models/List")
 
+const DEFAULT_LISTS = [
+    { name: 'Liked' },
+    { name: 'Must Visit' },
+]
+
+const ensureDefaultLists = async (userId) => {
+    for (const d of DEFAULT_LISTS) {
+        const exists = await List.findOne({ userId, name: d.name, isDefault: true })
+        if (!exists) {
+            await List.create({ userId, name: d.name, isDefault: true, place_ids: [] })
+        }
+    }
+}
+
 exports.getLists = async (req, res) => {
     try {
-        const lists = await List.find({ userId: req.user.id }).sort({ createdAt: -1 })
+        await ensureDefaultLists(req.user.id)
+        const lists = await List.find({ userId: req.user.id }).sort({ isDefault: -1, createdAt: -1 })
         res.json(lists)
     } catch (error) {
         res.status(500).json({ error: error.message })
@@ -23,8 +38,10 @@ exports.createList = async (req, res) => {
 
 exports.deleteList = async (req, res) => {
     try {
-        const deleted = await List.findOneAndDelete({ _id: req.params.listId, userId: req.user.id })
-        if (!deleted) return res.status(404).json({ message: "List not found" })
+        const list = await List.findOne({ _id: req.params.listId, userId: req.user.id })
+        if (!list) return res.status(404).json({ message: "List not found" })
+        if (list.isDefault) return res.status(403).json({ message: "Cannot delete a default list" })
+        await list.deleteOne()
         res.json({ message: "Deleted" })
     } catch (error) {
         res.status(500).json({ error: error.message })

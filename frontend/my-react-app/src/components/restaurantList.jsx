@@ -1,12 +1,29 @@
-import { Box, Typography, Stack, Rating, IconButton, Skeleton } from "@mui/material"
+import { useState } from "react"
+import { Box, Typography, Stack, Rating, IconButton, Skeleton, Menu, MenuItem, Checkbox, Divider, Tooltip } from "@mui/material"
 import '../css/googleModal.css'
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder'
 import BookmarkAddedIcon from '@mui/icons-material/BookmarkAdded'
+import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
 
 const IMG_FALLBACK = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Crect width='120' height='120' rx='20' fill='%23FFECEE'/%3E%3Ctext x='60' y='78' font-size='52' text-anchor='middle' font-family='serif'%3E🍽%3C/text%3E%3C/svg%3E"
 
-const RestaurantList = ({ restaurants, handleLocationClick, selectedLocation, savedIds, bookmarkToggle, isLoading, isLoadingMore, newRestaurantIds, usingFallbackLocation }) => {
+const LIST_ICONS = { 'Liked': '❤️', 'Must Visit': '⭐' }
+
+const RestaurantList = ({ restaurants, handleLocationClick, selectedLocation, savedIds, bookmarkToggle, isLoading, isLoadingMore, newRestaurantIds, usingFallbackLocation, lists, onAddToList }) => {
     const priceLevels = ["$", "$$", "$$$", "$$$$"]
+    const [menuAnchor, setMenuAnchor] = useState(null)
+    const [menuRestaurant, setMenuRestaurant] = useState(null)
+
+    const handleOpenMenu = (e, resto) => {
+        e.stopPropagation()
+        setMenuAnchor(e.currentTarget)
+        setMenuRestaurant(resto)
+    }
+
+    const handleCloseMenu = () => {
+        setMenuAnchor(null)
+        setMenuRestaurant(null)
+    }
 
     return (
         <>
@@ -97,16 +114,25 @@ const RestaurantList = ({ restaurants, handleLocationClick, selectedLocation, sa
                             >
                                 {resto.name}
                             </Typography>
-                            <IconButton onClick={(e) => {
-                                e.stopPropagation()
-                                bookmarkToggle(resto)
-                            }}>
-                                {savedIds.includes(resto.place_id) ? (
-                                    <BookmarkAddedIcon sx={{ color: "#EF233C", fontSize: "35px" }} />
-                                ) : (
-                                    <BookmarkBorderIcon sx={{ color: "#FFBF69", fontSize: "35px" }} />
+                            <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                                {lists && onAddToList && (
+                                    <Tooltip title="Add to list">
+                                        <IconButton onClick={(e) => handleOpenMenu(e, resto)} size="small">
+                                            <PlaylistAddIcon sx={{ color: "#888", fontSize: "28px" }} />
+                                        </IconButton>
+                                    </Tooltip>
                                 )}
-                            </IconButton>
+                                <IconButton onClick={(e) => {
+                                    e.stopPropagation()
+                                    bookmarkToggle(resto)
+                                }}>
+                                    {savedIds.includes(resto.place_id) ? (
+                                        <BookmarkAddedIcon sx={{ color: "#EF233C", fontSize: "35px" }} />
+                                    ) : (
+                                        <BookmarkBorderIcon sx={{ color: "#FFBF69", fontSize: "35px" }} />
+                                    )}
+                                </IconButton>
+                            </Box>
                         </Box>
                         <Box display="flex" alignItems="center" sx={{ flexWrap: 'nowrap', gap: 0.5 }}>
                             <Typography variant="body2" sx={{ flexShrink: 0 }}>
@@ -154,6 +180,41 @@ const RestaurantList = ({ restaurants, handleLocationClick, selectedLocation, sa
                     </Box>
                 ))}
             </ul>
+
+            {/* Add-to-list dropdown */}
+            <Menu
+                anchorEl={menuAnchor}
+                open={Boolean(menuAnchor)}
+                onClose={handleCloseMenu}
+                slotProps={{ paper: { sx: { borderRadius: '16px', minWidth: 220, boxShadow: '0 8px 24px rgba(0,0,0,0.12)' } } }}
+            >
+                {lists?.length === 0 && (
+                    <MenuItem disabled>
+                        <Typography variant="body2" color="text.secondary">No lists yet</Typography>
+                    </MenuItem>
+                )}
+                {lists?.map(list => {
+                    const isInList = list.place_ids?.includes(menuRestaurant?.place_id)
+                    const icon = list.isDefault ? LIST_ICONS[list.name] : null
+                    return (
+                        <MenuItem
+                            key={list._id}
+                            onClick={() => { onAddToList(list._id, menuRestaurant); handleCloseMenu() }}
+                            sx={{ gap: 1, py: 1 }}
+                        >
+                            <Checkbox
+                                size="small"
+                                checked={!!isInList}
+                                disableRipple
+                                sx={{ p: 0, color: '#EF233C', '&.Mui-checked': { color: '#EF233C' } }}
+                                onClick={e => e.stopPropagation()}
+                            />
+                            {icon && <Typography sx={{ fontSize: '15px', lineHeight: 1 }}>{icon}</Typography>}
+                            <Typography variant="body2">{list.name}</Typography>
+                        </MenuItem>
+                    )
+                })}
+            </Menu>
         </>
     )
 }

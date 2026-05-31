@@ -476,55 +476,55 @@ const SavedRestaurantsPage = () => {
                     </Button>
                 )}
 
-                {lists.length === 0 && !creatingList ? (
-                    <Box sx={{ textAlign: 'center', mt: 4 }}>
-                        <Typography fontSize="36px">📋</Typography>
-                        <Typography fontWeight={700} fontSize="18px" fontFamily="'Tinos', serif" sx={{ mt: 1 }}>
-                            No lists yet
-                        </Typography>
-                        <Typography color="text.secondary" fontSize="14px" sx={{ mt: 0.5 }}>
-                            Create a list to organize your saved spots.
-                        </Typography>
-                    </Box>
-                ) : (
+                {lists.length === 0 && !creatingList ? null : (
                     <Stack spacing={1.5}>
-                        {lists.map(list => (
-                            <Box
-                                key={list._id}
-                                sx={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    p: '14px 16px',
-                                    borderRadius: '20px',
-                                    backgroundColor: '#fff',
-                                    cursor: 'pointer',
-                                    border: '1.5px solid transparent',
-                                    '&:hover': { border: '1.5px solid #EF233C', backgroundColor: '#EF233C08' },
-                                }}
-                                onClick={() => setSelectedListId(list._id)}
-                            >
-                                <Box sx={{ flex: 1 }}>
-                                    <Typography fontWeight={600} fontSize="15px" fontFamily="'Tinos', serif">
-                                        {list.name}
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        {list.place_ids.length} {list.place_ids.length === 1 ? 'place' : 'places'}
-                                    </Typography>
+                        {lists.map(list => {
+                            const defaultIcon = list.isDefault
+                                ? (list.name === 'Liked' ? '❤️' : list.name === 'Must Visit' ? '⭐' : null)
+                                : null
+                            return (
+                                <Box
+                                    key={list._id}
+                                    sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        p: '14px 16px',
+                                        borderRadius: '20px',
+                                        backgroundColor: list.isDefault ? '#fff8f8' : '#fff',
+                                        cursor: 'pointer',
+                                        border: list.isDefault ? '1.5px solid #EF233C20' : '1.5px solid transparent',
+                                        '&:hover': { border: '1.5px solid #EF233C', backgroundColor: '#EF233C08' },
+                                    }}
+                                    onClick={() => setSelectedListId(list._id)}
+                                >
+                                    {defaultIcon && (
+                                        <Typography sx={{ fontSize: '22px', mr: 1.5, lineHeight: 1 }}>{defaultIcon}</Typography>
+                                    )}
+                                    <Box sx={{ flex: 1 }}>
+                                        <Typography fontWeight={600} fontSize="15px" fontFamily="'Tinos', serif">
+                                            {list.name}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            {list.place_ids.length} {list.place_ids.length === 1 ? 'place' : 'places'}
+                                        </Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                        {!list.isDefault && (
+                                            <Tooltip title="Delete list">
+                                                <IconButton
+                                                    size="small"
+                                                    onClick={(e) => { e.stopPropagation(); deleteList(list._id) }}
+                                                    sx={{ color: '#ccc', '&:hover': { color: '#ef233c' } }}
+                                                >
+                                                    <DeleteOutlineIcon fontSize="small" />
+                                                </IconButton>
+                                            </Tooltip>
+                                        )}
+                                        <ChevronRightIcon sx={{ color: '#bbb' }} />
+                                    </Box>
                                 </Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                    <Tooltip title="Delete list">
-                                        <IconButton
-                                            size="small"
-                                            onClick={(e) => { e.stopPropagation(); deleteList(list._id) }}
-                                            sx={{ color: '#ccc', '&:hover': { color: '#ef233c' } }}
-                                        >
-                                            <DeleteOutlineIcon fontSize="small" />
-                                        </IconButton>
-                                    </Tooltip>
-                                    <ChevronRightIcon sx={{ color: '#bbb' }} />
-                                </Box>
-                            </Box>
-                        ))}
+                            )
+                        })}
                     </Stack>
                 )}
             </Box>
@@ -589,9 +589,13 @@ const SavedRestaurantsPage = () => {
                 )}
                 {lists.map(list => {
                     const isInList = list.place_ids.includes(addToListRestaurant?.place_id)
+                    const defaultIcon = list.isDefault
+                        ? (list.name === 'Liked' ? '❤️' : list.name === 'Must Visit' ? '⭐' : null)
+                        : null
                     return (
                         <MenuItem key={list._id} onClick={() => toggleRestaurantInList(list._id, addToListRestaurant)} sx={{ gap: 1 }}>
                             <Checkbox size="small" checked={isInList} disableRipple sx={{ p: 0, color: '#EF233C', '&.Mui-checked': { color: '#EF233C' } }} onClick={(e) => e.stopPropagation()} />
+                            {defaultIcon && <Typography sx={{ fontSize: '14px', lineHeight: 1 }}>{defaultIcon}</Typography>}
                             <Typography variant="body2">{list.name}</Typography>
                         </MenuItem>
                     )

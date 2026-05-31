@@ -50,6 +50,7 @@ const UserHome = () => {
     const [isNewUser, setIsNewUser] = useState(false)
     const [spotifyId, setSpotifyId] = useState("")
 
+    const [lists, setLists] = useState([])
     const [refreshStatus, setRefreshStatus] = useState(null) // null | 'new' | 'same' | 'location'
     const [awaitingLocation, setAwaitingLocation] = useState(false)
     const [usingFallbackLocation, setUsingFallbackLocation] = useState(false)
@@ -372,6 +373,20 @@ const UserHome = () => {
         loadSavedIds()
     }, [])
 
+    useEffect(() => {
+        const fetchLists = async () => {
+            try {
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/lists`, { credentials: 'include', headers: spotifyAuthHeaders() })
+                if (!res.ok) return
+                const data = await res.json()
+                setLists(Array.isArray(data) ? data : [])
+            } catch (err) {
+                console.error("Failed to load lists:", err)
+            }
+        }
+        fetchLists()
+    }, [])
+
     const checkForPassword = async () => {
         try {
             const res = await fetch(`${import.meta.env.VITE_API_URL}/check-for-password`, {
@@ -443,6 +458,39 @@ const UserHome = () => {
                 setSavedIds(prev => prev.filter(id => id !== restaurant.place_id))
                 console.error("Failed to save bookmark:", error)
             }
+        }
+    }
+
+    const handleAddToList = async (listId, restaurant) => {
+        if (!restaurant) return
+        const list = lists.find(l => l._id === listId)
+        if (!list) return
+        const isInList = list.place_ids?.includes(restaurant.place_id)
+
+        setLists(prev => prev.map(l =>
+            l._id === listId
+                ? { ...l, place_ids: isInList
+                    ? l.place_ids.filter(id => id !== restaurant.place_id)
+                    : [...l.place_ids, restaurant.place_id] }
+                : l
+        ))
+
+        // Auto-save the restaurant when adding to a list for the first time
+        if (!isInList && !savedIds.includes(restaurant.place_id)) {
+            bookmarkToggle(restaurant)
+        }
+
+        try {
+            const url = `${import.meta.env.VITE_API_URL}/api/lists/${listId}/${isInList ? 'remove' : 'add'}/${restaurant.place_id}`
+            await fetch(url, { method: isInList ? 'DELETE' : 'POST', credentials: 'include', headers: spotifyAuthHeaders() })
+        } catch {
+            setLists(prev => prev.map(l =>
+                l._id === listId
+                    ? { ...l, place_ids: isInList
+                        ? [...l.place_ids, restaurant.place_id]
+                        : l.place_ids.filter(id => id !== restaurant.place_id) }
+                    : l
+            ))
         }
     }
 
@@ -782,6 +830,8 @@ const UserHome = () => {
                                         isLoadingMore={isLoadingMore}
                                         newRestaurantIds={newRestaurantIds}
                                         usingFallbackLocation={usingFallbackLocation}
+                                        lists={lists}
+                                        onAddToList={handleAddToList}
                                     />
                                     <Box display="flex" justifyContent="center" alignItems="center" mt={2} mb={1.5}>
                                         {hasNoMoreResults ? (
@@ -837,6 +887,8 @@ const UserHome = () => {
                                         isLoadingMore={isLoadingMore}
                                         newRestaurantIds={newRestaurantIds}
                                         usingFallbackLocation={usingFallbackLocation}
+                                        lists={lists}
+                                        onAddToList={handleAddToList}
                                     />
                                     <Box display="flex" justifyContent="center" alignItems="center" marginTop="2rem" marginBottom="1rem">
                                         {hasNoMoreResults ? (
