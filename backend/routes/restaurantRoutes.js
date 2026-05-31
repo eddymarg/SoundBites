@@ -1,5 +1,5 @@
 const express = require("express")
-const { getNearbyRestoByMusic } = require("../controllers/restaurantController")
+const { getNearbyRestoByMusic, getPlaceDetailsById } = require("../controllers/restaurantController")
 const { saveRestaurant, removeRestaurant, getSavedRestaurants, toggleVisited } = require("../controllers/saveController")
 const { getLists, createList, deleteList, addToList, removeFromList } = require("../controllers/listController")
 const authMiddleware = require("../middleware/authMiddleware")
@@ -7,6 +7,7 @@ const authMiddleware = require("../middleware/authMiddleware")
 const router = express.Router()
 
 router.post("/nearby-restaurants", getNearbyRestoByMusic)
+router.get("/place-details/:placeId", getPlaceDetailsById)
 
 // Protected routes — require a logged-in user
 router.post("/save", authMiddleware, saveRestaurant)

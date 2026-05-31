@@ -83,6 +83,7 @@ const HomeHeader = ({setHasFetchedRestaurants, setVisibleRestaurants, homeButton
             localStorage.removeItem("restaurantCache")
             localStorage.removeItem("userLocation")
             localStorage.removeItem("ipLocation")
+            sessionStorage.removeItem("hasSeenLoadingScreen")
 
             if (typeof setHasFetchedRestaurants === "function") setHasFetchedRestaurants(false)
             if (typeof setVisibleRestaurants === "function") setVisibleRestaurants([])

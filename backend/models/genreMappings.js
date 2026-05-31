@@ -7,7 +7,7 @@ const genreMappings = {
         adjectives: ["Plant-filled", "Soft-decor"]
     },
     "Abstract": {
-        settings: ["Artsy Cafes", "Experimental Restaurants", "Lounge Bards"
+        settings: ["Artsy Cafes", "Experimental Restaurants", "Concept Cafes"
         ],
         adjectives: ["Introspective", "Avant-garde"]
     },
@@ -16,11 +16,11 @@ const genreMappings = {
         adjectives: ["Chaotic", "Unconventional"]
     },
     "Abstract Hip Hop": {
-        settings: ["Speakeasy", "Vinyl Bars", "Speakeasy"],
+        settings: ["Retro Diner", "Vinyl Cafes", "Record Store Cafes"],
         adjectives: ["Surrealistic", "Complex"]
     },
     "Abstract IDM": {
-        settings: ["Multi-sensory dining", "Tea Ceremony Cafes", "Listening Bars"],
+        settings: ["Multi-sensory dining", "Tea Ceremony Cafes", "Listening Cafes"],
         adjectives: ["Exploratory", "Intricate"]
     },
     "Abstracto": {
@@ -28,19 +28,19 @@ const genreMappings = {
         adjectives: ["Unconventional", "Noisy"]
     },
     "Accordion": {
-        settings: ["Family-Owned Restaurants", "Taverns", "European Bistro"],
+        settings: ["Family-Owned Restaurants", "Heritage Eateries", "European Bistro"],
         adjectives: ["Traditional", "Lively"]
     },
     "Acid House": {
-        settings: ["Rooftop Bars", "Sensory Dining", "Themed Restaurants"],
+        settings: ["Rooftop Cafes", "Sensory Dining", "Themed Restaurants"],
         adjectives: ["Euphoric", "Psychedelic"]
     },
     "Acid Jazz": {
-        settings: ["Retro Diners", "Listening Bars", "Art House Cafes"],
+        settings: ["Retro Diners", "Listening Cafes", "Art House Cafes"],
         adjectives: ["Funky", "Eclectic"]
     },
     "Acid Techno": {
-        settings: ["Industrial-themed bars", "Food Trucks", "Noodle Shops"],
+        settings: ["Industrial-themed Cafes", "Food Trucks", "Noodle Shops"],
         adjectives: ["Fast", "Intense"]
     },
     "Acousmatic": {
@@ -48,7 +48,7 @@ const genreMappings = {
         adjectives: ["Enchanting", "Mysterious"]
     },
     "Acoustic Blues": {
-        settings: ["Soul Food", "Porch Dining", "Speakeasy Diners"],
+        settings: ["Soul Food", "Porch Dining", "Retro Diners"],
         adjectives: ["Soulful", "Intimate"]
     },
     "Acoustic Pop": {
@@ -56,35 +56,35 @@ const genreMappings = {
         adjectives: ["Organic", "Laid-back"]
     },
     "Adult Standards": {
-        settings: ["Wine Bars", "Steakhouses", "French Bistros"],
+        settings: ["Bistros", "Steakhouses", "French Bistros"],
         adjectives: ["Classic, Clean"]
     },
     "African Percussion": {
-        settings: ["Afro-Caribbean Restaurants, Communal Dining Halls, Open-Air Markets"],
+        settings: ["Afro-Caribbean Restaurants", "Communal Dining Halls", "Open-Air Markets"],
         adjectives: ["Vibrant", "Communal"]
     },
     "African Rock": {
-        settings: ["Urban Food Markets", "Street Food Trucks", "Late-night Lounges"],
+        settings: ["Urban Food Markets", "Street Food Trucks", "Late-night Cafes"],
         adjectives: ["Vibrant", "Edgy"]
     },
     "Afrikaans": {
-        settings: ["Fusion Restaurants", "Pubs", "Artisanal Bakery"],
+        settings: ["Fusion Restaurants", "Bistros", "Artisanal Bakery"],
         adjectives: ["Diverse, Funky"]
     },
     "Afrobeat": {
-        settings: ["Rooftop Bars", "Caribbean & West African Fusion Restaurants", "Food Halls"],
+        settings: ["Rooftop Cafes", "Caribbean & West African Fusion Restaurants", "Food Halls"],
         adjectives: ["Energetic", "Diverse"]
     },
     "Afrobeats": {
-        settings: ["Rooftop Bars", "Caribbean & West African Fusion Restaurants", "Food Halls"],
+        settings: ["Rooftop Cafes", "Caribbean & West African Fusion Restaurants", "Food Halls"],
         adjectives: ["Energetic", "Diverse"]
     },
     "Aggrotech": {
-        settings: ["Robotic kitchens", "Alt Cafes", "Industrial-themed bars"],
+        settings: ["Robotic kitchens", "Indie Cafes", "Industrial-themed Cafes"],
         adjectives: ["Intense", "Dystopian"]
     },
     "Albanian Pop": {
-        settings: ["Balkan Fusion Restaurants", "Mediterannean Cafes", "Neo-Tavernas"],
+        settings: ["Balkan Fusion Restaurants", "Mediterranean Cafes", "Neo-Tavernas"],
         adjectives: ["Innovative", "Fresh"]
     },
     "Album Rock": {
@@ -96,7 +96,7 @@ const genreMappings = {
         adjectives: ["Eclectic", "Authentic"]
     },
     "Alternative Americana": {
-        settings: ["Roadside Diners", "Rustic Country Cafes", "Americana-themed saloons"],
+        settings: ["Roadside Diners", "Rustic Country Cafes", "Americana-themed Eateries"],
         adjectives: ["Rustic", "Eclectic"]
     },
     "Alternative Country": {
@@ -104,15 +104,15 @@ const genreMappings = {
         adjectives: ["Authentic", "Roots"]
     },
     "Alternative Dance": {
-        settings: ["Futuristic cocktail lounge", "Minimalist fusion kitchens", "Robotic restaurants"],
+        settings: ["Futuristic Dessert Lounge", "Minimalist fusion kitchens", "Robotic restaurants"],
         adjectives: ["Experimental", "Electronic"]
     },
     "Alternative Emo": {
-        settings: ["Indie Record Store Cafe", "Vintage Pizza Parlor", "Urban Dive Bars"],
+        settings: ["Indie Record Store Cafe", "Vintage Pizza Parlor", "Urban Indie Cafes"],
         adjectives: ["Emotional", "Angsty"]
     },
     "Alternative Hardcore": {
-        settings: ["Food Trucks", "Dive Bars", "Tattoo Parlor Coffee Shop"],
+        settings: ["Food Trucks", "Indie Cafes", "Tattoo Parlor Coffee Shop"],
         adjectives: ["Fast", "Intentionally Aggressive"]
     },
     "Alternative Hip Hop": {
@@ -120,11 +120,11 @@ const genreMappings = {
         adjectives: ["Experimental", "Diverse"]
     },
     "Alternative Metal": {
-        settings: ["Industrial-themed gastropubs", "Experimental Smokehouses", "Grungy Cafes"],
+        settings: ["Industrial-themed Restaurants", "Experimental Smokehouses", "Grungy Cafes"],
         adjectives: ["Unconventional", "Range"]
     },
     "Alternative Metalcore": {
-        settings: ["Late-night diner", "Rock Music Cafes", "Industrial Dive Bar"],
+        settings: ["Late-night diner", "Rock Music Cafes", "Industrial Indie Cafe"],
         adjectives: ["Distorted", "Heavy"]
     },
     "Alternative New Age": {
@@ -140,19 +140,19 @@ const genreMappings = {
         adjectives: ["Addicting", "Melodic"]
     },
     "Alternative R&B": {
-        settings: ["Intimate Wine Bars", "Rooftop Bars", "Lounge Cafes"],
+        settings: ["Intimate Bistros", "Rooftop Cafes", "Lounge Cafes"],
         adjectives: ["Chill", "Soulful"]
-    }, 
+    },
     "Alternative Rock": {
-        settings: ["Dive Bars with Live Music", "Indie Coffeehouses", "Record Store Cafes"],
+        settings: ["Indie Cafes with Live Music", "Indie Coffeehouses", "Record Store Cafes"],
         adjectives: ["Independent", "Grunge"]
     },
     "Alternative Roots Rock": {
-        settings: ["Brewpubs", "Wood-fired Pizza", "Barn Eateries"],
+        settings: ["Craft Restaurants", "Wood-fired Pizza", "Barn Eateries"],
         adjectives: ["Modern", "Raw Energy"]
     },
     "Ambeat": {
-        settings: ["Speakeasies", "Jazz Lounges", "Ramen Shops"],
+        settings: ["Diners", "Jazz Cafes", "Ramen Shops"],
         adjectives: ["Ambient", "Chill"]
     },
     "Ambient": {
@@ -160,11 +160,11 @@ const genreMappings = {
         adjectives: ["Atmospheric", "Minimalist"]
     },
     "Ambient Dub Techno": {
-        settings: ["Rooftop Bars", "Sushi bars", "Communal Dining Spaces"],
+        settings: ["Rooftop Cafes", "Sushi bars", "Communal Dining Spaces"],
         adjectives: ["Meditative", "Slow"]
     },
     "Ambient Fusion": {
-        settings: ["Brunch Spots", "Wine Cellars", "Fusion Restaurants"],
+        settings: ["Brunch Spots", "Bistros", "Fusion Restaurants"],
         adjectives: ["Ethereal", "Subtle"]
     },
     "Ambient Idm": {
@@ -172,15 +172,15 @@ const genreMappings = {
         adjectives: ["Lush", "Minimalist"]
     },
     "Ambient Psychill": {
-        settings: ["Bohemian-style Cafes", "Hookah Lounges", "Vegetarian Restaurant"],
+        settings: ["Bohemian-style Cafes", "Tea Lounges", "Vegetarian Restaurant"],
         adjectives: ["Dreamy", "Psychedelic"]
     },
     "Ambient Trance": {
-        settings: ["Zen Tea House", "Ghost Kitchen", "Hookah Lounge"],
+        settings: ["Zen Tea House", "Ghost Kitchen", "Tea Lounge"],
         adjectives: ["Dreamy", "Hypnotic"]
     },
     "Anarcho-punk": {
-        settings: ["Food Trucks", "Indie-Grunge Cafes", "Dive Bars"],
+        settings: ["Food Trucks", "Indie-Grunge Cafes", "Indie Cafes"],
         adjectives: ["Anarchist", "DIY"]
     },
     "Andean": {
@@ -188,7 +188,7 @@ const genreMappings = {
         adjectives: ["South American", "Traditional"]
     },
     "Anime": {
-        settings: ["Night Markets", "Video Game Bar", "Sushi Bar"],
+        settings: ["Night Markets", "Video Game Cafe", "Sushi Bar"],
         adjectives: ["Vibrant", "Japanese"]
     },
     "Anime Score": {
@@ -208,15 +208,15 @@ const genreMappings = {
         adjectives: ["Old-timey", "Nature"]
     },
     "Arab Folk": {
-        settings: ["Buffet", "Gastropub", "Communal Dining"],
+        settings: ["Buffet", "Casual Restaurant", "Communal Dining"],
         adjectives: ["Vibrant", "Traditional"]
     },
     "Arab Pop": {
-        settings: ["Shisha Lounge", "Courtyard Cage", "Intimate Courtyard Cafe"],
+        settings: ["Dessert Cafe", "Courtyard Cafe", "Intimate Courtyard Cafe"],
         adjectives: ["Melancholic", "Addictive"]
     },
     "Arabesk": {
-        settings: ["Upscale Mezze Restaurant", "Elegant Courtyard Restaurant", "Terrace Lounge"],
+        settings: ["Upscale Mezze Restaurant", "Elegant Courtyard Restaurant", "Terrace Cafe"],
         adjectives: ["Diverse", "Desirable"]
     },
     "Argentine Indie": {
@@ -228,31 +228,31 @@ const genreMappings = {
         adjectives: ["Vibrant", "Relaxed"]
     },
     "Argentine Rock": {
-        settings: ["Rock Bar", "Indie Music Cafe", "Fusion Restaurant"],
+        settings: ["Rock Themed Cafe", "Indie Music Cafe", "Fusion Restaurant"],
         adjectives: ["Vibrant", "Eclectic"]
     },
     "Armenian Folk": {
-        settings: ["Armenian Tavern", "Mezze Restaurant", "Wine Cellar"],
+        settings: ["Armenian Heritage Restaurant", "Mezze Restaurant", "Bistro"],
         adjectives: ["Lively", "Nostalgic"]
     },
     "Art Rock": {
         settings: ["Art Gallery Cafe", "Vinyl Cafe", "Pop-up Restaurant"],
-        adjectives: ["Experiemental", "Avant-garde"]
+        adjectives: ["Experimental", "Avant-garde"]
     },
     "Athens Indie": {
         settings: ["Indie Cafe", "DIY Sandwich Shops", "Patio Pizza Spots"],
         adjectives: ["Community", "Alt"]
     },
     "Atmospheric Black Metal": {
-        settings: ["Warehouse Breweries", "Late-night Food Stalls", "No-frills Burger Joints"],
+        settings: ["Warehouse Craft Kitchens", "Late-night Food Stalls", "No-frills Burger Joints"],
         adjectives: ["Unconventional", "Grunge"]
     },
     "Atmospheric Post Rock": {
-        settings: ["Vinyl Listening Bars", "Slow Dining Restaurants", "Vegan Kitchens"],
+        settings: ["Vinyl Listening Cafes", "Slow Dining Restaurants", "Vegan Kitchens"],
         adjectives: ["Experimental", "Slow-paced"]
     },
     "Atmospheric Post-metal": {
-        settings: ["Industrial Breweries", "BBQ Joints", "Smokehouses"],
+        settings: ["Industrial Craft Kitchens", "BBQ Joints", "Smokehouses"],
         adjectives: ["Immersive", "Intense"]
     },
     "Aussietronica": {
@@ -268,11 +268,11 @@ const genreMappings = {
         adjectives: ["Eclectic", "Experimental"]
     },
     "Australian Country": {
-        settings: ["Casual Dining Restaurant", "Whiskey Bar", "BBQ House"],
+        settings: ["Casual Dining Restaurant", "BBQ House", "BBQ House"],
         adjectives: ["Laid-Back", "Traditional"]
     },
     "Australian Dance": {
-        settings: ["Organic Eatery", "Karaoke Bar", "Casual Dining Restaurant"],
+        settings: ["Organic Eatery", "Karaoke Cafe", "Casual Dining Restaurant"],
         adjectives: ["Energetic", "Diverse"]
     },
     "Australian Hip Hop": {
@@ -280,7 +280,7 @@ const genreMappings = {
         adjectives: ["Authentic", "Intricate"]
     },
     "Australian Indie": {
-        settings: ["Beachfront restaurant", "Treehouse restaurant", "Dive bar"],
+        settings: ["Beachfront restaurant", "Treehouse restaurant", "Indie Cafe"],
         adjectives: ["Creative", "Sun-soaked"]
     },
     "Australian Pop": {
@@ -292,7 +292,7 @@ const genreMappings = {
         adjectives: ["Upbeat", "Dynamic"]
     },
     "Austropop": {
-        settings: ["Viennese Coffee House", "Wine Bar", "Lakefront Restaurant"],
+        settings: ["Viennese Coffee House", "Bistro", "Lakefront Restaurant"],
         adjectives: ["Simple", "Catchy"]
     },
     "Avant-garde": {
@@ -300,19 +300,19 @@ const genreMappings = {
         adjectives: ["Innovative", "Aesthetic"]
     },
     "Avant-garde Jazz": {
-        settings: ["Art Gallery Cafe", "Cave Dining Experience", "Jazz Bar"],
+        settings: ["Art Gallery Cafe", "Cave Dining Experience", "Jazz Cafe"],
         adjectives: ["Experimental", "Unconventional"]
     },
     "Avant-Garde Metal": {
-        settings: ["Fusion Kitchens", "Speakeasies", "Industrial-themed Breweries"],
+        settings: ["Fusion Kitchens", "Diners", "Industrial-themed Craft Kitchens"],
         adjectives: ["Unconventional", "Progressive"]
     },
     "Axe": {
-        settings: ["Beachfront Bars", "Street Food Markets", "Churrascarias"],
+        settings: ["Beachfront Cafes", "Street Food Markets", "Churrascarias"],
         adjectives: ["Good vibrations", "Vibrant"]
     },
     "Azonto": {
-        settings: ["BBQ Joints", "Dance Lounge Restaurants", "Night Market Eateries"],
+        settings: ["BBQ Joints", "Dance Restaurants", "Night Market Eateries"],
         adjectives: ["Intricate", "Energetic"]
     },
     "Bachata": {
@@ -320,7 +320,7 @@ const genreMappings = {
         adjectives: ["Bittersweet", "Sensual"]
     },
     "Baile Funk": {
-        settings: ["Food Trucks", "Open-air Joints", "Restaurant Bars"],
+        settings: ["Food Trucks", "Open-air Joints", "Restaurant Cafes"],
         adjectives: ["Powerful", "High-energy"]
     },
     "Balearic": {
@@ -328,7 +328,7 @@ const genreMappings = {
         adjectives: ["Relaxed", "Vibrant"]
     },
     "Balkan Brass": {
-        settings: ["Taverns", "Balkan Restaurants", "Beer Gardens"],
+        settings: ["Heritage Eateries", "Balkan Restaurants", "Outdoor Patios"],
         adjectives: ["High-energy", "Fast"]
     },
     "Banda": {
@@ -360,19 +360,19 @@ const genreMappings = {
         adjectives: ["Ornate", "Complex"]
     },
     "Basque Rock": {
-        settings: ["Taverns", "Late-night Pizza Joints", "Food Trucks"],
+        settings: ["Heritage Eateries", "Late-night Pizza Joints", "Food Trucks"],
         adjectives: ["Punk", "Rebellious"]
     },
     "Bass House": {
-        settings: ["Late-night Street Food", "Urban fast-casual", "Cocktail Lounges"],
+        settings: ["Late-night Street Food", "Urban fast-casual", "Dessert Lounges"],
         adjectives: ["Groovy", "Explosive"]
     },
     "Bass Music": {
-        settings: ["Urban Fusion Restaurants", "Speakeasies", "Underground Burger Joints"],
+        settings: ["Urban Fusion Restaurants", "Diners", "Underground Burger Joints"],
         adjectives: ["Dark", "Heavy"]
     },
     "Bass Trip": {
-        settings: ["Fusion Lounge", "Underground Tasting Room", "Multi-course Meal"],
+        settings: ["Fusion Cafe", "Underground Tasting Room", "Multi-course Meal"],
         adjectives: ["Hypnotic", "Immersive"]
     },
     "Bassline": {
@@ -382,9 +382,9 @@ const genreMappings = {
     "Bay Area Hip Hop": {
         settings: ["Community-owned Eateries", "Underground pop-ups", "Rotating Menu Concepts"],
         adjectives: ["Innovative", "Socially Conscious"]
-    }, 
+    },
     "Beach Music": {
-        settings: ["Seaside Shacks", "Tropical-themed restaurants", "Tiki Bars"],
+        settings: ["Seaside Shacks", "Tropical-themed restaurants", "Tropical-themed Cafes"],
         adjectives: ["Upbeat", "Party"]
     },
     "Beatdown": {
@@ -396,7 +396,7 @@ const genreMappings = {
         adjectives: ["Funky", "Unique"]
     },
     "Bebop": {
-        settings: ["Jazz Lounges", "Speakeasy Bars", "Upscale Bistros"],
+        settings: ["Jazz Cafes", "Speakeasy Bars", "Upscale Bistros"],
         adjectives: ["Complex", "Fast"]
     },
     "Belgian Indie": {
@@ -404,7 +404,7 @@ const genreMappings = {
         adjectives: ["Independent Spirit", "Innovative"]
     },
     "Belgian Rock": {
-        settings: ["Neighborhood Pubs", "Food Markets", "Small Batch Breweries"],
+        settings: ["Neighborhood Bistros", "Food Markets", "Small Batch Craft Kitchens"],
         adjectives: ["Diversity", "Local"]
     },
     "Belly Dance": {
@@ -412,7 +412,7 @@ const genreMappings = {
         adjectives: ["Traditional", "Contemporary"]
     },
     "Belorush": {
-        settings: ["Cozy Taverns", "Traditional Bakeries", "Urban Spots"],
+        settings: ["Cozy Heritage Eateries", "Traditional Bakeries", "Urban Spots"],
         adjectives: ["Blend", "Modern"]
     },
     "Bemani": {
@@ -420,7 +420,7 @@ const genreMappings = {
         adjectives: ["Electronic", "Video Games"]
     },
     "Benga": {
-        settings: ["Dance-friendly Bars", "African Outdoor Patios", "Shareable Plates"],
+        settings: ["Dance Cafes", "African Outdoor Patios", "Shareable Plates"],
         adjectives: ["Vibrant", "Upbeat"]
     },
     "Bhangra": {
@@ -428,31 +428,31 @@ const genreMappings = {
         adjectives: ["Pop", "Fusion"]
     },
     "Big Band": {
-        settings: ["Classic American Diners", "Cocktail Lounges", "Supper Clubs"],
+        settings: ["Classic American Diners", "Cocktail Lounges", "Family Dining Spots"],
         adjectives: ["Graceful", "Joyous"]
     },
     "Big Beat": {
-        settings: ["Urban Fusion Spots", "Party Brunches", "Clubs"],
+        settings: ["Urban Fusion Spots", "Party Brunches", "Dance Cafes"],
         adjectives: ["High-energy", "Party-oriented"]
     },
     "Big Room": {
-        settings: ["Open-air Rooftops", "Cocktail Bars", "Trendy Restaurants"],
+        settings: ["Open-air Rooftops", "Dessert Bars", "Trendy Restaurants"],
         adjectives: ["Commercial", "High-energy"]
     },
     "Black Death": {
-        settings: ["Dive Bars", "Food Trucks", "Industrial-styled Restaurants"],
+        settings: ["Indie Cafes", "Food Trucks", "Industrial-styled Restaurants"],
         adjectives: ["Aggressive", "Chaotic"]
     },
     "Black Metal": {
-        settings: ["Dimly lit Metal Bars", "Avant-garde Cafes", "Mom & Pop Restaurants"],
+        settings: ["Dimly lit Metal Cafes", "Avant-garde Cafes", "Mom & Pop Restaurants"],
         adjectives: ["Distorted", "Unconventional"]
     },
     "Black Sludge": {
-        settings: ["BBQ Joints", "Craft Beer Bars", "Urban Diners"],
+        settings: ["BBQ Joints", "Craft Kitchens", "Urban Diners"],
         adjectives: ["Slow", "Heavy"]
     },
     "Black Thrash": {
-        settings: ["Metal-themed Food Trucks", "Industrial Beer Halls", "Late-night Taco Spot"],
+        settings: ["Metal-themed Food Trucks", "Industrial Food Halls", "Late-night Taco Spot"],
         adjectives: ["Aggressive", "Harsh"]
     },
     "Blackgaze": {
@@ -460,7 +460,7 @@ const genreMappings = {
         adjectives: ["Dreamy", "Dark"]
     },
     "Blaskapelle": {
-        settings: ["Beer Gardens", "Traditional Eateries", "Open-air Markets"],
+        settings: ["Outdoor Patios", "Traditional Eateries", "Open-air Markets"],
         adjectives: ["Lively", "Social"]
     },
     "Bluegrass": {
@@ -468,7 +468,7 @@ const genreMappings = {
         adjectives: ["Harmony", "Intricate"]
     },
     "Blues": {
-        settings: ["Southen Soul-food", "Juke Joints", "Neighborhood Cafes"],
+        settings: ["Southern Soul-food", "Juke Joints", "Neighborhood Cafes"],
         adjectives: ["Resilient", "Soulful"]
     },
     "Blues-Rock": {
@@ -484,15 +484,15 @@ const genreMappings = {
         adjectives: ["High-energy", "Easy-going"]
     },
     "Bolero": {
-        settings: ["Tapas-style Wine Bars", "Candlelit Patios", "Dessert Cafes"],
+        settings: ["Tapas-style Bistros", "Candlelit Patios", "Dessert Cafes"],
         adjectives: ["Melodic", "Romantic"]
     },
     "Boogaloo": {
-        settings: ["Latin Fusion Restaurants", "Salsa Bars", "Casual Eateries"],
+        settings: ["Latin Fusion Restaurants", "Latin Dance Restaurants", "Casual Eateries"],
         adjectives: ["Blend", "Soulful"]
     },
     "Boogie-woogie": {
-        settings: ["Retro Diners", "Bars with Live Piano", "Outdoor Patio Restaurants"],
+        settings: ["Retro Diners", "Restaurants with Live Piano", "Outdoor Patio Restaurants"],
         adjectives: ["Energetic", "Improvised"]
     },
     "Bossa Nova": {
@@ -500,11 +500,11 @@ const genreMappings = {
         adjectives: ["Relaxed", "Sophisticated"]
     },
     "Bossa Nova Jazz": {
-        settings: ["Jazz Lounge", "Wine Bars", "Garden Restaurants"],
+        settings: ["Jazz Cafe", "Bistros", "Garden Restaurants"],
         adjectives: ["Mellow", "Melodic"]
     },
     "Boston Rock": {
-        settings: ["Classic American Grills", "Sports Bars", "Casual Joints"],
+        settings: ["Classic American Grills", "Sports Diners", "Casual Joints"],
         adjectives: ["Energetic", "Addictive"]
     },
     "Bounce": {
@@ -512,7 +512,7 @@ const genreMappings = {
         adjectives: ["Party", "Energetic"]
     },
     "Bouncy House": {
-        settings: ["Trendy Eateries", "Social Bars", "Pop-up Joints"],
+        settings: ["Trendy Eateries", "Social Cafes", "Pop-up Joints"],
         adjectives: ["Energetic", "Playful"]
     },
     "Bow Pop": {
@@ -540,7 +540,7 @@ const genreMappings = {
         adjectives: ["Vibrant", "Soulful"]
     },
     "Brazilian Hip Hop": {
-        settings: ["Brazilian Fusion Restaurants", "Open Mic Cafes", "Dance Bars"],
+        settings: ["Brazilian Fusion Restaurants", "Open Mic Cafes", "Dance Cafes"],
         adjectives: ["Socially Conscious", "Party-oriented"]
     },
     "Brazilian Indie": {
@@ -552,7 +552,7 @@ const genreMappings = {
         adjectives: ["Vibrant", "Rooted"]
     },
     "Brazilian Punk": {
-        settings: ["Late-night Snack Bars", "Local Bars", "Concept Eateries"],
+        settings: ["Late-night Snack Shops", "Local Cafes", "Concept Eateries"],
         adjectives: ["Raw", "Unique"]
     },
     "Breakbeat": {
@@ -584,7 +584,7 @@ const genreMappings = {
         adjectives: ["Introspective", "Distinct"]
     },
     "British Blues": {
-        settings: ["Modern Pubs", "Vinyl Cafes", "Gastropubs"],
+        settings: ["Modern Bistros", "Vinyl Cafes", "Casual Restaurants"],
         adjectives: ["Powerful", "Innovative"]
     },
     "British Brass Band": {
@@ -592,7 +592,7 @@ const genreMappings = {
         adjectives: ["Dynamic", "Mellow"]
     },
     "British Dance Band": {
-        settings: ["Art Deco Cocktail Bar", "Vintage Tea Rooms", "Upscale Restaurants"],
+        settings: ["Art Deco Cafe", "Vintage Tea Rooms", "Upscale Restaurants"],
         adjectives: ["Smooth", "Jazzy"]
     },
     "British Folk": {
@@ -600,7 +600,7 @@ const genreMappings = {
         adjectives: ["Traditional", "Rooted"]
     },
     "British Indie Rock": {
-        settings: ["Record Store Cafes", "Pop-up Food Stalls", "Natural Wine Bar"],
+        settings: ["Record Store Cafes", "Pop-up Food Stalls", "Natural Juice Bar"],
         adjectives: ["Independent", "Introspective"]
     },
     "British Invasion": {
@@ -624,15 +624,15 @@ const genreMappings = {
         adjectives: ["Introspective", "Eclectic"]
     },
     "Brostep": {
-        settings: ["Late-night Food Trucks", "Club Restaurants", "Rustic Eateries"],
+        settings: ["Late-night Food Trucks", "Dance Restaurants", "Rustic Eateries"],
         adjectives: ["Intense", "Distorted"]
     },
     "Brutal Death Metal": {
-        settings: ["Metal-themed Food Joints", "Dive Bars", "BBQ Counters"],
+        settings: ["Metal-themed Food Joints", "Indie Cafes", "BBQ Counters"],
         adjectives: ["Extreme", "Speedy"]
     },
     "Brutal Deathcore": {
-        settings: ["Metal-themed Food Joints", "Dive Bars", "BBQ Counters"],
+        settings: ["Metal-themed Food Joints", "Indie Cafes", "BBQ Counters"],
         adjectives: ["Extreme", "Speedy"]
     },
     "Bubble Trance": {
@@ -644,7 +644,7 @@ const genreMappings = {
         adjectives: ["Upbeat", "Playful"]
     },
     "Bubblegum Pop": {
-        settings: ["Neon Diners", "Dessert Cafes", "Food Courts"], 
+        settings: ["Neon Diners", "Dessert Cafes", "Food Courts"],
         adjectives: ["Youthful", "Simplistic"]
     },
     "Bulgarian Rock": {
@@ -668,7 +668,7 @@ const genreMappings = {
         adjectives: ["Jangly", "DIY"]
     },
     "Cabaret": {
-        settings: ["Burlesque-style Lounges", "Vintage Cocktail Bars", "Supper Clubs"],
+        settings: ["Vintage Themed Restaurants", "Vintage Dessert Bars", "Family Dining Spots"],
         adjectives: ["Playful", "Theatrical"]
     },
     "Cajun": {
@@ -692,7 +692,7 @@ const genreMappings = {
         adjectives: ["Eclectic", "Atmospheric"]
     },
     "Canadian Metal": {
-        settings: ["Underground Bars", "Food Trucks", "Vegan Punk Cafes"],
+        settings: ["Underground Cafes", "Food Trucks", "Vegan Punk Cafes"],
         adjectives: ["Experimental", "Punk"]
     },
     "Canadian Pop": {
@@ -730,7 +730,7 @@ const genreMappings = {
     "Carnatic": {
         settings: ["South Indian Vegetarian Spots", "Family-run Kitchens", "Thali-style"],
         adjectives: ["Intricate", "Devotional"]
-    }, 
+    },
     "Catstep": {
         settings: ["Ramen Bars", "Food Trucks", "Late-night Restaurants"],
         adjectives: ["Loud", "Heavy"]
@@ -744,7 +744,7 @@ const genreMappings = {
         adjectives: ["Faithful", "Uplifting"]
     },
     "Ceilidh": {
-        settings: ["Traditional Pubs", "Outdoor Beer Gardens", "Family-style Eateries"],
+        settings: ["Traditional Eateries", "Outdoor Patios", "Family-style Eateries"],
         adjectives: ["Lively", "Communal"]
     },
     "Cello": {
@@ -752,7 +752,7 @@ const genreMappings = {
         adjectives: ["Deep", "Warm"]
     },
     "Celtic": {
-        settings: ["Rustic Pubs", "Festival Restaurants", "Celtic Eateries"],
+        settings: ["Rustic Bistros", "Festival Restaurants", "Celtic Eateries"],
         adjectives: ["Lively", "Melancholic"]
     },
     "Celtic Christmas": {
@@ -760,11 +760,11 @@ const genreMappings = {
         adjectives: ["Festive", "Melancholic"]
     },
     "Celtic Punk": {
-        settings: ["Dive Bars", "Colorful Cafes", "Celtic Bars"],
+        settings: ["Indie Cafes", "Colorful Cafes", "Celtic-themed Cafes"],
         adjectives: ["Energetic", "Rebellious"]
     },
     "Celtic Rock": {
-        settings: ["Music Venue Pubs", "Cozy Cafes", "Folk Restaurants"],
+        settings: ["Music Venue Cafes", "Cozy Cafes", "Folk Restaurants"],
         adjectives: ["Folk", "Energetic"]
     },
     "Central Asian Folk": {
@@ -772,7 +772,7 @@ const genreMappings = {
         adjectives: ["Intricate", "Melodic"]
     },
     "Chalga": {
-        settings: ["Late-night Lounges", "Live Music Restaurants", "Finger Foods"],
+        settings: ["Late-night Cafes", "Live Music Restaurants", "Finger Foods"],
         adjectives: ["Energetic", "Fast"]
     },
     "Chamber Pop": {
@@ -804,7 +804,7 @@ const genreMappings = {
         adjectives: ["Amplified", "Expressive"]
     },
     "Chicago House": {
-        settings:["Supper Clubs", "Comfort Menus", "Cocktail Dining Room"],
+        settings:["Family Dining", "Comfort Menus", "Themed Dining Room"],
         adjectives: ["Soulful", "Hypnotic"]
     },
     "Chicago Indie": {
@@ -812,7 +812,7 @@ const genreMappings = {
         adjectives: ["Eclectic", "DIY"]
     },
     "Jazz": {
-        settings: ["Bars", "Speakeasies", "Dim Restaurants"],
+        settings: ["Intimate Cafes", "Speakeasies", "Dim Restaurants"],
         adjectives: ["Intimate", "Cozy", "Vintage"]
     },
     "Classical": {
@@ -828,7 +828,7 @@ const genreMappings = {
         adjectives: ["High-energy", "Nostalgic", "Themed"]
     },
     "Hip Hop": {
-        settings: ["Cocktail Lounges", "Modern Eateries", "Specialized Cocktail Lounges"],
+        settings: ["Dessert Lounges", "Modern Eateries", "Specialized Dessert Lounges"],
         adjectives: ["Energetic", "Urban", "Trendy"]
     },
     "Indie": {
@@ -836,7 +836,7 @@ const genreMappings = {
         adjectives: ["Curated", "Aesthetic", "Artisanal"]
     },
     "Electronic": {
-        settings: ["Trendy Brunch", "Food Trucks", "Lounge"],
+        settings: ["Trendy Brunch", "Food Trucks", "Cafe"],
         adjectives: ["High-tempo", "Modern", "Relaxed"]
     },
     "Country": {
@@ -844,7 +844,7 @@ const genreMappings = {
         adjectives: ["Comfort", "Rustic", "Homemade"]
     },
     "R&B": {
-        settings: ["Lounge", "Casual Restaurants", "Cocktail Lounge"],
+        settings: ["Cafe", "Casual Restaurants", "Lounge Cafe"],
         adjectives: ["Relaxed", "Intimate", "Soulful"]
     },
     "Latin": {
@@ -854,15 +854,11 @@ const genreMappings = {
     "Reggae": {
         settings: ["Tropical Restaurants", "Festivals", "Food Trucks"],
         adjectives: ["Casual", "Lively", "Energetic"]
-    },
-    "Blues": {
-        settings: ["Soul Food", "BBQ Restaurants", "Intimate Restaurants"],
-        adjectives: ["Hearty", "Nostalgic", "Intimate"]
     }
 }
 
 function mapGenresToKeywords(genres) {
-    const keywords = new Set()
+    const settingCounts = {}
     const adjectives = new Set()
 
     genres.forEach(genre => {
@@ -871,7 +867,10 @@ function mapGenresToKeywords(genres) {
         for(const [key, value] of Object.entries(genreMappings)) {
             if(genreLower.includes(key.toLowerCase()) || key.toLowerCase().includes(genreLower)){
                 if(value.settings) {
-                    value.settings.forEach(setting => keywords.add(setting.toLowerCase()))
+                    value.settings.forEach(setting => {
+                        const s = setting.toLowerCase()
+                        settingCounts[s] = (settingCounts[s] || 0) + 1
+                    })
                 }
                 if(value.adjectives) {
                     value.adjectives.forEach(adj => adjectives.add(adj.toLowerCase()))
@@ -879,6 +878,12 @@ function mapGenresToKeywords(genres) {
             }
         }
     })
+
+    const sortedSettings = Object.entries(settingCounts)
+        .sort((a, b) => b[1] - a[1])
+        .map(([setting]) => setting)
+
+    return { settings: sortedSettings, adjectives: Array.from(adjectives) }
 }
 
 module.exports = {

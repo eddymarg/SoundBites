@@ -1,4 +1,5 @@
 const axios = require('axios')
+const { mapGenresToKeywords } = require('../models/genreMappings')
 
 const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY
 
@@ -20,6 +21,13 @@ const GENRE_VENUE_MAP = [
 function mapGenresToVenueQueries(genres, filterAlcohol = false) {
     if (!genres || genres.length === 0) return ['restaurant']
 
+    // Use detailed genre mappings as primary source
+    const { settings } = mapGenresToKeywords(genres)
+    if (settings.length > 0) {
+        return settings.slice(0, 2)
+    }
+
+    // Fall back to coarse map for genres with no detailed match
     const counts = {}
     for (const genre of genres) {
         const lower = genre.toLowerCase()
@@ -50,7 +58,7 @@ async function getPlaceDetails(placeId) {
         )
         if (detailsResponse.data.result) {
             return {
-                website: detailsResponse.data.result.website || "No website found",
+                website: detailsResponse.data.result.website || null,
                 formatted_phone_number: detailsResponse.data.result.formatted_phone_number || "No associated phone number",
                 opening_hours: detailsResponse.data.result.opening_hours || "No hours provided",
             }
@@ -116,30 +124,29 @@ exports.getNearbyRestoByMusic = async (req, res) => {
             }
         }
 
-        const restaurants = await Promise.all(
-            allFoodResults.map(async (resto) => {
-                let photoUrl = "https://source.unsplash.com/400x400/?restaurant"
-                if (resto.photos && resto.photos.length > 0) {
-                    photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${resto.photos[0].photo_reference}&key=${GOOGLE_PLACES_API_KEY}`
-                }
+        const BAR_TYPES = new Set(['bar', 'night_club'])
+        const nonBarResults = allFoodResults.filter(p => !p.types?.some(t => BAR_TYPES.has(t)))
+        const barResults = allFoodResults.filter(p => p.types?.some(t => BAR_TYPES.has(t)))
+        const barAllowance = Math.max(1, Math.floor(nonBarResults.length / 5))
+        const mixedResults = [...nonBarResults, ...barResults.slice(0, barAllowance)]
 
-                const details = await getPlaceDetails(resto.place_id)
+        const restaurants = mixedResults.map((resto) => {
+            let photoUrl = "https://source.unsplash.com/400x400/?restaurant"
+            if (resto.photos && resto.photos.length > 0) {
+                photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${resto.photos[0].photo_reference}&key=${GOOGLE_PLACES_API_KEY}`
+            }
 
-                return {
-                    place_id: resto.place_id,
-                    name: resto.name,
-                    address: resto.formatted_address,
-                    rating: resto.rating || "No rating",
-                    user_ratings_total: resto.user_ratings_total || 0,
-                    price_level: resto.price_level,
-                    photo: photoUrl,
-                    geometry: resto.geometry,
-                    opening_hours: details.opening_hours || "No hours available",
-                    website: details.website,
-                    formatted_phone_number: details.formatted_phone_number,
-                }
-            })
-        )
+            return {
+                place_id: resto.place_id,
+                name: resto.name,
+                address: resto.formatted_address,
+                rating: resto.rating || "No rating",
+                user_ratings_total: resto.user_ratings_total || 0,
+                price_level: resto.price_level,
+                photo: photoUrl,
+                geometry: resto.geometry,
+            }
+        })
 
         res.status(200).json({
             restaurants,
@@ -150,4 +157,12 @@ exports.getNearbyRestoByMusic = async (req, res) => {
         console.error('Error fetching restaurants:', error)
         res.status(500).json({message: 'Error fetching restaurants'})
     }
+}
+
+exports.getPlaceDetailsById = async (req, res) => {
+    const { placeId } = req.params
+    if (!placeId) return res.status(400).json({ message: 'Missing placeId' })
+
+    const details = await getPlaceDetails(placeId)
+    res.status(200).json(details)
 }

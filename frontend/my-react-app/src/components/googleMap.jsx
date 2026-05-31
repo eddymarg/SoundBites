@@ -4,7 +4,7 @@
 import { useState } from "react"
 import { Map, AdvancedMarker, useApiIsLoaded } from "@vis.gl/react-google-maps"
 import '../css/googleModal.css'
-import { Box, Typography, Rating, Divider, Stack, IconButton, Button } from "@mui/material"
+import { Box, Typography, Rating, Divider, Stack, IconButton, Button, Skeleton } from "@mui/material"
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LanguageIcon from '@mui/icons-material/Language';
 import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
@@ -180,65 +180,80 @@ const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocati
                                 {/* Underneath middle info strip */}
                                 <Box margin={3} display="flex" flexDirection="column" gap={1.5}>
                                     {/* Hours */}
-                                    <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1}}>
-                                        <AccessTimeIcon style={{ color: "#0D1B2A"}}/>
-                                        {getTodayHours(selectedLocation.opening_hours?.weekday_text)}
-                                    </Typography>
-                                    <Typography
-                                        variant = "body2"
-                                        onClick={() => setShowAllHours(!showAllHours)}
-                                        sx={{
-                                            cursor: 'pointer',
-                                            color: '#43784F',
-                                            textDecoration: 'underline',
-                                            mt: 1,
-                                            mb: showAllHours ? 1 : 0,
-                                            ml: 4,                
-                                        }}
-                                    >
-                                        {showAllHours ? "Hide hours ▲" : "Show all hours ▼"}
-                                    </Typography>
-
-                                    {showAllHours && (
-                                        <Box sx={{ pl: 4}}>
-                                            {selectedLocation.opening_hours?.weekday_text?.map((day, index) => {
-                                                const isToday = index === (new Date().getDay() + 6) % 7
-                                                return (
-                                                    <Typography
-                                                        key={index}
-                                                        style={{ fontSize: "14px", color: isToday ? "#0D1B2A" : "#0D1B2A90", fontWeight: isToday ? "600" : "normal", marginBottom: "2px"}}
-                                                    >
-                                                        {day}
-                                                    </Typography>
-                                                )
-                                            })}
-                                        </Box>
+                                    {'opening_hours' in selectedLocation ? (
+                                        <>
+                                            <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1}}>
+                                                <AccessTimeIcon style={{ color: "#0D1B2A"}}/>
+                                                {getTodayHours(selectedLocation.opening_hours?.weekday_text)}
+                                            </Typography>
+                                            <Typography
+                                                variant="body2"
+                                                onClick={() => setShowAllHours(!showAllHours)}
+                                                sx={{ cursor: 'pointer', color: '#43784F', textDecoration: 'underline', mt: 1, mb: showAllHours ? 1 : 0, ml: 4 }}
+                                            >
+                                                {showAllHours ? "Hide hours ▲" : "Show all hours ▼"}
+                                            </Typography>
+                                            {showAllHours && (
+                                                <Box sx={{ pl: 4}}>
+                                                    {selectedLocation.opening_hours?.weekday_text?.map((day, index) => {
+                                                        const isToday = index === (new Date().getDay() + 6) % 7
+                                                        return (
+                                                            <Typography
+                                                                key={index}
+                                                                style={{ fontSize: "14px", color: isToday ? "#0D1B2A" : "#0D1B2A90", fontWeight: isToday ? "600" : "normal", marginBottom: "2px"}}
+                                                            >
+                                                                {day}
+                                                            </Typography>
+                                                        )
+                                                    })}
+                                                </Box>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <Skeleton variant="text" width={160} height={24} />
                                     )}
-                                    <Typography
-                                        component="a"
-                                        href={selectedLocation.website}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        whiteSpace="nowrap"
-                                        overflow="hidden"
-                                        textOverflow="ellipsis"
-                                        sx={{
-                                            textDecoration: "none",
-                                            "&:hover": { textDecoration: "underline"}
-                                        }}
-                                    >
-                                        <LanguageIcon style={{margin: 4}}/>
-                                        {selectedLocation.website}
-                                    </Typography>
-                                    <Typography
-                                        sx={{
-                                            textDecoration: "none",
-                                            "&:hover": { textDecoration: "underline"}
-                                        }}
-                                    >
-                                        <LocalPhoneIcon style={{margin: 4}}/>
-                                        {selectedLocation.formatted_phone_number || "Phone number is not available"}
-                                    </Typography>
+                                    {'website' in selectedLocation ? (
+                                        selectedLocation.website ? (
+                                            <Typography
+                                                component="a"
+                                                href={selectedLocation.website}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                whiteSpace="nowrap"
+                                                overflow="hidden"
+                                                textOverflow="ellipsis"
+                                                sx={{ textDecoration: "none", "&:hover": { textDecoration: "underline"} }}
+                                            >
+                                                <LanguageIcon style={{margin: 4}}/>
+                                                {selectedLocation.website}
+                                            </Typography>
+                                        ) : (
+                                            <Typography style={{ color: "#0D1B2A90", fontSize: "14px" }}>
+                                                <LanguageIcon style={{margin: 4}}/>
+                                                Website not available
+                                            </Typography>
+                                        )
+                                    ) : (
+                                        <Skeleton variant="text" width={200} height={24} />
+                                    )}
+                                    {'formatted_phone_number' in selectedLocation ? (
+                                        selectedLocation.formatted_phone_number && selectedLocation.formatted_phone_number !== "No associated phone number" ? (
+                                        <Typography
+                                            component="a"
+                                            href={`tel:${selectedLocation.formatted_phone_number}`}
+                                            sx={{ textDecoration: "none", "&:hover": { textDecoration: "underline"} }}
+                                        >
+                                            <LocalPhoneIcon style={{margin: 4}}/>
+                                            {selectedLocation.formatted_phone_number}
+                                        </Typography>
+                                    ) : (
+                                        <Typography style={{ color: "#0D1B2A90", fontSize: "14px" }}>
+                                            <LocalPhoneIcon style={{margin: 4}}/>
+                                            Phone number not available
+                                        </Typography>
+                                    )) : (
+                                        <Skeleton variant="text" width={150} height={24} />
+                                    )}
                                 </Box>
                             </div>
                         )}

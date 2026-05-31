@@ -41,7 +41,11 @@ const UserHome = () => {
     const [visitedIds, setVisitedIds] = useState([])
     // for loading screen
     const [loadingStage, setLoadingStage] = useState(0)
-    const [showLoadingScreen, setShowLoadingScreen] = useState(() => !localStorage.getItem("userLocation"))
+    const [showLoadingScreen, setShowLoadingScreen] = useState(() => !sessionStorage.getItem("hasSeenLoadingScreen"))
+    const hideLoadingScreen = () => {
+        sessionStorage.setItem("hasSeenLoadingScreen", "true")
+        setShowLoadingScreen(false)
+    }
     // for password addition
     const [isNewUser, setIsNewUser] = useState(false)
     const [spotifyId, setSpotifyId] = useState("")
@@ -129,7 +133,7 @@ const UserHome = () => {
             setUserLocation(coords)
             localStorage.setItem("userLocation", JSON.stringify(coords))
             setIsLoading(false)
-            delayMinLoadTime(loadStartTime.current, () => setShowLoadingScreen(false))
+            delayMinLoadTime(loadStartTime.current, hideLoadingScreen)
             permResult?.removeEventListener("change", onPermissionChange)
         }
 
@@ -149,7 +153,7 @@ const UserHome = () => {
                 setUserLocation(coords)
                 localStorage.setItem("userLocation", JSON.stringify(coords))
                 setIsLoading(false)
-                delayMinLoadTime(loadStartTime.current, () => setShowLoadingScreen(false))
+                delayMinLoadTime(loadStartTime.current, hideLoadingScreen)
                 return
             }
 
@@ -160,22 +164,36 @@ const UserHome = () => {
                     setUserLocation(fallbackCoords)
                     localStorage.setItem("userLocation", JSON.stringify(fallbackCoords))
                     setIsLoading(false)
-                    delayMinLoadTime(loadStartTime.current, () => setShowLoadingScreen(false))
+                    delayMinLoadTime(loadStartTime.current, hideLoadingScreen)
                 })
                 .catch(() => {
                     const nyc = { lat: 40.7128, lng: -74.0060 }
                     setUserLocation(nyc)
                     localStorage.setItem("userLocation", JSON.stringify(nyc))
                     setIsLoading(false)
-                    delayMinLoadTime(loadStartTime.current, () => setShowLoadingScreen(false))
+                    delayMinLoadTime(loadStartTime.current, hideLoadingScreen)
                 })
         }
 
         if ("permissions" in navigator && "geolocation" in navigator) {
             navigator.permissions.query({ name: "geolocation" }).then((result) => {
                 permResult = result
-                if (result.state === "granted" || result.state === "prompt") {
-                    if (result.state === "prompt") setAwaitingLocation(true)
+                if (result.state === "granted") {
+                    const cached = localStorage.getItem("userLocation")
+                    if (cached) {
+                        // Permission already granted and location cached — use it directly
+                        gotGPS.current = true
+                        const coords = JSON.parse(cached)
+                        setUserLocation(coords)
+                        setUsingFallbackLocation(false)
+                        setIsLoading(false)
+                        delayMinLoadTime(loadStartTime.current, hideLoadingScreen)
+                    } else {
+                        result.addEventListener("change", onPermissionChange)
+                        navigator.geolocation.getCurrentPosition(successCallback, errorCallback, geoOptions)
+                    }
+                } else if (result.state === "prompt") {
+                    setAwaitingLocation(true)
                     result.addEventListener("change", onPermissionChange)
                     navigator.geolocation.getCurrentPosition(successCallback, errorCallback, geoOptions)
                 } else {
@@ -590,6 +608,22 @@ const UserHome = () => {
         setSelectedLocation(location)
     }
 
+    useEffect(() => {
+        if (!selectedLocation?.place_id || 'website' in selectedLocation) return
+
+        fetch(`${import.meta.env.VITE_API_URL}/api/place-details/${selectedLocation.place_id}`, {
+            credentials: 'include',
+            headers: spotifyAuthHeaders(),
+        })
+            .then(res => res.json())
+            .then(details => {
+                setSelectedLocation(prev =>
+                    prev?.place_id === selectedLocation.place_id ? { ...prev, ...details } : prev
+                )
+            })
+            .catch(err => console.error('Failed to fetch place details:', err))
+    }, [selectedLocation?.place_id])
+
     const handleDrawerDragStart = (e) => {
         dragStartY.current = e.touches[0].clientY
     }
@@ -741,6 +775,7 @@ const UserHome = () => {
                                             handleLocationClick(loc)
                                             setMobileRecsOpen(false)
                                         }}
+                                        selectedLocation={selectedLocation}
                                         savedIds={savedIds}
                                         bookmarkToggle={bookmarkToggle}
                                         isLoading={isLoading}
@@ -795,6 +830,7 @@ const UserHome = () => {
                                     <RestaurantList
                                         restaurants={visibleRestaurants}
                                         handleLocationClick={handleLocationClick}
+                                        selectedLocation={selectedLocation}
                                         savedIds={savedIds}
                                         bookmarkToggle={bookmarkToggle}
                                         isLoading={isLoading}
