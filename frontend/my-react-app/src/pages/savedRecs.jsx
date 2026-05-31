@@ -2,13 +2,15 @@
 import { useEffect, useState, useRef } from "react"
 import {
     Box, Button, Stack, Typography, Rating, IconButton, Tabs, Tab, Skeleton,
-    Tooltip, Menu, MenuItem, Checkbox, Divider, TextField
+    Tooltip, Menu, MenuItem, Checkbox, Divider, TextField, Drawer, InputAdornment
 } from "@mui/material"
 import { useNavigate } from "react-router-dom"
 import { APIProvider } from "@vis.gl/react-google-maps"
 import LoggedInHeader from "../components/loggedinHeader"
 import GoogleMap from "../components/googleMap"
 import BookmarkAddedIcon from '@mui/icons-material/BookmarkAdded'
+import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder'
+import RestaurantIcon from '@mui/icons-material/Restaurant'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
@@ -19,6 +21,11 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline'
+import FavoriteIcon from '@mui/icons-material/Favorite'
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'
+import PlaceIcon from '@mui/icons-material/Place'
+import OpenInNewIcon from '@mui/icons-material/OpenInNew'
+import SearchIcon from '@mui/icons-material/Search'
 import "../css/loggedin.css"
 
 const IMG_FALLBACK = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Crect width='120' height='120' rx='20' fill='%23FFECEE'/%3E%3Ctext x='60' y='78' font-size='52' text-anchor='middle' font-family='serif'%3E🍽%3C/text%3E%3C/svg%3E"
@@ -72,7 +79,9 @@ const SavedRestaurantsPage = () => {
     const [newListName, setNewListName] = useState('')
     const [addToListAnchor, setAddToListAnchor] = useState(null)
     const [addToListRestaurant, setAddToListRestaurant] = useState(null)
-    const [addPlacesMenuAnchor, setAddPlacesMenuAnchor] = useState(null)
+    const [addPlacesOpen, setAddPlacesOpen] = useState(false)
+    const [addPlacesSearch, setAddPlacesSearch] = useState('')
+    const [modalRestaurants, setModalRestaurants] = useState([])
     const [mobilePanelOpen, setMobilePanelOpen] = useState(false)
 
     const mobilePanelRef = useRef(null)
@@ -129,6 +138,17 @@ const SavedRestaurantsPage = () => {
             console.error("Failed to load lists", err)
         }
     }
+
+    useEffect(() => {
+        if (!addPlacesOpen) return
+        const cache = localStorage.getItem('restaurantCache')
+        const cached = cache ? (JSON.parse(cache).restaurants || []) : []
+        const map = new Map()
+        ;[...cached, ...savedRestaurants].forEach(r => {
+            if (r?.place_id && !map.has(r.place_id)) map.set(r.place_id, r)
+        })
+        setModalRestaurants(Array.from(map.values()))
+    }, [addPlacesOpen])
 
     const bookmarkToggle = async (restaurant) => {
         const isSaved = savedIds.includes(restaurant.place_id)
@@ -198,13 +218,30 @@ const SavedRestaurantsPage = () => {
         const isInList = list?.place_ids?.includes(restaurant.place_id)
         setLists(prev => prev.map(l =>
             l._id === listId
-                ? {
-                    ...l, place_ids: isInList
-                        ? l.place_ids.filter(id => id !== restaurant.place_id)
-                        : [...l.place_ids, restaurant.place_id]
-                }
+                ? { ...l, place_ids: isInList ? l.place_ids.filter(id => id !== restaurant.place_id) : [...l.place_ids, restaurant.place_id] }
                 : l
         ))
+        if (!isInList && !savedIds.includes(restaurant.place_id)) {
+            setSavedIds(prev => [...prev, restaurant.place_id])
+            setSavedRestaurants(prev => [...prev, restaurant])
+            try {
+                await fetch(`${import.meta.env.VITE_API_URL}/api/save`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', ...spotifyAuthHeaders() },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        place_id: restaurant.place_id,
+                        name: restaurant.name,
+                        photo: restaurant.photo,
+                        rating: restaurant.rating,
+                        price_level: restaurant.price_level,
+                        address: restaurant.address,
+                    })
+                })
+            } catch (err) {
+                console.error("Failed to auto-save restaurant", err)
+            }
+        }
         try {
             const endpoint = isInList
                 ? `${import.meta.env.VITE_API_URL}/api/lists/${listId}/remove/${restaurant.place_id}`
@@ -321,9 +358,11 @@ const SavedRestaurantsPage = () => {
                                 </IconButton>
                             </Tooltip>
                         ) : (
-                            <IconButton size="small" onClick={(e) => { e.stopPropagation(); bookmarkToggle(resto) }}>
-                                <BookmarkAddedIcon sx={{ color: '#EF233C', fontSize: 22 }} />
-                            </IconButton>
+                            <Tooltip title="Remove from saved">
+                                <IconButton size="small" onClick={(e) => { e.stopPropagation(); bookmarkToggle(resto) }}>
+                                    <BookmarkAddedIcon sx={{ color: '#EF233C', fontSize: 22 }} />
+                                </IconButton>
+                            </Tooltip>
                         )}
                     </Box>
                 </Box>
@@ -345,7 +384,7 @@ const SavedRestaurantsPage = () => {
 
     const EmptyState = ({ icon, title, subtitle, action }) => (
         <Box sx={{ textAlign: 'center', mt: 6 }}>
-            <Typography fontSize="48px">{icon}</Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>{icon}</Box>
             <Typography fontWeight={700} fontSize="20px" fontFamily="'Tinos', serif" sx={{ mt: 1 }}>
                 {title}
             </Typography>
@@ -376,7 +415,7 @@ const SavedRestaurantsPage = () => {
         if (savedRestaurants.length === 0) {
             return (
                 <EmptyState
-                    icon="🔖"
+                    icon={<BookmarkBorderIcon sx={{ fontSize: 52, color: '#EF233C' }} />}
                     title="No saved spots yet"
                     subtitle="Bookmark restaurants from your recommendations to see them here."
                     action={
@@ -403,32 +442,66 @@ const SavedRestaurantsPage = () => {
 
     const renderListsTab = () => {
         if (selectedListId && selectedList) {
+            const listIcon = selectedList.isDefault
+                ? (selectedList.name === 'Liked'
+                    ? <FavoriteIcon sx={{ fontSize: 20, color: '#EF233C', mr: 1 }} />
+                    : selectedList.name === 'Must Visit'
+                        ? <PlaceIcon sx={{ fontSize: 20, color: '#EF233C', mr: 1 }} />
+                        : null)
+                : null
+
             return (
                 <Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            <IconButton size="small" onClick={() => setSelectedListId(null)}>
-                                <ArrowBackIcon />
-                            </IconButton>
-                            <Typography fontWeight={700} fontSize="17px" fontFamily="'Tinos', serif" sx={{ ml: 1 }}>
+                            <Tooltip title="Back to lists">
+                                <IconButton size="small" onClick={() => setSelectedListId(null)}>
+                                    <ArrowBackIcon />
+                                </IconButton>
+                            </Tooltip>
+                            {listIcon}
+                            <Typography fontWeight={700} fontSize="17px" fontFamily="'Tinos', serif" sx={{ ml: listIcon ? 0 : 1 }}>
                                 {selectedList.name}
                             </Typography>
                         </Box>
-                        <Button
-                            startIcon={<PlaylistAddIcon />}
-                            size="small"
-                            onClick={(e) => setAddPlacesMenuAnchor(e.currentTarget)}
-                            sx={{ textTransform: 'none', color: '#EF233C', fontWeight: 600, fontSize: '13px', borderRadius: '20px', border: '1.5px solid #EF233C30', px: 1.5 }}
-                        >
-                            Add places
-                        </Button>
                     </Box>
                     {listRestaurants.length === 0 ? (
-                        <Box sx={{ textAlign: 'center', mt: 4 }}>
-                            <Typography color="text.secondary">No places in this list yet.</Typography>
-                            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                                Tap <strong>Add places</strong> above or use the <PlaylistAddIcon sx={{ fontSize: 16, verticalAlign: 'middle' }} /> icon on the All tab.
+                        <Box sx={{ textAlign: 'center', mt: 6 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
+                                {selectedList.name === 'Liked'
+                                    ? <FavoriteIcon sx={{ fontSize: 52, color: '#EF233C' }} />
+                                    : selectedList.name === 'Must Visit'
+                                        ? <PlaceIcon sx={{ fontSize: 52, color: '#EF233C' }} />
+                                        : <PlaylistAddIcon sx={{ fontSize: 52, color: '#EF233C' }} />
+                                }
+                            </Box>
+                            <Typography fontWeight={700} fontSize="18px" fontFamily="'Tinos', serif" sx={{ mb: 0.5 }}>
+                                {selectedList.name === 'Liked' ? 'No liked spots yet' : selectedList.name === 'Must Visit' ? 'Nothing on the must-visit list' : 'This list is empty'}
                             </Typography>
+                            <Typography color="text.secondary" fontSize="14px" sx={{ mb: 3, maxWidth: 260, mx: 'auto' }}>
+                                {selectedList.name === 'Liked'
+                                    ? 'Save recommendations you love and they\'ll show up here.'
+                                    : selectedList.name === 'Must Visit'
+                                        ? 'Add places you\'re dying to try and track them here.'
+                                        : 'Add places from your saved restaurants to get started.'}
+                            </Typography>
+                            <Stack spacing={1.5} alignItems="center">
+                                <Button
+                                    startIcon={<PlaylistAddIcon />}
+                                    variant="contained"
+                                    onClick={() => setAddPlacesOpen(true)}
+                                    sx={{ color: 'white', backgroundColor: '#EF233C', borderRadius: '36px', textTransform: 'none', fontWeight: 600, px: 3, boxShadow: 0, '&:hover': { backgroundColor: '#d41e35', boxShadow: 0 } }}
+                                >
+                                    Add places
+                                </Button>
+                                <Button
+                                    variant="text"
+                                    onClick={() => navigate('/userHome')}
+                                    sx={{ color: '#888', textTransform: 'none', fontSize: '13px', borderRadius: '36px' }}
+                                >
+                                    Explore recommendations
+                                </Button>
+                            </Stack>
                         </Box>
                     ) : (
                         <Stack spacing={1.5}>
@@ -440,11 +513,39 @@ const SavedRestaurantsPage = () => {
                                     listId={selectedListId}
                                 />
                             ))}
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: 1,
+                                    mt: 0.5,
+                                    py: 2,
+                                    borderRadius: '20px',
+                                    border: '1.5px dashed #EF233C30',
+                                    cursor: 'pointer',
+                                    color: '#EF233C',
+                                    '&:hover': { backgroundColor: '#EF233C08', border: '1.5px dashed #EF233C' },
+                                }}
+                                onClick={() => setAddPlacesOpen(true)}
+                            >
+                                <PlaylistAddIcon sx={{ fontSize: 20 }} />
+                                <Typography fontSize="14px" fontWeight={600}>Add more places</Typography>
+                            </Box>
                         </Stack>
                     )}
                 </Box>
             )
         }
+
+        const sortedLists = [...lists].sort((a, b) => {
+            const order = (l) => {
+                if (l.isDefault && l.name === 'Liked') return 0
+                if (l.isDefault && l.name === 'Must Visit') return 1
+                return 2
+            }
+            return order(a) - order(b)
+        })
 
         return (
             <Box>
@@ -459,12 +560,16 @@ const SavedRestaurantsPage = () => {
                             autoFocus
                             sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
                         />
-                        <IconButton onClick={createList} sx={{ color: '#EF233C' }}>
-                            <CheckIcon />
-                        </IconButton>
-                        <IconButton onClick={() => { setCreatingList(false); setNewListName('') }}>
-                            <CloseIcon />
-                        </IconButton>
+                        <Tooltip title="Create list">
+                            <IconButton onClick={createList} sx={{ color: '#EF233C' }}>
+                                <CheckIcon />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Cancel">
+                            <IconButton onClick={() => { setCreatingList(false); setNewListName('') }}>
+                                <CloseIcon />
+                            </IconButton>
+                        </Tooltip>
                     </Box>
                 ) : (
                     <Button
@@ -476,55 +581,57 @@ const SavedRestaurantsPage = () => {
                     </Button>
                 )}
 
-                {lists.length === 0 && !creatingList ? (
-                    <Box sx={{ textAlign: 'center', mt: 4 }}>
-                        <Typography fontSize="36px">📋</Typography>
-                        <Typography fontWeight={700} fontSize="18px" fontFamily="'Tinos', serif" sx={{ mt: 1 }}>
-                            No lists yet
-                        </Typography>
-                        <Typography color="text.secondary" fontSize="14px" sx={{ mt: 0.5 }}>
-                            Create a list to organize your saved spots.
-                        </Typography>
-                    </Box>
-                ) : (
+                {lists.length === 0 && !creatingList ? null : (
                     <Stack spacing={1.5}>
-                        {lists.map(list => (
-                            <Box
-                                key={list._id}
-                                sx={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    p: '14px 16px',
-                                    borderRadius: '20px',
-                                    backgroundColor: '#fff',
-                                    cursor: 'pointer',
-                                    border: '1.5px solid transparent',
-                                    '&:hover': { border: '1.5px solid #EF233C', backgroundColor: '#EF233C08' },
-                                }}
-                                onClick={() => setSelectedListId(list._id)}
-                            >
-                                <Box sx={{ flex: 1 }}>
-                                    <Typography fontWeight={600} fontSize="15px" fontFamily="'Tinos', serif">
-                                        {list.name}
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        {list.place_ids.length} {list.place_ids.length === 1 ? 'place' : 'places'}
-                                    </Typography>
+                        {sortedLists.map(list => {
+                            const defaultIcon = list.isDefault
+                                ? (list.name === 'Liked'
+                                    ? <FavoriteIcon sx={{ fontSize: 22, color: '#EF233C', mr: 1.5, flexShrink: 0 }} />
+                                    : list.name === 'Must Visit'
+                                        ? <PlaceIcon sx={{ fontSize: 22, color: '#EF233C', mr: 1.5, flexShrink: 0 }} />
+                                        : null)
+                                : null
+                            return (
+                                <Box
+                                    key={list._id}
+                                    sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        p: '14px 16px',
+                                        borderRadius: '20px',
+                                        backgroundColor: list.isDefault ? '#ffeeef' : '#fff',
+                                        cursor: 'pointer',
+                                        border: list.isDefault ? '1.5px solid #EF233C45' : '1.5px solid transparent',
+                                        '&:hover': { border: '1.5px solid #EF233C', backgroundColor: '#EF233C08' },
+                                    }}
+                                    onClick={() => setSelectedListId(list._id)}
+                                >
+                                    {defaultIcon}
+                                    <Box sx={{ flex: 1 }}>
+                                        <Typography fontWeight={600} fontSize="15px" fontFamily="'Tinos', serif">
+                                            {list.name}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            {list.place_ids.length} {list.place_ids.length === 1 ? 'place' : 'places'}
+                                        </Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                        {!list.isDefault && (
+                                            <Tooltip title="Delete list">
+                                                <IconButton
+                                                    size="small"
+                                                    onClick={(e) => { e.stopPropagation(); deleteList(list._id) }}
+                                                    sx={{ color: '#ccc', '&:hover': { color: '#ef233c' } }}
+                                                >
+                                                    <DeleteOutlineIcon fontSize="small" />
+                                                </IconButton>
+                                            </Tooltip>
+                                        )}
+                                        <ChevronRightIcon sx={{ color: '#bbb' }} />
+                                    </Box>
                                 </Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                    <Tooltip title="Delete list">
-                                        <IconButton
-                                            size="small"
-                                            onClick={(e) => { e.stopPropagation(); deleteList(list._id) }}
-                                            sx={{ color: '#ccc', '&:hover': { color: '#ef233c' } }}
-                                        >
-                                            <DeleteOutlineIcon fontSize="small" />
-                                        </IconButton>
-                                    </Tooltip>
-                                    <ChevronRightIcon sx={{ color: '#bbb' }} />
-                                </Box>
-                            </Box>
-                        ))}
+                            )
+                        })}
                     </Stack>
                 )}
             </Box>
@@ -551,7 +658,7 @@ const SavedRestaurantsPage = () => {
         if (visitedRestaurants.length === 0) {
             return (
                 <EmptyState
-                    icon="✅"
+                    icon={<CheckCircleOutlineIcon sx={{ fontSize: 52, color: '#4CAF50' }} />}
                     title="No visited spots yet"
                     subtitle="Mark places as visited from your recommendations or saved list."
                     action={
@@ -589,9 +696,17 @@ const SavedRestaurantsPage = () => {
                 )}
                 {lists.map(list => {
                     const isInList = list.place_ids.includes(addToListRestaurant?.place_id)
+                    const defaultIcon = list.isDefault
+                        ? (list.name === 'Liked'
+                            ? <FavoriteIcon sx={{ fontSize: 18, color: '#EF233C' }} />
+                            : list.name === 'Must Visit'
+                                ? <PlaceIcon sx={{ fontSize: 18, color: '#EF233C' }} />
+                                : null)
+                        : null
                     return (
                         <MenuItem key={list._id} onClick={() => toggleRestaurantInList(list._id, addToListRestaurant)} sx={{ gap: 1 }}>
                             <Checkbox size="small" checked={isInList} disableRipple sx={{ p: 0, color: '#EF233C', '&.Mui-checked': { color: '#EF233C' } }} onClick={(e) => e.stopPropagation()} />
+                            {defaultIcon}
                             <Typography variant="body2">{list.name}</Typography>
                         </MenuItem>
                     )
@@ -603,29 +718,157 @@ const SavedRestaurantsPage = () => {
                 </MenuItem>
             </Menu>
 
-            {/* Add places to list menu (from Lists tab) */}
-            <Menu
-                anchorEl={addPlacesMenuAnchor}
-                open={Boolean(addPlacesMenuAnchor)}
-                onClose={() => setAddPlacesMenuAnchor(null)}
-                slotProps={{ paper: { sx: { borderRadius: '16px', minWidth: 260, maxHeight: 340, overflowY: 'auto', boxShadow: '0 8px 24px rgba(0,0,0,0.12)' } } }}
+            {/* Add places drawer (full recommendations) */}
+            <Drawer
+                anchor="right"
+                open={addPlacesOpen}
+                onClose={() => { setAddPlacesOpen(false); setAddPlacesSearch('') }}
+                slotProps={{ paper: { sx: { width: { xs: '100%', sm: 420 }, display: 'flex', flexDirection: 'column', backgroundColor: '#fafafa' } } }}
             >
-                {savedRestaurants.length === 0 ? (
-                    <MenuItem disabled><Typography variant="body2" color="text.secondary">No saved places yet</Typography></MenuItem>
-                ) : savedRestaurants.map(restaurant => {
-                    const isInList = selectedList?.place_ids?.includes(restaurant.place_id)
-                    return (
-                        <MenuItem key={restaurant.place_id} onClick={() => toggleRestaurantInList(selectedListId, restaurant)} sx={{ gap: 1.5, py: 1 }}>
-                            <Checkbox size="small" checked={!!isInList} disableRipple sx={{ p: 0, color: '#EF233C', '&.Mui-checked': { color: '#EF233C' } }} onClick={(e) => e.stopPropagation()} />
-                            <img src={restaurant.photo} alt={restaurant.name} onError={(e) => { e.target.onerror = null; e.target.src = IMG_FALLBACK }} style={{ width: 36, height: 36, borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }} />
-                            <Box sx={{ minWidth: 0 }}>
-                                <Typography variant="body2" fontWeight={600} noWrap>{restaurant.name}</Typography>
-                                <Typography variant="caption" color="text.secondary" noWrap>{restaurant.address}</Typography>
-                            </Box>
-                        </MenuItem>
-                    )
-                })}
-            </Menu>
+                {/* Header */}
+                <Box sx={{ px: 2.5, py: 2, borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, backgroundColor: '#fff' }}>
+                    <Box>
+                        <Typography fontWeight={700} fontSize="17px" fontFamily="'Tinos', serif">
+                            Add to {selectedList?.name || 'list'}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                            {modalRestaurants.length} recommendations available
+                        </Typography>
+                    </Box>
+                    <Tooltip title="Close">
+                        <IconButton size="small" onClick={() => { setAddPlacesOpen(false); setAddPlacesSearch('') }}>
+                            <CloseIcon />
+                        </IconButton>
+                    </Tooltip>
+                </Box>
+
+                {/* Search */}
+                <Box sx={{ px: 2, py: 1.5, flexShrink: 0, backgroundColor: '#fff', borderBottom: '1px solid #f0f0f0' }}>
+                    <TextField
+                        size="small"
+                        fullWidth
+                        placeholder="Search restaurants…"
+                        value={addPlacesSearch}
+                        onChange={e => setAddPlacesSearch(e.target.value)}
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <SearchIcon sx={{ color: '#bbb', fontSize: 20 }} />
+                                </InputAdornment>
+                            )
+                        }}
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px', backgroundColor: '#f5f5f5' } }}
+                    />
+                </Box>
+
+                {/* List */}
+                <Box sx={{ flex: 1, overflowY: 'auto', px: 2, py: 1.5 }}>
+                    {(() => {
+                        const filtered = modalRestaurants.filter(r =>
+                            !addPlacesSearch || r.name?.toLowerCase().includes(addPlacesSearch.toLowerCase())
+                        )
+                        if (filtered.length === 0) {
+                            return (
+                                <Box sx={{ textAlign: 'center', mt: 8 }}>
+                                    <RestaurantIcon sx={{ fontSize: 44, color: '#EF233C', mb: 1 }} />
+                                    <Typography color="text.secondary" fontSize="14px">
+                                        {addPlacesSearch ? 'No restaurants match your search.' : 'No recommendations yet. Go explore!'}
+                                    </Typography>
+                                </Box>
+                            )
+                        }
+                        return (
+                            <Stack spacing={0.5}>
+                                {filtered.map(restaurant => {
+                                    const isInList = selectedList?.place_ids?.includes(restaurant.place_id)
+                                    const likedList = lists.find(l => l.isDefault && l.name === 'Liked')
+                                    const isLiked = likedList?.place_ids?.includes(restaurant.place_id)
+                                    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name)}&query_place_id=${restaurant.place_id}`
+                                    return (
+                                        <Box
+                                            key={restaurant.place_id}
+                                            sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: 1.5,
+                                                py: 1.25,
+                                                px: 1.5,
+                                                borderRadius: '16px',
+                                                cursor: 'pointer',
+                                                backgroundColor: isInList ? '#EF233C08' : 'transparent',
+                                                border: isInList ? '1px solid #EF233C20' : '1px solid transparent',
+                                                '&:hover': { backgroundColor: '#EF233C10', border: '1px solid #EF233C30' },
+                                            }}
+                                            onClick={() => toggleRestaurantInList(selectedListId, restaurant)}
+                                        >
+                                            <Checkbox
+                                                size="small"
+                                                checked={!!isInList}
+                                                disableRipple
+                                                sx={{ p: 0, color: '#ddd', '&.Mui-checked': { color: '#EF233C' } }}
+                                                onClick={e => e.stopPropagation()}
+                                            />
+                                            <img
+                                                src={restaurant.photo}
+                                                alt={restaurant.name}
+                                                onError={(e) => { e.target.onerror = null; e.target.src = IMG_FALLBACK }}
+                                                style={{ width: 52, height: 52, borderRadius: '12px', objectFit: 'cover', flexShrink: 0 }}
+                                            />
+                                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                                                <Typography fontWeight={600} fontSize="14px" fontFamily="'Tinos', serif" noWrap>
+                                                    {restaurant.name}
+                                                </Typography>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.25 }}>
+                                                    <Rating readOnly value={Number(restaurant.rating)} precision={0.1} size="small" sx={{ '& .MuiRating-icon': { fontSize: '13px' } }} />
+                                                    <Typography variant="caption" color="text.secondary">{Number(restaurant.rating).toFixed(1)}</Typography>
+                                                </Box>
+                                                <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>
+                                                    {restaurant.address}
+                                                </Typography>
+                                            </Box>
+                                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+                                                <Tooltip title={isLiked ? 'Remove from Liked' : 'Add to Liked'}>
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={e => { e.stopPropagation(); likedList && toggleRestaurantInList(likedList._id, restaurant) }}
+                                                        sx={{ p: 0.5, '&:hover .like-icon': { color: '#EF233C' } }}
+                                                    >
+                                                        {isLiked
+                                                            ? <FavoriteIcon className="like-icon" sx={{ fontSize: 20, color: '#EF233C' }} />
+                                                            : <FavoriteBorderIcon className="like-icon" sx={{ fontSize: 20, color: '#ccc', transition: 'color 0.15s' }} />
+                                                        }
+                                                    </IconButton>
+                                                </Tooltip>
+                                                <Tooltip title="View on Google Maps">
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={e => { e.stopPropagation(); window.open(mapsUrl, '_blank', 'noopener') }}
+                                                        sx={{ p: 0.5 }}
+                                                    >
+                                                        <OpenInNewIcon sx={{ fontSize: 16, color: '#bbb', '&:hover': { color: '#EF233C' } }} />
+                                                    </IconButton>
+                                                </Tooltip>
+                                            </Box>
+                                        </Box>
+                                    )
+                                })}
+                            </Stack>
+                        )
+                    })()}
+                </Box>
+
+                {/* Footer */}
+                <Box sx={{ px: 2, py: 1.5, borderTop: '1px solid #f0f0f0', flexShrink: 0, backgroundColor: '#fff' }}>
+                    <Button
+                        fullWidth
+                        variant="contained"
+                        onClick={() => { setAddPlacesOpen(false); setAddPlacesSearch('') }}
+                        sx={{ color: 'white', backgroundColor: '#EF233C', borderRadius: '36px', textTransform: 'none', fontWeight: 600, py: 1.25, boxShadow: 0, '&:hover': { backgroundColor: '#d41e35', boxShadow: 0 } }}
+                    >
+                        Done ({selectedList?.place_ids?.length ?? 0} places)
+                    </Button>
+                </Box>
+            </Drawer>
         </>
     )
 
@@ -641,6 +884,8 @@ const SavedRestaurantsPage = () => {
         newRestaurantIds: new Set(),
         visitedIds: savedRestaurants.filter(r => r.visited).map(r => r.place_id),
         visitedToggle: toggleVisited,
+        lists,
+        onToggleList: toggleRestaurantInList,
     }
 
     const tabsPanel = (

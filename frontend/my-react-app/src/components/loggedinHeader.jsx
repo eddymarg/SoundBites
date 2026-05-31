@@ -2,7 +2,7 @@
 import axios from "axios"
 import React, { useEffect } from "react"
 import { useState } from "react";
-import { Button, Box, Stack, Avatar, IconButton, Modal, Typography, TextField, InputAdornment, Snackbar, Alert } from "@mui/material"
+import { Button, Box, Stack, Avatar, IconButton, Modal, Typography, TextField, InputAdornment, Snackbar, Alert, Tooltip } from "@mui/material"
 import { useNavigate } from "react-router-dom"
 import { LogoWNote } from "../assets/logoWNote"
 import ButtonBase from '@mui/material/ButtonBase';
@@ -123,21 +123,27 @@ const HomeHeader = ({setHasFetchedRestaurants, setVisibleRestaurants, homeButton
         <nav>
             <Stack direction="row" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: '1rem'}}>
                 {homeButton ? (
-                    <IconButton onClick={() => navigate("/userHome")}>
-                        <HomeIcon sx={{ width: 40, height: 40, color: '#EF233C' }} />
-                    </IconButton>
+                    <Tooltip title="Back to home">
+                        <IconButton onClick={() => navigate("/userHome")}>
+                            <HomeIcon sx={{ width: 40, height: 40, color: '#EF233C' }} />
+                        </IconButton>
+                    </Tooltip>
                 ) : (
-                    <IconButton onClick={handleInfoOpen}>
-                        <Avatar src={avatarSrc || "/broken-image.jpg"} sx={{ width: 56, height: 56 }}/>
-                    </IconButton>
+                    <Tooltip title="Edit profile">
+                        <IconButton onClick={handleInfoOpen}>
+                            <Avatar src={avatarSrc || "/broken-image.jpg"} sx={{ width: 56, height: 56 }}/>
+                        </IconButton>
+                    </Tooltip>
                 )}
                 <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center'}}>
                     <LogoWNote />
                 </Box>
                 <Stack spacing={2} direction="row">
-                    <IconButton aria-label="bookmark" onClick={() => navigate("/savedRestaurantsPage")}>
-                        <BookmarkIcon fontSize="large" color="mainRed"/>
-                    </IconButton>
+                    <Tooltip title="Saved restaurants">
+                        <IconButton aria-label="bookmark" onClick={() => navigate("/savedRestaurantsPage")}>
+                            <BookmarkIcon fontSize="large" color="mainRed"/>
+                        </IconButton>
+                    </Tooltip>
                     <Button variant="contained" color="mainRed" onClick={handleUserLogout}
                         sx={{
                             color: "white",
@@ -234,9 +240,11 @@ const HomeHeader = ({setHasFetchedRestaurants, setVisibleRestaurants, homeButton
                                 input: {
                                     endAdornment: (
                                         <InputAdornment position="end">
-                                            <IconButton onClick={() => setEditField('name')}>
-                                                <EditIcon/>
-                                            </IconButton>
+                                            <Tooltip title="Edit username">
+                                                <IconButton onClick={() => setEditField('name')}>
+                                                    <EditIcon/>
+                                                </IconButton>
+                                            </Tooltip>
                                         </InputAdornment>
                                     )
                                 }
@@ -252,9 +260,11 @@ const HomeHeader = ({setHasFetchedRestaurants, setVisibleRestaurants, homeButton
                                 input: {
                                     endAdornment: (
                                         <InputAdornment position="end">
-                                            <IconButton onClick={() => setEditField('email')}>
-                                                <EditIcon/>
-                                            </IconButton>
+                                            <Tooltip title="Edit email">
+                                                <IconButton onClick={() => setEditField('email')}>
+                                                    <EditIcon/>
+                                                </IconButton>
+                                            </Tooltip>
                                         </InputAdornment>
                                     )
                                 }

@@ -1,7 +1,7 @@
 // Main file for header when user is not yet logged in
 
 import React from "react"
-import { Button, Box, Stack } from "@mui/material"
+import { Button, Box, Stack, Tooltip } from "@mui/material"
 import { useNavigate } from "react-router-dom"
 import { Logo } from "../assets/Logo"
 import { useAuth0 } from "@auth0/auth0-react"
@@ -22,17 +22,18 @@ const HomeHeader = () => {
         <nav>
             <Stack direction="row" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginRight: '1rem', marginLeft: '1rem'}}>
                 {/* NEED TO MAKE CLICKABLE ONCE PAGE EXPANDS */}
-                <Box
-                    onClick={() => document.getElementById('top-section').scrollIntoView({ behavior: 'smooth'})}
-                    sx={{
-                        transition: "transform 0.3s ease-in-out",
-                        "&:hover": {
-                            transform: "scale(1.1)"
-                        }
-                    }}
-                >
-                    <Logo/>
-                </Box>
+                <Tooltip title="Back to top">
+                    <Box
+                        onClick={() => document.getElementById('top-section').scrollIntoView({ behavior: 'smooth'})}
+                        sx={{
+                            cursor: 'pointer',
+                            transition: "transform 0.3s ease-in-out",
+                            "&:hover": { transform: "scale(1.1)" }
+                        }}
+                    >
+                        <Logo/>
+                    </Box>
+                </Tooltip>
                 <Stack spacing={{ xs: 1, sm: 2 }} direction="row">
                     <Button variant="outlined" color="mainRed"
                     onClick={() => document.getElementById('about-section').scrollIntoView({ behavior: 'smooth'})}
