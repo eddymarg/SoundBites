@@ -1,5 +1,3 @@
-const { Settings } = require("@mui/icons-material")
-const { set } = require("lodash")
 
 const genreMappings = {
     "A Capella": {
