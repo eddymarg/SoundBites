@@ -737,6 +737,8 @@ const UserHome = () => {
                                     newRestaurantIds={newRestaurantIds}
                                     visitedIds={visitedIds}
                                     visitedToggle={visitedToggle}
+                                    lists={lists}
+                                    onToggleList={handleAddToList}
                                 />
                             </Box>
 
@@ -933,6 +935,8 @@ const UserHome = () => {
                                     newRestaurantIds={newRestaurantIds}
                                     visitedIds={visitedIds}
                                     visitedToggle={visitedToggle}
+                                    lists={lists}
+                                    onToggleList={handleAddToList}
                                 />
                             </Box>
                         </Box>

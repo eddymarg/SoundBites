@@ -4,7 +4,7 @@
 import { useState } from "react"
 import { Map, AdvancedMarker, useApiIsLoaded } from "@vis.gl/react-google-maps"
 import '../css/googleModal.css'
-import { Box, Typography, Rating, Divider, Stack, IconButton, Button, Skeleton } from "@mui/material"
+import { Box, Typography, Rating, Divider, Stack, IconButton, Button, Skeleton, Tooltip } from "@mui/material"
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LanguageIcon from '@mui/icons-material/Language';
 import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
@@ -14,8 +14,10 @@ import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import BookmarkAddedIcon from '@mui/icons-material/BookmarkAdded';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 
-const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocation, setSelectedLocation, savedIds, bookmarkToggle, newRestaurantIds, visitedIds = [], visitedToggle }) => {
+const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocation, setSelectedLocation, savedIds, bookmarkToggle, newRestaurantIds, visitedIds = [], visitedToggle, lists = [], onToggleList }) => {
     const [showAllHours, setShowAllHours] = useState(false)
     const [hoveredPinID, setHoveredPinID] = useState(null)
     const fallbackLocation = { lat: 40.7128, lng: -74.0060 }
@@ -25,7 +27,7 @@ const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocati
 
     const showInMapClicked = () => {
         if (selectedLocation?.place_id) {
-            window.open(`https://www.google.com/maps/search/?api=1&query=place_id:${selectedLocation.place_id}`, "_blank");
+            window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedLocation.name)}&query_place_id=${selectedLocation.place_id}`, "_blank");
         } else if (selectedLocation?.geometry?.location) {
             const { lat, lng } = selectedLocation.geometry.location;
             window.open(`https://www.google.com/maps?q=${lat},${lng}`, "_blank");
@@ -119,14 +121,27 @@ const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocati
                                 {/* location name */}
                                 <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center"}}>
                                     <Typography variant="h4" style={{fontFamily: "'Tinos', serif", fontWeight: "700"}}>{selectedLocation.name}</Typography>
-                                    <Typography>
-                                        <LocationOnIcon 
-                                            fontSize="large" 
-                                            onClick={showInMapClicked} 
-                                            sx={{
-                                                '&:hover': {color: 'grey'}
-                                            }}/>
-                                    </Typography>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+                                        {(() => {
+                                            const likedList = lists.find(l => l.isDefault && l.name === 'Liked')
+                                            const isLiked = likedList?.place_ids?.includes(selectedLocation.place_id)
+                                            return onToggleList && likedList ? (
+                                                <Tooltip title={isLiked ? 'Remove from Liked' : 'Add to Liked'}>
+                                                    <IconButton size="small" onClick={() => onToggleList(likedList._id, selectedLocation)}>
+                                                        {isLiked
+                                                            ? <FavoriteIcon sx={{ color: '#EF233C', fontSize: 26 }} />
+                                                            : <FavoriteBorderIcon sx={{ color: '#ccc', fontSize: 26, '&:hover': { color: '#EF233C' } }} />
+                                                        }
+                                                    </IconButton>
+                                                </Tooltip>
+                                            ) : null
+                                        })()}
+                                        <Tooltip title="View on Google Maps">
+                                            <IconButton size="small" onClick={showInMapClicked}>
+                                                <LocationOnIcon sx={{ color: '#EF233C', fontSize: 26, '&:hover': { color: '#c41e32' } }} />
+                                            </IconButton>
+                                        </Tooltip>
+                                    </Box>
                                 </Stack>
                                 {/* location rating */}
                                 <Box display="flex" alignItems="center" gap={1} sx={{marginBottom: '0.5rem'}}>
