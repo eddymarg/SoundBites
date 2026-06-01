@@ -61,6 +61,20 @@ const UserHome = () => {
     const loadStartTime = useRef(Date.now())
     const listContainerRef = useRef(null)
 
+    // Must run synchronously before any effects so the genre fetch has the token
+    const _tokenInitRef = useRef(false)
+    if (!_tokenInitRef.current) {
+        _tokenInitRef.current = true
+        const _params = new URLSearchParams(window.location.search)
+        const _at = _params.get('access_token')
+        const _rt = _params.get('refresh_token')
+        if (_at && _rt) {
+            localStorage.setItem('spotify_access_token', _at)
+            localStorage.setItem('spotify_refresh_token', _rt)
+            window.history.replaceState({}, '', '/userHome')
+        }
+    }
+
     useEffect(() => {
         localStorage.removeItem("restaurantCache")
     }, [])
@@ -347,18 +361,6 @@ const UserHome = () => {
         fetchTopArtists()
     },[])
 
-    useEffect(() => {
-        const params = new URLSearchParams(window.location.search)
-        const accessToken = params.get('access_token')
-        const refreshToken = params.get('refresh_token')
-
-        if (accessToken && refreshToken) {
-            localStorage.setItem('spotify_access_token', accessToken)
-            localStorage.setItem('spotify_refresh_token', refreshToken)
-
-            window.history.replaceState({}, '', '/userHome')
-        }
-    }, [])
 
 
     useEffect(() => {

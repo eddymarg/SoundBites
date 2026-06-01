@@ -86,7 +86,7 @@ const genreMappings = {
         adjectives: ["Innovative", "Fresh"]
     },
     "Album Rock": {
-        settings: ["Rock Diners", "Music Memorabilia Cafes", "Barbeque Smokehouse"],
+        settings: ["Music Memorabilia Cafes", "Barbeque Smokehouse", "Rock Themed Restaurant"],
         adjectives: ["Immersive", "Thematic"]
     },
     "Albuquerque Indie": {
@@ -150,7 +150,7 @@ const genreMappings = {
         adjectives: ["Modern", "Raw Energy"]
     },
     "Ambeat": {
-        settings: ["Diners", "Jazz Cafes", "Ramen Shops"],
+        settings: ["Jazz Cafes", "Ramen Shops", "Cozy Restaurant"],
         adjectives: ["Ambient", "Chill"]
     },
     "Ambient": {
@@ -426,7 +426,7 @@ const genreMappings = {
         adjectives: ["Pop", "Fusion"]
     },
     "Big Band": {
-        settings: ["Classic American Diners", "Cocktail Lounges", "Family Dining Spots"],
+        settings: ["Cocktail Lounges", "Jazz Club Restaurant", "Family Dining Spots"],
         adjectives: ["Graceful", "Joyous"]
     },
     "Big Beat": {
@@ -462,7 +462,7 @@ const genreMappings = {
         adjectives: ["Lively", "Social"]
     },
     "Bluegrass": {
-        settings: ["Farm-to-table Southern Restaurants", "Countryside Diners", "Rustic-chic Cafes"],
+        settings: ["Farm-to-table Southern Restaurants", "Country Kitchen Restaurant", "Rustic-chic Cafes"],
         adjectives: ["Harmony", "Intricate"]
     },
     "Blues": {
@@ -478,7 +478,7 @@ const genreMappings = {
         adjectives: ["Electric", "Jazzy"]
     },
     "Bmore": {
-        settings: ["Neighborhood Joints", "Diners", "Family-friendly Spots"],
+        settings: ["Neighborhood Joints", "Soul Food Restaurant", "Family-friendly Spots"],
         adjectives: ["High-energy", "Easy-going"]
     },
     "Bolero": {
@@ -642,7 +642,7 @@ const genreMappings = {
         adjectives: ["Upbeat", "Playful"]
     },
     "Bubblegum Pop": {
-        settings: ["Neon Diners", "Dessert Cafes", "Food Courts"],
+        settings: ["Dessert Cafes", "Instagrammable Restaurant", "Food Courts"],
         adjectives: ["Youthful", "Simplistic"]
     },
     "Bulgarian Rock": {
@@ -818,11 +818,11 @@ const genreMappings = {
         adjectives: ["Sweet", "Refined", "Slow"]
     },
     "Pop": {
-        settings: ["Quick-service", "Retro Diner", "Brunch"],
+        settings: ["Trendy Brunch Restaurant", "Dessert Cafe", "Fast-casual Eatery"],
         adjectives: ["Fast", "Casual", "Trendy"]
     },
     "Rock": {
-        settings: ["Themed Restaurants", "Retro Diners", "Decorated Restaurants"],
+        settings: ["Live Music Restaurant", "Craft Beer Pub", "Music Themed Cafe"],
         adjectives: ["High-energy", "Nostalgic", "Themed"]
     },
     "Hip Hop": {

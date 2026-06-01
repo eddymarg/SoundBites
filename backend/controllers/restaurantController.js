@@ -18,13 +18,69 @@ const GENRE_VENUE_MAP = [
     { keywords: ['gospel', 'christian', 'worship', 'spiritual', 'ccm'],                                                                                                                          query: 'soul food restaurant', safeQuery: 'soul food restaurant' },
 ]
 
+// Buckets a setting string into a broad venue category so we can ensure
+// the two search queries sent to Google Places are genuinely different types.
+function getVenueCategory(setting) {
+    const s = setting.toLowerCase()
+    if (s.includes('diner')) return 'diner'
+    if (s.includes('fine dining') || s.includes("chef's table") || s.includes('omakase') || s.includes('tasting menu')) return 'fine_dining'
+    if (s.includes('rooftop')) return 'rooftop'
+    if (s.includes('food truck')) return 'food_truck'
+    if (s.includes('food market') || s.includes('food hall') || s.includes('night market') || s.includes('open-air market') || s.includes('hawker') || s.includes('street food') || s.includes('pop-up')) return 'food_market'
+    if (s.includes('pub') || s.includes('gastropub')) return 'pub'
+    if (s.includes('wine bar')) return 'wine_bar'
+    if (s.includes('cocktail') || s.includes('speakeasy')) return 'cocktail_bar'
+    if (s.includes('pizza')) return 'pizza'
+    if (s.includes('sushi') || s.includes('ramen') || s.includes('izakaya')) return 'japanese'
+    if (s.includes('bbq') || s.includes('smokehouse') || s.includes('barbeque') || s.includes('barbecue') || s.includes('churrasco')) return 'bbq'
+    if (s.includes('taco') || s.includes('cantina') || s.includes('taqueria')) return 'mexican'
+    if (s.includes('vegan') || s.includes('vegetarian') || s.includes('plant-based') || s.includes('plant based')) return 'vegan'
+    if (s.includes('soul food')) return 'soul_food'
+    if (s.includes('brunch') || s.includes('pancake house')) return 'brunch'
+    if (s.includes('steakhouse') || s.includes('steak house')) return 'steakhouse'
+    if (s.includes('bakery') || s.includes('bakeries')) return 'bakery'
+    if (s.includes('tapas') || s.includes('mezze')) return 'tapas'
+    if (s.includes('tea')) return 'tea'
+    if (s.includes('buffet')) return 'buffet'
+    if (s.includes('fusion')) return 'fusion'
+    if (s.includes('cafe') || s.includes('cafes') || s.includes('coffeehouse') || s.includes('coffee shop')) return 'cafe'
+    if (s.includes('bistro')) return 'bistro'
+    if (s.includes('lounge')) return 'lounge'
+    if (s.includes('burger')) return 'burger'
+    if (s.includes('bar')) return 'bar'
+    return s
+}
+
 function mapGenresToVenueQueries(genres, filterAlcohol = false) {
     if (!genres || genres.length === 0) return ['restaurant']
 
-    // Use detailed genre mappings as primary source
     const { settings } = mapGenresToKeywords(genres)
+
     if (settings.length > 0) {
-        return settings.slice(0, 2)
+        const seenCategories = new Set()
+        const chosen = []
+        const dinerFallback = []
+
+        for (const setting of settings) {
+            if (chosen.length >= 2) break
+            const cat = getVenueCategory(setting)
+            if (cat === 'diner') {
+                // collect one diner in case we run out of other options
+                if (dinerFallback.length === 0) dinerFallback.push(setting)
+                continue
+            }
+            if (!seenCategories.has(cat)) {
+                seenCategories.add(cat)
+                chosen.push(setting)
+            }
+        }
+
+        // Only use a diner if there weren't enough diverse alternatives
+        while (chosen.length < 2 && dinerFallback.length > 0) {
+            chosen.push(dinerFallback.shift())
+        }
+
+        if (chosen.length > 0) return chosen
     }
 
     // Fall back to coarse map for genres with no detailed match
