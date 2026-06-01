@@ -26,6 +26,7 @@ const UserHome = () => {
     // Filter states
     const [genreFilter, setGenreFilter] = useState([])
     const [topGenres, setTopGenres] = useState([])
+    const [allGenres, setAllGenres] = useState([])
     //  For load more
     const [allRestaurants, setAllRestaurants] = useState([])
     const [visibleRestaurants, setVisibleRestaurants] = useState([])
@@ -301,6 +302,7 @@ const UserHome = () => {
             try {
                 const response = await fetch(`${import.meta.env.VITE_API_URL}/top-artists`, {
                     method: 'GET',
+                    credentials: 'include',
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('spotify_access_token')}`,
                         'x-refresh-token': localStorage.getItem('spotify_refresh_token')
@@ -310,7 +312,7 @@ const UserHome = () => {
                 if (!response.ok) {
                     throw new Error("Failed to fetch top artists")
                 }
-    
+
                 const newToken = response.headers.get('x-new-access-token')
                 if (newToken) {
                     localStorage.setItem('spotify_access_token', newToken)
@@ -319,7 +321,7 @@ const UserHome = () => {
                 const data = await response.json()
                 if (!Array.isArray(data)) throw new Error("Unexpected response from top artists")
 
-                const desiredGenreCount = 3
+                const desiredGenreCount = 10
                 const genreSet = new Set()
 
                 for (const artist of data) {
@@ -332,9 +334,11 @@ const UserHome = () => {
                     if(genreSet.size >= desiredGenreCount) break
                 }
 
-                const topGenres = Array.from(genreSet)
-                setTopGenres(topGenres)
-                setGenreFilter(topGenres)
+                const allGenresList = Array.from(genreSet)
+                const initialGenres = allGenresList.slice(0, 3)
+                setAllGenres(allGenresList)
+                setTopGenres(initialGenres)
+                setGenreFilter(initialGenres)
                 setLoadingStage(1)
             } catch (err) {
                 console.error("Error loading top artists:", err)
@@ -342,7 +346,6 @@ const UserHome = () => {
         }
         fetchTopArtists()
     },[])
-
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search)
@@ -356,6 +359,7 @@ const UserHome = () => {
             window.history.replaceState({}, '', '/userHome')
         }
     }, [])
+
 
     useEffect(() => {
         const loadSavedIds = async () => {
@@ -390,6 +394,7 @@ const UserHome = () => {
     const checkForPassword = async () => {
         try {
             const res = await fetch(`${import.meta.env.VITE_API_URL}/check-for-password`, {
+                credentials: 'include',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('spotify_access_token')}`,
                     'x-refresh-token': localStorage.getItem('spotify_refresh_token'),
@@ -811,6 +816,7 @@ const UserHome = () => {
                                 <Box sx={{ px: 2, pb: 1, flexShrink: 0 }}>
                                     <GenreDisplay
                                         topGenres={topGenres}
+                                        allGenres={allGenres}
                                         setTopGenres={(updated) => {
                                             setGenreFilter(updated)
                                             setTopGenres(updated)
@@ -872,6 +878,7 @@ const UserHome = () => {
                                 <Box sx={{ pb: 1, flexShrink: 0 }}>
                                     <GenreDisplay
                                         topGenres={topGenres}
+                                        allGenres={allGenres}
                                         setTopGenres={(updated) => {
                                             setGenreFilter(updated)
                                             setTopGenres(updated)

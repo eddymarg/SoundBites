@@ -1,10 +1,11 @@
 // Displays the top 3 genres as buttons
-import { useState, useEffect } from "react";
-import { Button, Box, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Portal } from "@mui/material"
+import { useState } from "react";
+import { Box, IconButton, Dialog, DialogContent, DialogActions, Button, Snackbar, Portal, Tooltip } from "@mui/material"
 import ClearIcon from '@mui/icons-material/Clear';
+import ShuffleIcon from '@mui/icons-material/Shuffle';
 import { motion } from "framer-motion"
 
-const GenreDisplay = ({ topGenres, setTopGenres }) => {
+const GenreDisplay = ({ topGenres, allGenres = [], setTopGenres }) => {
     const [genreToDelete, setGenreToDelete] = useState(null)
     const [open, setOpen] = useState(false)
     const [lastDeletedGenre, setLastDeletedGenre] = useState(null)
@@ -23,17 +24,28 @@ const GenreDisplay = ({ topGenres, setTopGenres }) => {
 
     const handleDeleteGenre = (genreToRemove) => {
         setLastDeletedGenre(genreToRemove)
-        setTopGenres(prev => prev.filter(g => g !== genreToRemove))
+        setTopGenres(topGenres.filter(g => g !== genreToRemove))
         handleCloseDialog()
         setSnackbarOpen(true)
     }
 
     const handleUndo = () => {
         if (lastDeletedGenre) {
-            setTopGenres(prev => [...prev, lastDeletedGenre])
+            setTopGenres([...topGenres, lastDeletedGenre])
             setLastDeletedGenre(null)
         }
         setSnackbarOpen(false)
+    }
+
+    const [spinCount, setSpinCount] = useState(0)
+
+    const handleShuffle = () => {
+        setSpinCount(c => c + 1)
+        const pool = allGenres.length >= 3 ? allGenres : topGenres
+        const different = pool.filter(g => !topGenres.includes(g))
+        const source = different.length >= 3 ? different : pool
+        const shuffled = [...source].sort(() => Math.random() - 0.5)
+        setTopGenres(shuffled.slice(0, 3))
     }
 
     return (
@@ -79,6 +91,42 @@ const GenreDisplay = ({ topGenres, setTopGenres }) => {
                     </Box>
                 </motion.div>
             ))}
+            {allGenres.length > 3 && (
+                <motion.div
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.35 }}
+                >
+                    <Tooltip title="Shuffle genres" placement="top" arrow>
+                        <IconButton
+                            onClick={handleShuffle}
+                            size="small"
+                            sx={{
+                                color: '#EF233C',
+                                border: '1.5px solid #EF233C',
+                                borderRadius: '50%',
+                                p: { xs: '5px', md: '7px' },
+                                background: 'transparent',
+                                transition: 'background 0.2s, color 0.2s, box-shadow 0.2s',
+                                '&:hover': {
+                                    background: '#EF233C',
+                                    color: 'white',
+                                    boxShadow: '0 0 0 3px #EF233C30',
+                                },
+                            }}
+                        >
+                            <motion.span
+                                key={spinCount}
+                                animate={{ rotate: spinCount > 0 ? 360 : 0 }}
+                                transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
+                                style={{ display: 'flex' }}
+                            >
+                                <ShuffleIcon sx={{ fontSize: { xs: '16px', md: '20px' } }} />
+                            </motion.span>
+                        </IconButton>
+                    </Tooltip>
+                </motion.div>
+            )}
         </Box>
 
         {/* Confirmation Dialog */}

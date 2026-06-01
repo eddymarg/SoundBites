@@ -83,6 +83,9 @@ const HomeHeader = ({setHasFetchedRestaurants, setVisibleRestaurants, homeButton
             localStorage.removeItem("restaurantCache")
             localStorage.removeItem("userLocation")
             localStorage.removeItem("ipLocation")
+            localStorage.removeItem("spotify_access_token")
+            localStorage.removeItem("spotify_refresh_token")
+            localStorage.removeItem("token")
             sessionStorage.removeItem("hasSeenLoadingScreen")
 
             if (typeof setHasFetchedRestaurants === "function") setHasFetchedRestaurants(false)
