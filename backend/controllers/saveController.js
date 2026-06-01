@@ -8,7 +8,8 @@ exports.saveRestaurant = async (req, res) => {
         const exists = await SaveSchema.findOne({ userId, place_id: req.body.place_id })
         if (exists) return res.status(409).json({ message: "Restaurant already saved" })
 
-        const newRestaurant = new SaveSchema({ ...req.body, userId })
+        const { place_id, name, photo, rating, price_level, address, geometry, opening_hours, website, formatted_phone_number } = req.body
+        const newRestaurant = new SaveSchema({ place_id, name, photo, rating, price_level, address, geometry, opening_hours, website, formatted_phone_number, userId })
         const saved = await newRestaurant.save()
         res.status(201).json(saved)
     } catch (error) {
@@ -48,7 +49,8 @@ exports.toggleVisited = async (req, res) => {
         const { place_id } = req.params
         let restaurant = await SaveSchema.findOne({ userId, place_id })
         if (!restaurant) {
-            restaurant = new SaveSchema({ ...req.body, userId, place_id, visited: true })
+            const { name, photo, rating, price_level, address, geometry, opening_hours, website, formatted_phone_number } = req.body
+            restaurant = new SaveSchema({ place_id, name, photo, rating, price_level, address, geometry, opening_hours, website, formatted_phone_number, userId, visited: true })
             await restaurant.save()
             return res.status(201).json(restaurant)
         }

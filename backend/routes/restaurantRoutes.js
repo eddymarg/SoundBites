@@ -6,8 +6,8 @@ const authMiddleware = require("../middleware/authMiddleware")
 
 const router = express.Router()
 
-router.post("/nearby-restaurants", getNearbyRestoByMusic)
-router.get("/place-details/:placeId", getPlaceDetailsById)
+router.post("/nearby-restaurants", authMiddleware, getNearbyRestoByMusic)
+router.get("/place-details/:placeId", authMiddleware, getPlaceDetailsById)
 
 // Protected routes — require a logged-in user
 router.post("/save", authMiddleware, saveRestaurant)
