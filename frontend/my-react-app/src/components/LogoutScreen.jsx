@@ -13,8 +13,8 @@ const LogoutScreen = () => {
     ]
 
     useEffect(() => {
-        const t1 = setTimeout(() => setStage(1), 1200)
-        const t2 = setTimeout(() => setStage(2), 2600)
+        const t1 = setTimeout(() => setStage(1), 400)
+        const t2 = setTimeout(() => setStage(2), 900)
         return () => { clearTimeout(t1); clearTimeout(t2) }
     }, [])
 

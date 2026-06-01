@@ -8,6 +8,7 @@ import UserHome from "./pages/loggedinHome"
 import SavedRestaurantsPage from "./pages/savedRecs"
 import LoadingScreen from "./components/LoadingScreen"
 import ResetPassword from "./pages/ResetPassword"
+import ProfileSettings from "./pages/ProfileSettings"
 
 const theme = createTheme({
   palette: {
@@ -34,6 +35,7 @@ const router = createBrowserRouter(
       <Route path="savedRestaurantsPage" element={<SavedRestaurantsPage />}/>
       <Route path="loadingScreen" element={<LoadingScreen />} />
       <Route path="reset-password/:token" element={<ResetPassword />} />
+      <Route path="profileSettings" element={<ProfileSettings />} />
     </Route>
   )
 )
