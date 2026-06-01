@@ -75,9 +75,6 @@ const UserHome = () => {
         }
     }
 
-    useEffect(() => {
-        localStorage.removeItem("restaurantCache")
-    }, [])
     const mobileListContainerRef = useRef(null)
     const isRefreshRef = useRef(false)
     const preRefreshRestaurantsRef = useRef([])
@@ -312,8 +309,23 @@ const UserHome = () => {
 
     // Gets Genres
     useEffect(() => {
+        const GENRE_CACHE_TTL = 60 * 60 * 1000 // 1 hour
+
         const fetchTopArtists = async () => {
             try {
+                // Use cached genres if still fresh
+                const cachedGenres = localStorage.getItem("genreCache")
+                if (cachedGenres) {
+                    const parsed = JSON.parse(cachedGenres)
+                    if (Date.now() - parsed.timestamp < GENRE_CACHE_TTL) {
+                        setAllGenres(parsed.allGenres)
+                        setTopGenres(parsed.topGenres)
+                        setGenreFilter(parsed.topGenres)
+                        setLoadingStage(1)
+                        return
+                    }
+                }
+
                 const response = await fetch(`${import.meta.env.VITE_API_URL}/top-artists`, {
                     method: 'GET',
                     credentials: 'include',
@@ -350,6 +362,13 @@ const UserHome = () => {
 
                 const allGenresList = Array.from(genreSet)
                 const initialGenres = allGenresList.slice(0, 3)
+
+                localStorage.setItem("genreCache", JSON.stringify({
+                    timestamp: Date.now(),
+                    allGenres: allGenresList,
+                    topGenres: initialGenres,
+                }))
+
                 setAllGenres(allGenresList)
                 setTopGenres(initialGenres)
                 setGenreFilter(initialGenres)

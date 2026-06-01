@@ -1,4 +1,6 @@
 const spotifyUser = require("../models/SpotifyUser")
+const Save = require("../models/Save")
+const List = require("../models/List")
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 const crypto = require("crypto")
@@ -155,7 +157,7 @@ exports.signup = async (req, res) => {
 
 exports.checkExistingUser = async (req, res) => {
     const { email } = req.body
-    
+
     if(!email ) {
         return res.status(400).json({ message: "Email required"})
     }
@@ -170,5 +172,93 @@ exports.checkExistingUser = async (req, res) => {
     } catch (error) {
         console.error("Error checking if Spotify user exists:", error)
         return res.status(500).json({ message: "Server error" })
+    }
+}
+
+exports.getProfile = async (req, res) => {
+    try {
+        const user = await spotifyUser.findById(req.user.id).select("display_name email avatar explicitContentFilter spotifyId")
+        if (!user) return res.status(404).json({ msg: "User not found" })
+        res.json({
+            display_name: user.display_name,
+            email: user.email,
+            avatar: user.avatar,
+            explicitContentFilter: user.explicitContentFilter ?? false,
+            hasSpotify: !!user.spotifyId,
+        })
+    } catch (err) {
+        res.status(500).json({ msg: "Internal server error" })
+    }
+}
+
+exports.updateProfile = async (req, res) => {
+    try {
+        const { display_name } = req.body
+        const update = {}
+        if (display_name !== undefined) update.display_name = display_name
+        if (req.file) {
+            update.avatar = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`
+        }
+        const user = await spotifyUser.findByIdAndUpdate(req.user.id, update, { new: true })
+        if (!user) return res.status(404).json({ msg: "User not found" })
+        res.json({ msg: "Profile updated", display_name: user.display_name, avatar: user.avatar })
+    } catch (err) {
+        res.status(500).json({ msg: "Internal server error" })
+    }
+}
+
+exports.requestPasswordChange = async (req, res) => {
+    try {
+        const user = await spotifyUser.findById(req.user.id)
+        if (!user) return res.status(404).json({ msg: "User not found" })
+        if (!user.email) return res.status(400).json({ msg: "No email associated with this account." })
+
+        const token = crypto.randomBytes(32).toString("hex")
+        user.resetPasswordToken = token
+        user.resetPasswordExpires = Date.now() + 60 * 60 * 1000
+        await user.save()
+
+        const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${token}`
+
+        const transporter = nodemailer.createTransport({
+            host: process.env.EMAIL_HOST,
+            port: Number(process.env.EMAIL_PORT) || 587,
+            secure: Number(process.env.EMAIL_PORT) === 465,
+            auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+        })
+
+        await transporter.sendMail({
+            from: `"SoundBites" <${process.env.EMAIL_USER}>`,
+            to: user.email,
+            subject: "Change your SoundBites password",
+            html: `
+                <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
+                    <h2 style="color: #EF233C;">Change Password</h2>
+                    <p>Hi ${user.display_name || "there"},</p>
+                    <p>We received a request to change your password. Click the button below — this link expires in <strong>1 hour</strong>.</p>
+                    <a href="${resetUrl}" style="display:inline-block;margin:16px 0;padding:12px 28px;background:#EF233C;color:#fff;border-radius:36px;text-decoration:none;font-size:16px;">Change Password</a>
+                    <p style="color:#888;font-size:13px;">If you didn't request this, you can safely ignore this email.</p>
+                </div>
+            `,
+        })
+
+        res.json({ msg: `Password change email sent to ${user.email}. Check your inbox.` })
+    } catch (err) {
+        console.error("Request password change error:", err)
+        res.status(500).json({ msg: "Failed to send email. Please try again." })
+    }
+}
+
+exports.deleteAccount = async (req, res) => {
+    try {
+        const userId = req.user.id
+        await Save.deleteMany({ userId })
+        await List.deleteMany({ userId })
+        await spotifyUser.findByIdAndDelete(userId)
+        res.clearCookie("token")
+        res.json({ msg: "Account deleted successfully." })
+    } catch (err) {
+        console.error("Delete account error:", err)
+        res.status(500).json({ msg: "Failed to delete account. Please try again." })
     }
 }

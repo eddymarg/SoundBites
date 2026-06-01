@@ -126,9 +126,33 @@ async function getPlaceDetails(placeId) {
     return { website: null, formatted_phone_number: null, opening_hours: null}
 }
 
+const FOOD_TYPES = new Set(['restaurant', 'food', 'bar', 'cafe', 'bakery', 'night_club'])
+
+const CHAIN_BLOCKLIST = [
+    "mcdonald", "burger king", "kfc", "taco bell", "subway", "wendy",
+    "domino", "pizza hut", "papa john", "chipotle", "panda express",
+    "popeyes", "chick-fil-a", "five guys", "shake shack", "in-n-out",
+    "sonic drive", "dairy queen", "dunkin", "starbucks", "tim horton",
+    "costa coffee", "baskin-robbins", "little caesar", "arby", "jack in the box",
+    "del taco", "carl's jr", "hardee", "white castle", "whataburger",
+    "checkers", "rally's", "bojangles", "raising cane", "wingstop",
+    "buffalo wild wings", "applebee", "chili's", "olive garden",
+    "red lobster", "ihop", "denny", "waffle house", "cracker barrel",
+    "golden corral", "bob evans", "panera", "jason's deli",
+    "noodles & company", "moe's southwest", "qdoba", "jersey mike",
+    "firehouse subs", "potbelly", "jimmy john", "pret a manger",
+    "sweetgreen", "cosi", "quiznos", "blaze pizza", "mod pizza",
+    "fatburger", "smashburger", "habit burger", "culver", "cook out",
+]
+
+const isChain = (name) => {
+    const lower = name.toLowerCase()
+    return CHAIN_BLOCKLIST.some(chain => lower.includes(chain))
+}
+
 exports.getNearbyRestoByMusic = async (req, res) => {
     const { lat, lng, genreFilter, pagetoken, filterAlcohol } = req.body
-    const radius = 1000
+    const radius = 2500
 
     if (!lat || !lng) {
         return res.status(400).json({ message: "Missing required parameters." })
@@ -139,7 +163,6 @@ exports.getNearbyRestoByMusic = async (req, res) => {
     const queriesToRun = pagetoken ? [venueQueries[0]] : venueQueries
 
     try {
-        const FOOD_TYPES = new Set(['restaurant', 'food', 'bar', 'cafe', 'meal_delivery', 'meal_takeaway', 'bakery', 'night_club', 'fast_food'])
         const allFoodResults = []
         const seenIds = new Set()
         let nextPageToken = null
@@ -148,7 +171,7 @@ exports.getNearbyRestoByMusic = async (req, res) => {
             const params = {
                 query: venueQuery,
                 location: `${lat}, ${lng}`,
-                radius: radius,
+                radius,
                 type: 'food',
                 key: GOOGLE_PLACES_API_KEY,
             }
@@ -165,7 +188,10 @@ exports.getNearbyRestoByMusic = async (req, res) => {
             if (!response.data?.results) continue
 
             const foodResults = response.data.results.filter(place =>
-                place.types && place.types.some(t => FOOD_TYPES.has(t))
+                place.types &&
+                place.types.some(t => FOOD_TYPES.has(t)) &&
+                !place.types.includes('fast_food') &&
+                !isChain(place.name)
             )
 
             for (const place of foodResults) {
@@ -184,7 +210,20 @@ exports.getNearbyRestoByMusic = async (req, res) => {
         const nonBarResults = allFoodResults.filter(p => !p.types?.some(t => BAR_TYPES.has(t)))
         const barResults = allFoodResults.filter(p => p.types?.some(t => BAR_TYPES.has(t)))
         const barAllowance = Math.max(1, Math.floor(nonBarResults.length / 5))
-        const mixedResults = [...nonBarResults, ...barResults.slice(0, barAllowance)]
+        const mixed = [...nonBarResults, ...barResults.slice(0, barAllowance)]
+
+        // Score to surface local gems: prefer rated, modest review counts, mid-range price
+        const scored = mixed
+            .filter(p => !p.rating || p.rating >= 3.5)
+            .map(p => {
+                const ratingScore = (p.rating || 3.5) * 2
+                const priceScore = (p.price_level === 2 || p.price_level === 3) ? 1.5 : 0
+                const reviewScore = p.user_ratings_total > 30 && p.user_ratings_total < 8000 ? 1 : 0
+                return { ...p, _score: ratingScore + priceScore + reviewScore }
+            })
+            .sort((a, b) => b._score - a._score)
+
+        const mixedResults = scored
 
         const restaurants = mixedResults.map((resto) => {
             let photoUrl = "https://source.unsplash.com/400x400/?restaurant"
