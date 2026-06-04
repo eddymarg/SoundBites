@@ -6,8 +6,8 @@ import "../css/loading.css"
 
 const LoadingScreen = ({ loadingStage, topGenres = [], showLocationTip = false }) => {
     const loadingText = [
-        "Analyzing Spotify...",
-        "Let it cook...",
+        "Checking your music taste...",
+        "Finding spots near you...",
         "Order up!"
     ]
 

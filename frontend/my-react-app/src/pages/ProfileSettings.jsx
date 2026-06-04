@@ -22,8 +22,7 @@ import { useNavigate } from "react-router-dom"
 import { LogoWNote } from "../assets/logoWNote"
 import LogoutScreen from "../components/LogoutScreen"
 
-const getAuthToken = () =>
-    localStorage.getItem("token") || localStorage.getItem("spotify_access_token")
+const getAuthToken = () => localStorage.getItem("app_token") || localStorage.getItem("spotify_access_token")
 
 const FAQ = [
     {
@@ -92,8 +91,10 @@ const ProfileSettings = () => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
+                const token = getAuthToken()
                 const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/profile`, {
-                    headers: { Authorization: `Bearer ${getAuthToken()}` }
+                    withCredentials: true,
+                    ...(token && { headers: { Authorization: `Bearer ${token}` } })
                 })
                 setUserInfo(res.data)
                 setDraftName(res.data.display_name || "")
@@ -154,8 +155,10 @@ const ProfileSettings = () => {
             const formData = new FormData()
             formData.append("display_name", draftName)
             if (avatarFile) formData.append("avatar", avatarFile)
+            const token = getAuthToken()
             const res = await axios.put(`${import.meta.env.VITE_API_URL}/api/auth/profile`, formData, {
-                headers: { Authorization: `Bearer ${getAuthToken()}`, "Content-Type": "multipart/form-data" }
+                withCredentials: true,
+                headers: { ...(token && { Authorization: `Bearer ${token}` }), "Content-Type": "multipart/form-data" }
             })
             setUserInfo(prev => ({ ...prev, display_name: res.data.display_name, avatar: res.data.avatar }))
             setAvatarFile(null)
@@ -173,10 +176,11 @@ const ProfileSettings = () => {
         setPwLoading(true)
         setPwMsg("")
         try {
+            const token = getAuthToken()
             const res = await axios.post(
                 `${import.meta.env.VITE_API_URL}/api/auth/request-password-change`,
                 {},
-                { headers: { Authorization: `Bearer ${getAuthToken()}` } }
+                { withCredentials: true, ...(token && { headers: { Authorization: `Bearer ${token}` } }) }
             )
             setPwMsg(res.data.msg)
         } catch (err) {
@@ -195,6 +199,7 @@ const ProfileSettings = () => {
             localStorage.removeItem("ipLocation")
             localStorage.removeItem("spotify_access_token")
             localStorage.removeItem("spotify_refresh_token")
+            localStorage.removeItem("app_token")
             localStorage.removeItem("token")
             sessionStorage.removeItem("hasSeenLoadingScreen")
             navigate("/")
@@ -204,8 +209,10 @@ const ProfileSettings = () => {
     const handleDeleteAccount = async () => {
         setDeleting(true)
         try {
+            const token = getAuthToken()
             await axios.delete(`${import.meta.env.VITE_API_URL}/api/auth/account`, {
-                headers: { Authorization: `Bearer ${getAuthToken()}` }
+                withCredentials: true,
+                ...(token && { headers: { Authorization: `Bearer ${token}` } })
             })
             setDeleteOpen(false)
             setLoggingOut(true)

@@ -48,11 +48,13 @@ const AddPassword = ({ open, onClose, spotifyId }) => {
 
         setLoading(true)
         try {
+            const _token = localStorage.getItem('app_token') || localStorage.getItem('spotify_access_token')
             const res = await fetch(`${import.meta.env.VITE_API_URL}/set-spotify-user-password`, {
                 method: "PUT",
+                credentials: 'include',
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem('spotify_access_token')}`
+                    ...(_token && { "Authorization": `Bearer ${_token}` })
                 },
                 body: JSON.stringify({ password })
             })

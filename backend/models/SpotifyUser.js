@@ -31,6 +31,10 @@ const SpotifyUser = new mongoose.Schema({
     explicitContentFilter: {
         type: Boolean,
         default: false
+    },
+    spotifyRefreshToken: {
+        type: String,
+        required: false,
     }
 })
 
