@@ -82,9 +82,12 @@ const SignIn = () => {
             const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
                 email,
                 password
-            })
+            }, { withCredentials: true })
 
-            localStorage.setItem("token", response.data.token)
+            if (response.data.spotifyAccessToken) {
+                localStorage.setItem('spotify_access_token', response.data.spotifyAccessToken)
+                localStorage.setItem('spotify_refresh_token', response.data.spotifyRefreshToken)
+            }
 
             if (window.PasswordCredential) {
                 const cred = new window.PasswordCredential({ id: email, password })

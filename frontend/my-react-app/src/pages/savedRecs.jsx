@@ -58,7 +58,7 @@ const TAB_STYLES = {
 // Attach Spotify access token as Authorization header so the backend can
 // identify Spotify-authenticated users who don't yet have a JWT cookie.
 const spotifyAuthHeaders = () => {
-    const token = localStorage.getItem("spotify_access_token")
+    const token = localStorage.getItem("app_token") || localStorage.getItem("spotify_access_token")
     return token ? { Authorization: `Bearer ${token}` } : {}
 }
 

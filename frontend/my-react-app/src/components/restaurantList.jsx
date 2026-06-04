@@ -32,7 +32,7 @@ const RestaurantList = ({ restaurants, handleLocationClick, selectedLocation, sa
             {restaurants.length === 0 && !isLoading && !isLoadingMore && (
                 usingFallbackLocation ? (
                     <Box sx={{ textAlign: 'center', mt: 6, px: 2 }}>
-                        <MusicNoteIcon sx={{ fontSize: 52, color: '#EF233C', mb: 1 }} />
+                        <MusicNoteIcon sx={{ fontSize: 52, color: '#FFBF69', mb: 1 }} />
                         <Typography
                             sx={{
                                 fontFamily: "'Tinos', serif",
@@ -57,7 +57,7 @@ const RestaurantList = ({ restaurants, handleLocationClick, selectedLocation, sa
                     </Box>
                 ) : (
                     <Box sx={{ textAlign: 'center', mt: 6, px: 2 }}>
-                        <RestaurantIcon sx={{ fontSize: 52, color: '#EF233C', mb: 1 }} />
+                        <RestaurantIcon sx={{ fontSize: 52, color: '#FFBF69', mb: 1 }} />
                         <Typography
                             sx={{
                                 fontFamily: "'Tinos', serif",
@@ -203,7 +203,7 @@ const RestaurantList = ({ restaurants, handleLocationClick, selectedLocation, sa
                         ? (list.name === 'Liked'
                             ? <FavoriteIcon sx={{ fontSize: 18, color: '#EF233C' }} />
                             : list.name === 'Must Visit'
-                                ? <PlaceIcon sx={{ fontSize: 18, color: '#EF233C' }} />
+                                ? <PlaceIcon sx={{ fontSize: 18, color: '#43784F' }} />
                                 : null)
                         : null
                     return (
@@ -216,7 +216,7 @@ const RestaurantList = ({ restaurants, handleLocationClick, selectedLocation, sa
                                 size="small"
                                 checked={!!isInList}
                                 disableRipple
-                                sx={{ p: 0, color: '#EF233C', '&.Mui-checked': { color: '#EF233C' } }}
+                                sx={{ p: 0, color: '#E5E5E5', '&.Mui-checked': { color: '#43784F' } }}
                                 onClick={e => e.stopPropagation()}
                             />
                             {icon}

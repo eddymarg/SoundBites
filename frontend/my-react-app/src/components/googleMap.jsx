@@ -49,9 +49,7 @@ const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocati
  
     return (
         <>
-            {isLoading ? (
-                <div className="text-center">Loading...</div>
-            ) : userLocation && typeof userLocation.lat === 'number' && typeof userLocation.lng === 'number' ? (
+            {userLocation && typeof userLocation.lat === 'number' && typeof userLocation.lng === 'number' ? (
                 // general map
                 <Box sx={{ height: '100%', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,0.10)' }}>
                     <Map
@@ -138,7 +136,7 @@ const GoogleMap = ({ userLocation, restaurants, error, isLoading, selectedLocati
                                         })()}
                                         <Tooltip title="View on Google Maps">
                                             <IconButton size="small" onClick={showInMapClicked}>
-                                                <LocationOnIcon sx={{ color: '#EF233C', fontSize: 26, '&:hover': { color: '#c41e32' } }} />
+                                                <LocationOnIcon sx={{ color: '#43784F', fontSize: 26, '&:hover': { color: '#2f5a3a' } }} />
                                             </IconButton>
                                         </Tooltip>
                                     </Box>

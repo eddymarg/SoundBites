@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react"
+import { useNavigate } from "react-router-dom"
 import { APIProvider } from "@vis.gl/react-google-maps"
 import { Box, Button, Snackbar, Portal } from "@mui/material"
 import LoggedInHeader from "../components/loggedinHeader"
@@ -9,16 +10,21 @@ import AddPassword from "../components/addPassword"
 import "../css/loggedin.css"
 import LoadingScreen from "../components/LoadingScreen"
 import getNearbyRestoByMusic from "../services/locationService"
+import logger from "../services/logger"
 
 const CACHE_DURATION = 60 * 60 * 1000 * 24
 const RESTAURANTS_PER_LOAD = 3
 
 const spotifyAuthHeaders = () => {
-    const token = localStorage.getItem("spotify_access_token")
-    return token ? { Authorization: `Bearer ${token}` } : {}
+    const jwt = localStorage.getItem("app_token")
+    const spotifyToken = localStorage.getItem("spotify_access_token")
+    if (jwt) return { Authorization: `Bearer ${jwt}` }
+    if (spotifyToken) return { Authorization: `Bearer ${spotifyToken}` }
+    return {}
 }
 
 const UserHome = () => {
+    const navigate = useNavigate()
     const [userLocation, setUserLocation] = useState(null)
     const [error, setError] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
@@ -43,10 +49,20 @@ const UserHome = () => {
     // for loading screen
     const [loadingStage, setLoadingStage] = useState(0)
     const [showLoadingScreen, setShowLoadingScreen] = useState(() => !sessionStorage.getItem("hasSeenLoadingScreen"))
+    const [minTimePassed, setMinTimePassed] = useState(false)
+    const [genreFetchComplete, setGenreFetchComplete] = useState(false)
     const hideLoadingScreen = () => {
         sessionStorage.setItem("hasSeenLoadingScreen", "true")
         setShowLoadingScreen(false)
     }
+
+    useEffect(() => {
+        if (minTimePassed && genreFetchComplete && hasFetchedRestaurants && showLoadingScreen) {
+            hideLoadingScreen()
+        }
+    }, [minTimePassed, genreFetchComplete, hasFetchedRestaurants])
+
+    useEffect(() => () => clearTimeout(stageTimerRef.current), [])
     // for password addition
     const [isNewUser, setIsNewUser] = useState(false)
     const [spotifyId, setSpotifyId] = useState("")
@@ -60,6 +76,21 @@ const UserHome = () => {
 
     const loadStartTime = useRef(Date.now())
     const listContainerRef = useRef(null)
+    const stageTimerRef = useRef(null)
+
+    // Enforces minimum stage display times so phrases are always visible:
+    // stage 1 ≥ 1.5s from load, stage 2 ≥ 3s from load
+    const STAGE_MIN_MS = [0, 1500, 3000]
+    const advanceStage = (stage) => {
+        const elapsed = Date.now() - loadStartTime.current
+        const delay = Math.max(0, (STAGE_MIN_MS[stage] ?? 0) - elapsed)
+        clearTimeout(stageTimerRef.current)
+        if (delay === 0) {
+            setLoadingStage(stage)
+        } else {
+            stageTimerRef.current = setTimeout(() => setLoadingStage(stage), delay)
+        }
+    }
 
     // Must run synchronously before any effects so the genre fetch has the token
     const _tokenInitRef = useRef(false)
@@ -68,9 +99,11 @@ const UserHome = () => {
         const _params = new URLSearchParams(window.location.search)
         const _at = _params.get('access_token')
         const _rt = _params.get('refresh_token')
+        const _jwt = _params.get('app_token')
         if (_at && _rt) {
             localStorage.setItem('spotify_access_token', _at)
             localStorage.setItem('spotify_refresh_token', _rt)
+            if (_jwt) localStorage.setItem('app_token', _jwt)
             window.history.replaceState({}, '', '/userHome')
         }
     }
@@ -81,13 +114,12 @@ const UserHome = () => {
     const dragStartY = useRef(null)
     const drawerRef = useRef(null)
 
-    const delayMinLoadTime = (start, callback, min = 5500) => {
+    const delayMinLoadTime = (start, min = 5500) => {
         const elapsed = Date.now() - start
         const remaining = Math.max(0, min - elapsed)
-        setTimeout(() => setLoadingStage(2), Math.max(0, remaining - 1800))
         setTimeout(() => {
             checkForPassword()
-            callback()
+            setMinTimePassed(true)
         }, remaining)
     }
 
@@ -146,7 +178,7 @@ const UserHome = () => {
             setUserLocation(coords)
             localStorage.setItem("userLocation", JSON.stringify(coords))
             setIsLoading(false)
-            delayMinLoadTime(loadStartTime.current, hideLoadingScreen)
+            delayMinLoadTime(loadStartTime.current)
             permResult?.removeEventListener("change", onPermissionChange)
         }
 
@@ -166,7 +198,7 @@ const UserHome = () => {
                 setUserLocation(coords)
                 localStorage.setItem("userLocation", JSON.stringify(coords))
                 setIsLoading(false)
-                delayMinLoadTime(loadStartTime.current, hideLoadingScreen)
+                delayMinLoadTime(loadStartTime.current)
                 return
             }
 
@@ -177,14 +209,14 @@ const UserHome = () => {
                     setUserLocation(fallbackCoords)
                     localStorage.setItem("userLocation", JSON.stringify(fallbackCoords))
                     setIsLoading(false)
-                    delayMinLoadTime(loadStartTime.current, hideLoadingScreen)
+                    delayMinLoadTime(loadStartTime.current)
                 })
                 .catch(() => {
                     const nyc = { lat: 40.7128, lng: -74.0060 }
                     setUserLocation(nyc)
                     localStorage.setItem("userLocation", JSON.stringify(nyc))
                     setIsLoading(false)
-                    delayMinLoadTime(loadStartTime.current, hideLoadingScreen)
+                    delayMinLoadTime(loadStartTime.current)
                 })
         }
 
@@ -200,7 +232,7 @@ const UserHome = () => {
                         setUserLocation(coords)
                         setUsingFallbackLocation(false)
                         setIsLoading(false)
-                        delayMinLoadTime(loadStartTime.current, hideLoadingScreen)
+                        delayMinLoadTime(loadStartTime.current)
                     } else {
                         result.addEventListener("change", onPermissionChange)
                         navigator.geolocation.getCurrentPosition(successCallback, errorCallback, geoOptions)
@@ -239,7 +271,7 @@ const UserHome = () => {
 
     // Deals with loading restaurant data
     useEffect(() => {
-        if (!userLocation || genreFilter.length === 0) return
+        if (!userLocation || !genreFetchComplete) return
 
         const cacheKey = getCacheKey(userLocation, genreFilter)
         const cachedData = localStorage.getItem("restaurantCache")
@@ -253,6 +285,7 @@ const UserHome = () => {
                 setVisibleRestaurants(parsed.restaurants.slice(0, RESTAURANTS_PER_LOAD))
                 setLoadedCount(RESTAURANTS_PER_LOAD)
                 setPagetoken(parsed.pagetoken || null)
+                advanceStage(2)
                 setHasFetchedRestaurants(true)
                 setIsLoading(false)
                 return
@@ -296,16 +329,18 @@ const UserHome = () => {
                             pagetoken: data.pagetoken
                         }))
                     }
+                    advanceStage(2)
                     setHasFetchedRestaurants(true)
                     setIsLoading(false)
                 })
                 .catch((err) => {
-                    console.error("Error fetching restaurants:", err)
+                    logger.error("fetchRestaurants", err, { lat: userLocation?.lat, lng: userLocation?.lng, genreFilter })
                     setError(err.message)
+                    setHasFetchedRestaurants(true)
                     setIsLoading(false)
                 })
         }
-    }, [userLocation, genreFilter, hasFetchedRestaurants])
+    }, [userLocation, genreFilter, hasFetchedRestaurants, genreFetchComplete])
 
     // Gets Genres
     useEffect(() => {
@@ -321,21 +356,38 @@ const UserHome = () => {
                         setAllGenres(parsed.allGenres)
                         setTopGenres(parsed.topGenres)
                         setGenreFilter(parsed.topGenres)
-                        setLoadingStage(1)
+                        setGenreFetchComplete(true)
+                        advanceStage(1)
                         return
                     }
                 }
 
+                const _jwt = localStorage.getItem('app_token')
+                const _at = localStorage.getItem('spotify_access_token')
+                const _rt = localStorage.getItem('spotify_refresh_token')
                 const response = await fetch(`${import.meta.env.VITE_API_URL}/top-artists`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('spotify_access_token')}`,
-                        'x-refresh-token': localStorage.getItem('spotify_refresh_token')
+                        // Prefer JWT for auth; Spotify token still needed by the controller to call Spotify API
+                        ...(_jwt ? { 'Authorization': `Bearer ${_jwt}` } : _at ? { 'Authorization': `Bearer ${_at}` } : {}),
+                        ...(_at && { 'x-spotify-token': _at }),
+                        ...(_rt && { 'x-refresh-token': _rt }),
                     }
                 })
 
                 if (!response.ok) {
+                    if (response.status === 401) {
+                        // Auth failed even after the server tried to refresh — user must re-login
+                        navigate('/signin')
+                        return
+                    }
+                    if (response.status === 400) {
+                        // No Spotify connected — continue without genre data
+                        setGenreFetchComplete(true)
+                        advanceStage(1)
+                        return
+                    }
                     throw new Error("Failed to fetch top artists")
                 }
 
@@ -372,9 +424,12 @@ const UserHome = () => {
                 setAllGenres(allGenresList)
                 setTopGenres(initialGenres)
                 setGenreFilter(initialGenres)
-                setLoadingStage(1)
+                setGenreFetchComplete(true)
+                advanceStage(1)
             } catch (err) {
-                console.error("Error loading top artists:", err)
+                logger.error("fetchTopArtists", err)
+                setGenreFetchComplete(true)
+                advanceStage(1)
             }
         }
         fetchTopArtists()
@@ -392,7 +447,7 @@ const UserHome = () => {
                 setSavedIds(safeData.map(r => r.place_id))
                 setVisitedIds(safeData.filter(r => r.visited).map(r => r.place_id))
             } catch (err) {
-                console.error("Failed to load saved IDs:", err)
+                logger.error("loadSavedIds", err)
             }
         }
         loadSavedIds()
@@ -406,7 +461,7 @@ const UserHome = () => {
                 const data = await res.json()
                 setLists(Array.isArray(data) ? data : [])
             } catch (err) {
-                console.error("Failed to load lists:", err)
+                logger.error("fetchLists", err)
             }
         }
         fetchLists()
@@ -414,13 +469,16 @@ const UserHome = () => {
 
     const checkForPassword = async () => {
         try {
+            const _token = localStorage.getItem('app_token') || localStorage.getItem('spotify_access_token')
+            const _rt = localStorage.getItem('spotify_refresh_token')
             const res = await fetch(`${import.meta.env.VITE_API_URL}/check-for-password`, {
                 credentials: 'include',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('spotify_access_token')}`,
-                    'x-refresh-token': localStorage.getItem('spotify_refresh_token'),
+                    ...(_token && { 'Authorization': `Bearer ${_token}` }),
+                    ...(_rt && { 'x-refresh-token': _rt }),
                 }
             })
+            if (!res.ok) return
             const newToken = res.headers.get('x-new-access-token')
             if (newToken) {
                 localStorage.setItem('spotify_access_token', newToken)
@@ -640,7 +698,7 @@ const UserHome = () => {
                     }))
                 }
             } catch (err) {
-                console.error("Error loading more restaurants:", err)
+                logger.error("loadMoreRestaurants", err)
                 setError(err.message)
             } finally {
                 setIsLoadingMore(false)
@@ -695,7 +753,7 @@ const UserHome = () => {
                     prev?.place_id === selectedLocation.place_id ? { ...prev, ...details } : prev
                 )
             })
-            .catch(err => console.error('Failed to fetch place details:', err))
+            .catch(err => logger.error("fetchPlaceDetails", err, { place_id: selectedLocation?.place_id }))
     }, [selectedLocation?.place_id])
 
     const handleDrawerDragStart = (e) => {

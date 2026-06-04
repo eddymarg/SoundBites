@@ -1,4 +1,5 @@
 const spotifyUser = require("../models/SpotifyUser")
+const { refreshAccessToken } = require("./spotifyController")
 const Save = require("../models/Save")
 const List = require("../models/List")
 const bcrypt = require("bcryptjs")
@@ -27,13 +28,26 @@ exports.login = async (req, res) => {
         // send token in HTTP-only cookie(more security)
         res.cookie("token", token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production", 
-            sameSite: "strict", 
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
         })
 
-        console.log("Token cookie set")
+        let spotifyAccessToken = null
+        if (user.spotifyRefreshToken) {
+            try {
+                spotifyAccessToken = await refreshAccessToken(user.spotifyRefreshToken)
+            } catch (err) {
+                console.error("Failed to refresh Spotify token on login:", err.message)
+            }
+        }
 
-        res.json({ user: { id: user._id, email: user.email }})
+        res.json({
+            user: { id: user._id, email: user.email },
+            ...(spotifyAccessToken && {
+                spotifyAccessToken,
+                spotifyRefreshToken: user.spotifyRefreshToken,
+            })
+        })
     } catch(err) {
         res.status(500).json({ msg: "Internal server error" })
     }

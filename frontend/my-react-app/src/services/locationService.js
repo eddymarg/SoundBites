@@ -2,7 +2,7 @@ import axios from 'axios'
 
 const getNearbyRestoByMusic = async (lat, lng, genreFilter, pagetoken = null, filterAlcohol = false) => {
     try {
-        const token = localStorage.getItem('spotify_access_token')
+        const token = localStorage.getItem('app_token') || localStorage.getItem('spotify_access_token')
         const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/nearby-restaurants`, {
             lat,
             lng,

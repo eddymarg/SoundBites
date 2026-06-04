@@ -9,7 +9,7 @@ const client_secret = process.env.SPOTIFY_CLIENT_SECRET
 const redirect_uri = process.env.SPOTIFY_REDIRECT_URI
 
 // exchanges a refresh token for a new access token
-const refreshAccessToken = async (refresh_token) => {
+const refreshAccessToken = exports.refreshAccessToken = async (refresh_token) => {
     const refreshResponse = await axios.post(
         'https://accounts.spotify.com/api/token',
         querystring.stringify({
@@ -82,7 +82,7 @@ exports.spotifyCallback = async (req, res) => {
 
         const { access_token, refresh_token } = response.data
         if (!access_token || !refresh_token) {
-            return res.redirect(`${process.env.FRONTEND_URL}/login?error=spotify_token_missing`)
+            return res.redirect(`${process.env.FRONTEND_URL}/signin?error=spotify_token_missing`)
         }
 
         const profileRes = await axios.get("https://api.spotify.com/v1/me", {
@@ -100,10 +100,11 @@ exports.spotifyCallback = async (req, res) => {
         // save to DB
         let user = await SpotifyUser.findOne({ spotifyId })
         if (!user) {
-            user = new SpotifyUser({ spotifyId, display_name, email, avatar, explicitContentFilter })
+            user = new SpotifyUser({ spotifyId, display_name, email, avatar, explicitContentFilter, spotifyRefreshToken: refresh_token })
             await user.save()
         } else {
             user.explicitContentFilter = explicitContentFilter
+            user.spotifyRefreshToken = refresh_token
             await user.save()
         }
 
@@ -113,12 +114,14 @@ exports.spotifyCallback = async (req, res) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
         })
 
         const params = new URLSearchParams({
             access_token,
             refresh_token,
-            spotify_id: spotifyId
+            spotify_id: spotifyId,
+            app_token: jwtToken
         })
 
         res.redirect(`${process.env.FRONTEND_URL}/userHome?${params.toString()}`)
@@ -131,36 +134,8 @@ exports.spotifyCallback = async (req, res) => {
 // helps return spotify user info
 exports.getSpotifyUserFromDB = async (req, res) => {
     try {
-        let access_token = req.headers.authorization?.replace('Bearer ', '')
-        const refresh_token = req.headers['x-refresh-token'] || req.cookies.spotify_refresh_token
-
-        if (!access_token) {
-            access_token = req.cookies.spotify_access_token
-        }
-
-        let profileRes
-        try {
-            profileRes = await axios.get("https://api.spotify.com/v1/me", {
-                headers: { Authorization: `Bearer ${access_token}` },
-            })
-        } catch (err) {
-            if (err.response?.status === 401 && refresh_token) {
-                access_token = await refreshAccessToken(refresh_token)
-                res.cookie("spotify_access_token", access_token, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", maxAge: 60 * 60 * 1000 })
-                profileRes = await axios.get("https://api.spotify.com/v1/me", {
-                    headers: { Authorization: `Bearer ${access_token}` },
-                })
-            } else {
-                throw err
-            }
-        }
-
-        const spotifyId = profileRes.data.id
-        const user = await SpotifyUser.findOne({ spotifyId })
-
-        if (!user) {
-            return res.status(404).json({ error: "User not found" })
-        }
+        const user = await SpotifyUser.findById(req.user.id)
+        if (!user) return res.status(404).json({ error: "User not found" })
 
         res.json({
             display_name: user.display_name,
@@ -177,69 +152,34 @@ exports.getSpotifyUserFromDB = async (req, res) => {
 // updates the user info
 exports.updateSpotifyUser = async (req, res) => {
     try {
-        const access_token = req.headers.authorization?.replace('Bearer ', '') || req.cookies.spotify_access_token
-
-        const profileRes = await axios.get("https://api.spotify.com/v1/me", {
-            headers: {Authorization: `Bearer ${access_token}` }
-        })
-
-        const spotifyId = profileRes.data.id
         const { display_name, email } = req.body
-        let avatar = req.body.avatar // fallback if no file
+        const update = { display_name, email }
 
         if (req.file) {
-            const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`
-            avatar = base64Image
+            update.avatar = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`
+        } else if (req.body.avatar) {
+            update.avatar = req.body.avatar
         }
 
-        const user = await SpotifyUser.findOneAndUpdate(
-            { spotifyId },
-            { display_name, email, avatar },
-            { new: true }
-        )
-
-        if(!user) return res.status(404).json({ error: "User not found" })
+        const user = await SpotifyUser.findByIdAndUpdate(req.user.id, update, { new: true })
+        if (!user) return res.status(404).json({ error: "User not found" })
 
         res.json({ message: "User updated" })
     } catch (err) {
         console.error("Failed to update user:", err.message)
-        res.status(500).json({ error: "Server error"})
+        res.status(500).json({ error: "Server error" })
     }
 }
 
 // Checks for user password
 exports.checkForPassword = async (req, res) => {
     try {
-        let access_token = req.headers.authorization?.replace('Bearer ', '') || req.cookies.spotify_access_token
-        const refresh_token = req.headers['x-refresh-token'] || req.cookies.spotify_refresh_token
-
-        let profileRes
-        try {
-            profileRes = await axios.get("https://api.spotify.com/v1/me", {
-                headers: { Authorization: `Bearer ${access_token}` },
-            })
-        } catch (err) {
-            if (err.response?.status === 401 && refresh_token) {
-                access_token = await refreshAccessToken(refresh_token)
-                res.cookie("spotify_access_token", access_token, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", maxAge: 60 * 60 * 1000 })
-                profileRes = await axios.get("https://api.spotify.com/v1/me", {
-                    headers: { Authorization: `Bearer ${access_token}` },
-                })
-            } else {
-                throw err
-            }
-        }
-
-        const spotifyId = profileRes.data.id
-        const user = await SpotifyUser.findOne({ spotifyId })
-
-        if (!user) {
-            return res.status(404).json({ error: "User not found" })
-        }
+        const user = await SpotifyUser.findById(req.user.id)
+        if (!user) return res.status(404).json({ error: "User not found" })
 
         res.json({
             isNewUser: !user.password,
-            spotifyId,
+            spotifyId: user.spotifyId,
         })
     } catch (error) {
         console.error("Error checking password:", error.message)
@@ -253,20 +193,9 @@ exports.setSpotifyUserPassword = async (req, res) => {
         const { password } = req.body
         if (!password) return res.status(400).json({ error: "Password is required" })
 
-        // Verify identity via Spotify — never trust spotifyId from the request body
-        const access_token = req.headers.authorization?.replace('Bearer ', '') || req.cookies.spotify_access_token
-        if (!access_token) return res.status(401).json({ error: "Authorization token required" })
-
-        const profileRes = await axios.get("https://api.spotify.com/v1/me", {
-            headers: { Authorization: `Bearer ${access_token}` }
-        })
-        const spotifyId = profileRes.data.id
-        if (!spotifyId) return res.status(401).json({ error: "Could not verify Spotify identity" })
-
         const hashedPassword = await bcrypt.hash(password, 10)
-
-        const user = await SpotifyUser.findOneAndUpdate(
-            { spotifyId },
+        const user = await SpotifyUser.findByIdAndUpdate(
+            req.user.id,
             { password: hashedPassword },
             { new: true }
         )
@@ -282,18 +211,16 @@ exports.setSpotifyUserPassword = async (req, res) => {
 
 // retrieve top artist data
 exports.getTopArtists = async(req, res) => {
-    let access_token = req.headers.authorization?.replace('Bearer ', '')
-    if(!access_token) {
-        access_token = req.cookies.spotify_access_token
-    }
+    // x-spotify-token is sent when Authorization carries a JWT for auth instead
+    let access_token = req.headers['x-spotify-token']
+        || req.headers.authorization?.replace('Bearer ', '')
+        || req.cookies.spotify_access_token
 
     let refresh_token = req.headers['x-refresh-token']
-    if (!refresh_token) {
-        refresh_token = req.cookies.spotify_refresh_token
-    }
+        || req.cookies.spotify_refresh_token
 
-    if(!access_token || !refresh_token) {
-        return res.status(400).json({error: 'Tokens are required'})
+    if (!access_token || !refresh_token) {
+        return res.status(400).json({ error: 'Tokens are required' })
     }
 
     try {
