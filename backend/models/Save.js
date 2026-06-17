@@ -10,8 +10,8 @@ const SaveSchema = new mongoose.Schema({
     address: String,
     geometry: {
         location: {
-            lat: { type: Number, required: true },
-            lng: { type: Number, required: true}
+            lat: { type: Number },
+            lng: { type: Number }
         },
         viewport: {
             northeast: {

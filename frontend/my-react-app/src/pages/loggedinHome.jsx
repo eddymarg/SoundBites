@@ -505,6 +505,7 @@ const UserHome = () => {
                     credentials: 'include',
                     headers: spotifyAuthHeaders(),
                 })
+                setLists(prev => prev.map(l => ({ ...l, place_ids: l.place_ids.filter(id => id !== restaurant.place_id) })))
             } catch (error) {
                 setSavedIds(prev => [...prev, restaurant.place_id])
                 console.error("Failed to remove bookmark:", error)
@@ -551,30 +552,39 @@ const UserHome = () => {
         if (!list) return
         const isInList = list.place_ids?.includes(restaurant.place_id)
 
-        setLists(prev => prev.map(l =>
+        const updatedLists = lists.map(l =>
             l._id === listId
                 ? { ...l, place_ids: isInList
                     ? l.place_ids.filter(id => id !== restaurant.place_id)
                     : [...l.place_ids, restaurant.place_id] }
                 : l
-        ))
+        )
+        setLists(updatedLists)
 
-        // Auto-save the restaurant when adding to a list for the first time
+        const stillInAnyList = isInList
+            ? updatedLists.some(l => l.place_ids.includes(restaurant.place_id))
+            : true
+
+        // Auto-save when adding to a list for the first time
         if (!isInList && !savedIds.includes(restaurant.place_id)) {
             bookmarkToggle(restaurant)
         }
 
         try {
-            const url = `${import.meta.env.VITE_API_URL}/api/lists/${listId}/${isInList ? 'remove' : 'add'}/${restaurant.place_id}`
-            await fetch(url, { method: isInList ? 'DELETE' : 'POST', credentials: 'include', headers: spotifyAuthHeaders() })
+            if (isInList && !stillInAnyList) {
+                // Removing from last list: unsave (backend also cleans all list memberships)
+                setSavedIds(prev => prev.filter(id => id !== restaurant.place_id))
+                await fetch(`${import.meta.env.VITE_API_URL}/api/remove/${restaurant.place_id}`, {
+                    method: 'DELETE',
+                    credentials: 'include',
+                    headers: spotifyAuthHeaders(),
+                })
+            } else {
+                const url = `${import.meta.env.VITE_API_URL}/api/lists/${listId}/${isInList ? 'remove' : 'add'}/${restaurant.place_id}`
+                await fetch(url, { method: isInList ? 'DELETE' : 'POST', credentials: 'include', headers: spotifyAuthHeaders() })
+            }
         } catch {
-            setLists(prev => prev.map(l =>
-                l._id === listId
-                    ? { ...l, place_ids: isInList
-                        ? [...l.place_ids, restaurant.place_id]
-                        : l.place_ids.filter(id => id !== restaurant.place_id) }
-                    : l
-            ))
+            setLists(lists)
         }
     }
 

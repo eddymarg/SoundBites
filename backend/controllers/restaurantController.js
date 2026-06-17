@@ -235,7 +235,7 @@ exports.getNearbyRestoByMusic = async (req, res) => {
                 place_id: resto.place_id,
                 name: resto.name,
                 address: resto.formatted_address,
-                rating: resto.rating || "No rating",
+                rating: resto.rating ?? null,
                 user_ratings_total: resto.user_ratings_total || 0,
                 price_level: resto.price_level,
                 photo: photoUrl,
