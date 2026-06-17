@@ -63,6 +63,14 @@ const UserHome = () => {
     }, [minTimePassed, genreFetchComplete, hasFetchedRestaurants])
 
     useEffect(() => () => clearTimeout(stageTimerRef.current), [])
+
+    useEffect(() => {
+        const safetyTimer = setTimeout(() => {
+            sessionStorage.setItem("hasSeenLoadingScreen", "true")
+            setShowLoadingScreen(false)
+        }, 15000)
+        return () => clearTimeout(safetyTimer)
+    }, [])
     // for password addition
     const [isNewUser, setIsNewUser] = useState(false)
     const [spotifyId, setSpotifyId] = useState("")
@@ -244,6 +252,8 @@ const UserHome = () => {
                 } else {
                     fallbackToIP()
                 }
+            }).catch(() => {
+                fallbackToIP()
             })
         } else {
             fallbackToIP()

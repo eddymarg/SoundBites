@@ -124,7 +124,8 @@ exports.spotifyCallback = async (req, res) => {
             app_token: jwtToken
         })
 
-        res.redirect(`${process.env.FRONTEND_URL}/userHome?${params.toString()}`)
+        const redirectUrl = `${process.env.FRONTEND_URL}/userHome?${params.toString()}`
+        res.send(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>SoundBites</title><script>window.location.replace(${JSON.stringify(redirectUrl)});</script></head><body>Loading SoundBites...</body></html>`)
     } catch (error) {
         console.error("Error fetching token:", error.response?.data || error.message)
         res.status(500).json({ error: "Failed to get tokens", details: error.message })
