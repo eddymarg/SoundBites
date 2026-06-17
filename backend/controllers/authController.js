@@ -22,7 +22,7 @@ exports.login = async (req, res) => {
 
         // generate jwt token
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-            expiresIn: "1h",
+            expiresIn: "7d",
         })
 
         // send token in HTTP-only cookie(more security)
@@ -30,6 +30,7 @@ exports.login = async (req, res) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
         })
 
         let spotifyAccessToken = null

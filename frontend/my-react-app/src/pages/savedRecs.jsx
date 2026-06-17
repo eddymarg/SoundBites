@@ -32,26 +32,38 @@ const IMG_FALLBACK = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
 const PRICE_LEVELS = ["$", "$$", "$$$", "$$$$"]
 
 const TAB_STYLES = {
-    mb: 0,
-    borderBottom: '2px solid #f0f0f0',
+    mb: 2,
+    minHeight: 'unset',
     '& .MuiTabs-indicator': {
-        backgroundColor: '#EF233C',
-        height: 3,
-        borderRadius: '2px 2px 0 0',
+        display: 'none',
+    },
+    '& .MuiTabs-flexContainer': {
+        gap: '8px',
     },
     '& .MuiTab-root': {
         textTransform: 'none',
-        fontSize: '15px',
+        fontSize: '14px',
         fontWeight: 500,
-        color: '#888',
+        color: '#999',
         minWidth: 'auto',
-        px: 2,
-        py: 1.5,
-        minHeight: 'unset',
+        minHeight: 34,
+        px: 2.5,
+        py: 0.75,
+        borderRadius: '50px',
+        border: '1.5px solid #FDE68A',
+        backgroundColor: '#FFFBEB',
+        transition: 'all 0.15s',
+        '&:hover': {
+            color: '#333',
+            backgroundColor: '#FEF3C7',
+            border: '1.5px solid #FCD34D',
+        },
     },
     '& .Mui-selected': {
-        color: '#EF233C !important',
+        color: '#1a1a1a !important',
         fontWeight: 700,
+        backgroundColor: '#FDE68A !important',
+        border: '1.5px solid #FCD34D !important',
     },
 }
 
@@ -86,6 +98,19 @@ const SavedRestaurantsPage = () => {
 
     const mobilePanelRef = useRef(null)
     const dragStartY = useRef(null)
+    const addMoreSentinelRef = useRef(null)
+    const [addMoreStuck, setAddMoreStuck] = useState(false)
+
+    useEffect(() => {
+        const el = addMoreSentinelRef.current
+        if (!el) return
+        const observer = new IntersectionObserver(
+            ([entry]) => setAddMoreStuck(!entry.isIntersecting),
+            { threshold: 1.0 }
+        )
+        observer.observe(el)
+        return () => observer.disconnect()
+    }, [selectedListId])
 
     const visitedRestaurants = savedRestaurants.filter(r => r.visited)
     const selectedList = lists.find(l => l._id === selectedListId)
@@ -125,6 +150,21 @@ const SavedRestaurantsPage = () => {
         fetchLists()
     }, [])
 
+    useEffect(() => {
+        if (!selectedLocation?.place_id || 'website' in selectedLocation) return
+        fetch(`${import.meta.env.VITE_API_URL}/api/place-details/${selectedLocation.place_id}`, {
+            credentials: 'include',
+            headers: spotifyAuthHeaders(),
+        })
+            .then(res => res.json())
+            .then(details => {
+                setSelectedLocation(prev =>
+                    prev?.place_id === selectedLocation.place_id ? { ...prev, ...details } : prev
+                )
+            })
+            .catch(err => console.error("fetchPlaceDetails", err))
+    }, [selectedLocation?.place_id])
+
     const fetchLists = async () => {
         try {
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/lists`, { credentials: 'include', headers: spotifyAuthHeaders() })
@@ -158,6 +198,7 @@ const SavedRestaurantsPage = () => {
             if (selectedLocation?.place_id === restaurant.place_id) setSelectedLocation(null)
             try {
                 await fetch(`${import.meta.env.VITE_API_URL}/api/remove/${restaurant.place_id}`, { method: 'DELETE', credentials: 'include', headers: spotifyAuthHeaders() })
+                setLists(prev => prev.map(l => ({ ...l, place_ids: l.place_ids.filter(id => id !== restaurant.place_id) })))
             } catch {
                 setSavedIds(prev => [...prev, restaurant.place_id])
                 setSavedRestaurants(prev => [...prev, restaurant])
@@ -194,7 +235,7 @@ const SavedRestaurantsPage = () => {
                 body: JSON.stringify({ name: newListName.trim() })
             })
             const list = await res.json()
-            setLists(prev => [list, ...prev])
+            setLists(prev => [...prev, list])
             setNewListName('')
             setCreatingList(false)
         } catch (err) {
@@ -216,16 +257,24 @@ const SavedRestaurantsPage = () => {
     const toggleRestaurantInList = async (listId, restaurant) => {
         const list = lists.find(l => l._id === listId)
         const isInList = list?.place_ids?.includes(restaurant.place_id)
-        setLists(prev => prev.map(l =>
+
+        const updatedLists = lists.map(l =>
             l._id === listId
                 ? { ...l, place_ids: isInList ? l.place_ids.filter(id => id !== restaurant.place_id) : [...l.place_ids, restaurant.place_id] }
                 : l
-        ))
+        )
+        setLists(updatedLists)
+
+        const stillInAnyList = isInList
+            ? updatedLists.some(l => l.place_ids.includes(restaurant.place_id))
+            : true
+
         if (!isInList && !savedIds.includes(restaurant.place_id)) {
+            // Adding to list and not yet saved: auto-save
             setSavedIds(prev => [...prev, restaurant.place_id])
             setSavedRestaurants(prev => [...prev, restaurant])
             try {
-                await fetch(`${import.meta.env.VITE_API_URL}/api/save`, {
+                const saveRes = await fetch(`${import.meta.env.VITE_API_URL}/api/save`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', ...spotifyAuthHeaders() },
                     credentials: 'include',
@@ -238,15 +287,35 @@ const SavedRestaurantsPage = () => {
                         address: restaurant.address,
                     })
                 })
+                if (!saveRes.ok && saveRes.status !== 409) {
+                    throw new Error(`Save failed: ${saveRes.status}`)
+                }
             } catch (err) {
                 console.error("Failed to auto-save restaurant", err)
+                setSavedIds(prev => prev.filter(id => id !== restaurant.place_id))
+                setSavedRestaurants(prev => prev.filter(r => r.place_id !== restaurant.place_id))
             }
+        } else if (isInList && !stillInAnyList) {
+            // Removing from last list: also unsave from All tab
+            setSavedIds(prev => prev.filter(id => id !== restaurant.place_id))
+            setSavedRestaurants(prev => prev.filter(r => r.place_id !== restaurant.place_id))
+            if (selectedLocation?.place_id === restaurant.place_id) setSelectedLocation(null)
         }
+
         try {
-            const endpoint = isInList
-                ? `${import.meta.env.VITE_API_URL}/api/lists/${listId}/remove/${restaurant.place_id}`
-                : `${import.meta.env.VITE_API_URL}/api/lists/${listId}/add/${restaurant.place_id}`
-            await fetch(endpoint, { method: isInList ? 'DELETE' : 'POST', credentials: 'include', headers: spotifyAuthHeaders() })
+            if (isInList && !stillInAnyList) {
+                // Calling remove-saved cleans up both the saved record and all list memberships
+                await fetch(`${import.meta.env.VITE_API_URL}/api/remove/${restaurant.place_id}`, {
+                    method: 'DELETE',
+                    credentials: 'include',
+                    headers: spotifyAuthHeaders()
+                })
+            } else {
+                const endpoint = isInList
+                    ? `${import.meta.env.VITE_API_URL}/api/lists/${listId}/remove/${restaurant.place_id}`
+                    : `${import.meta.env.VITE_API_URL}/api/lists/${listId}/add/${restaurant.place_id}`
+                await fetch(endpoint, { method: isInList ? 'DELETE' : 'POST', credentials: 'include', headers: spotifyAuthHeaders() })
+            }
         } catch (err) {
             console.error("Failed to update list", err)
             fetchLists()
@@ -300,14 +369,14 @@ const SavedRestaurantsPage = () => {
                 borderRadius: '36px',
                 cursor: 'pointer',
                 border: selectedLocation?.place_id === resto.place_id
-                    ? '1.5px solid #EF233C'
+                    ? '1.5px solid #FCD34D'
                     : '1.5px solid transparent',
                 backgroundColor: selectedLocation?.place_id === resto.place_id
-                    ? '#EF233C10'
+                    ? 'rgba(252,211,77,0.2)'
                     : '#fff',
                 '&:hover': {
-                    backgroundColor: '#EF233C20',
-                    border: '1.5px solid #EF233C',
+                    backgroundColor: 'rgba(252,211,77,0.25)',
+                    border: '1.5px solid #FCD34D',
                 },
             }}
             onClick={() => handleCardClick(resto)}
@@ -354,13 +423,13 @@ const SavedRestaurantsPage = () => {
                                         toggleRestaurantInList(listId, resto)
                                     }}
                                 >
-                                    <RemoveCircleOutlineIcon sx={{ color: '#bbb', fontSize: 22, '&:hover': { color: '#EF233C' } }} />
+                                    <RemoveCircleOutlineIcon sx={{ color: '#bbb', fontSize: 22, '&:hover': { color: '#D97706' } }} />
                                 </IconButton>
                             </Tooltip>
                         ) : (
                             <Tooltip title="Remove from saved">
                                 <IconButton size="small" onClick={(e) => { e.stopPropagation(); bookmarkToggle(resto) }}>
-                                    <BookmarkAddedIcon sx={{ color: '#EF233C', fontSize: 22 }} />
+                                    <BookmarkAddedIcon sx={{ color: '#D97706', fontSize: 22 }} />
                                 </IconButton>
                             </Tooltip>
                         )}
@@ -415,15 +484,14 @@ const SavedRestaurantsPage = () => {
         if (savedRestaurants.length === 0) {
             return (
                 <EmptyState
-                    icon={<BookmarkBorderIcon sx={{ fontSize: 52, color: '#EF233C' }} />}
+                    icon={<BookmarkBorderIcon sx={{ fontSize: 52, color: '#D97706' }} />}
                     title="No saved spots yet"
                     subtitle="Bookmark restaurants from your recommendations to see them here."
                     action={
                         <Button
                             variant="contained"
-                            color="mainRed"
                             onClick={() => navigate('/userHome')}
-                            sx={{ mt: 3, color: 'white', borderRadius: '36px', textTransform: 'none', fontSize: '16px', px: 3, boxShadow: 0 }}
+                            sx={{ mt: 3, color: '#92610A', backgroundColor: '#FCD34D', borderRadius: '36px', textTransform: 'none', fontSize: '16px', px: 3, boxShadow: 0, '&:hover': { backgroundColor: '#FBBF24', boxShadow: 0 } }}
                         >
                             Explore recommendations
                         </Button>
@@ -444,9 +512,9 @@ const SavedRestaurantsPage = () => {
         if (selectedListId && selectedList) {
             const listIcon = selectedList.isDefault
                 ? (selectedList.name === 'Liked'
-                    ? <FavoriteIcon sx={{ fontSize: 20, color: '#EF233C', mr: 1 }} />
+                    ? <FavoriteIcon sx={{ fontSize: 20, color: '#D97706', mr: 1 }} />
                     : selectedList.name === 'Must Visit'
-                        ? <PlaceIcon sx={{ fontSize: 20, color: '#EF233C', mr: 1 }} />
+                        ? <PlaceIcon sx={{ fontSize: 20, color: '#D97706', mr: 1 }} />
                         : null)
                 : null
 
@@ -469,10 +537,10 @@ const SavedRestaurantsPage = () => {
                         <Box sx={{ textAlign: 'center', mt: 6 }}>
                             <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
                                 {selectedList.name === 'Liked'
-                                    ? <FavoriteIcon sx={{ fontSize: 52, color: '#EF233C' }} />
+                                    ? <FavoriteIcon sx={{ fontSize: 52, color: '#D97706' }} />
                                     : selectedList.name === 'Must Visit'
-                                        ? <PlaceIcon sx={{ fontSize: 52, color: '#EF233C' }} />
-                                        : <PlaylistAddIcon sx={{ fontSize: 52, color: '#EF233C' }} />
+                                        ? <PlaceIcon sx={{ fontSize: 52, color: '#D97706' }} />
+                                        : <PlaylistAddIcon sx={{ fontSize: 52, color: '#D97706' }} />
                                 }
                             </Box>
                             <Typography fontWeight={700} fontSize="18px" fontFamily="'Tinos', serif" sx={{ mb: 0.5 }}>
@@ -490,7 +558,7 @@ const SavedRestaurantsPage = () => {
                                     startIcon={<PlaylistAddIcon />}
                                     variant="contained"
                                     onClick={() => setAddPlacesOpen(true)}
-                                    sx={{ color: 'white', backgroundColor: '#EF233C', borderRadius: '36px', textTransform: 'none', fontWeight: 600, px: 3, boxShadow: 0, '&:hover': { backgroundColor: '#d41e35', boxShadow: 0 } }}
+                                    sx={{ color: '#92610A', backgroundColor: '#FCD34D', borderRadius: '36px', textTransform: 'none', fontWeight: 600, px: 3, boxShadow: 0, '&:hover': { backgroundColor: '#FBBF24', boxShadow: 0 } }}
                                 >
                                     Add places
                                 </Button>
@@ -504,35 +572,42 @@ const SavedRestaurantsPage = () => {
                             </Stack>
                         </Box>
                     ) : (
-                        <Stack spacing={1.5}>
-                            {listRestaurants.map((resto, index) => (
-                                <RestaurantCard
-                                    key={resto.place_id || index}
-                                    resto={resto}
-                                    showRemoveFromList
-                                    listId={selectedListId}
-                                />
-                            ))}
-                            <Box
-                                sx={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: 1,
-                                    mt: 0.5,
-                                    py: 2,
-                                    borderRadius: '20px',
-                                    border: '1.5px dashed #EF233C30',
-                                    cursor: 'pointer',
-                                    color: '#EF233C',
-                                    '&:hover': { backgroundColor: '#EF233C08', border: '1.5px dashed #EF233C' },
-                                }}
-                                onClick={() => setAddPlacesOpen(true)}
-                            >
-                                <PlaylistAddIcon sx={{ fontSize: 20 }} />
-                                <Typography fontSize="14px" fontWeight={600}>Add more places</Typography>
+                        <>
+                            <Stack spacing={1.5} sx={{ pb: 1 }}>
+                                {listRestaurants.map((resto, index) => (
+                                    <RestaurantCard
+                                        key={resto.place_id || index}
+                                        resto={resto}
+                                        showRemoveFromList
+                                        listId={selectedListId}
+                                    />
+                                ))}
+                            </Stack>
+                            <Box ref={addMoreSentinelRef} sx={{ height: '1px' }} />
+                            <Box sx={{ position: 'sticky', bottom: 0, zIndex: 1, pt: 1, pb: 2 }}>
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: 1,
+                                        py: 1.5,
+                                        borderRadius: '20px',
+                                        border: '1.5px dashed #FCD34D',
+                                        cursor: 'pointer',
+                                        color: '#92610A',
+                                        backgroundColor: addMoreStuck ? '#FCD34D' : 'rgba(252,211,77,0.25)',
+                                        boxShadow: addMoreStuck ? '0 2px 16px rgba(252,211,77,0.4)' : '0 2px 12px rgba(252,211,77,0.2)',
+                                        transition: 'background-color 0.2s, box-shadow 0.2s',
+                                        '&:hover': { backgroundColor: addMoreStuck ? '#FBBF24' : 'rgba(252,211,77,0.4)', border: '1.5px dashed #FBBF24' },
+                                    }}
+                                    onClick={() => setAddPlacesOpen(true)}
+                                >
+                                    <PlaylistAddIcon sx={{ fontSize: 20 }} />
+                                    <Typography fontSize="14px" fontWeight={600}>Add more places</Typography>
+                                </Box>
                             </Box>
-                        </Stack>
+                        </>
                     )}
                 </Box>
             )
@@ -561,7 +636,7 @@ const SavedRestaurantsPage = () => {
                             sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
                         />
                         <Tooltip title="Create list">
-                            <IconButton onClick={createList} sx={{ color: '#EF233C' }}>
+                            <IconButton onClick={createList} sx={{ color: '#D97706' }}>
                                 <CheckIcon />
                             </IconButton>
                         </Tooltip>
@@ -575,7 +650,7 @@ const SavedRestaurantsPage = () => {
                     <Button
                         startIcon={<AddIcon />}
                         onClick={() => setCreatingList(true)}
-                        sx={{ mb: 2, textTransform: 'none', color: '#EF233C', fontWeight: 600, borderRadius: '36px', border: '1.5px solid #EF233C', px: 2 }}
+                        sx={{ mb: 2, textTransform: 'none', color: '#D97706', fontWeight: 600, borderRadius: '36px', border: '1.5px solid #FCD34D', px: 2 }}
                     >
                         New List
                     </Button>
@@ -586,9 +661,9 @@ const SavedRestaurantsPage = () => {
                         {sortedLists.map(list => {
                             const defaultIcon = list.isDefault
                                 ? (list.name === 'Liked'
-                                    ? <FavoriteIcon sx={{ fontSize: 22, color: '#EF233C', mr: 1.5, flexShrink: 0 }} />
+                                    ? <FavoriteIcon sx={{ fontSize: 22, color: '#D97706', mr: 1.5, flexShrink: 0 }} />
                                     : list.name === 'Must Visit'
-                                        ? <PlaceIcon sx={{ fontSize: 22, color: '#EF233C', mr: 1.5, flexShrink: 0 }} />
+                                        ? <PlaceIcon sx={{ fontSize: 22, color: '#D97706', mr: 1.5, flexShrink: 0 }} />
                                         : null)
                                 : null
                             return (
@@ -599,10 +674,10 @@ const SavedRestaurantsPage = () => {
                                         alignItems: 'center',
                                         p: '14px 16px',
                                         borderRadius: '20px',
-                                        backgroundColor: list.isDefault ? '#ffeeef' : '#fff',
+                                        backgroundColor: list.isDefault ? '#FFFBEB' : '#fff',
                                         cursor: 'pointer',
-                                        border: list.isDefault ? '1.5px solid #EF233C45' : '1.5px solid transparent',
-                                        '&:hover': { border: '1.5px solid #EF233C', backgroundColor: '#EF233C08' },
+                                        border: list.isDefault ? '1.5px solid rgba(252,211,77,0.6)' : '1.5px solid transparent',
+                                        '&:hover': { border: '1.5px solid #FCD34D', backgroundColor: 'rgba(252,211,77,0.12)' },
                                     }}
                                     onClick={() => setSelectedListId(list._id)}
                                 >
@@ -612,7 +687,7 @@ const SavedRestaurantsPage = () => {
                                             {list.name}
                                         </Typography>
                                         <Typography variant="body2" color="text.secondary">
-                                            {list.place_ids.length} {list.place_ids.length === 1 ? 'place' : 'places'}
+                                            {(() => { const count = list.place_ids.filter(id => savedIds.includes(id)).length; return `${count} ${count === 1 ? 'place' : 'places'}` })()}
                                         </Typography>
                                     </Box>
                                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -621,7 +696,7 @@ const SavedRestaurantsPage = () => {
                                                 <IconButton
                                                     size="small"
                                                     onClick={(e) => { e.stopPropagation(); deleteList(list._id) }}
-                                                    sx={{ color: '#ccc', '&:hover': { color: '#ef233c' } }}
+                                                    sx={{ color: '#ccc', '&:hover': { color: '#D97706' } }}
                                                 >
                                                     <DeleteOutlineIcon fontSize="small" />
                                                 </IconButton>
@@ -665,7 +740,7 @@ const SavedRestaurantsPage = () => {
                         <Button
                             variant="outlined"
                             onClick={() => navigate('/userHome')}
-                            sx={{ mt: 3, borderColor: '#EF233C', color: '#EF233C', borderRadius: '36px', textTransform: 'none', fontSize: '16px', px: 3 }}
+                            sx={{ mt: 3, borderColor: '#FCD34D', color: '#D97706', borderRadius: '36px', textTransform: 'none', fontSize: '16px', px: 3 }}
                         >
                             Go to recommendations
                         </Button>
@@ -698,21 +773,21 @@ const SavedRestaurantsPage = () => {
                     const isInList = list.place_ids.includes(addToListRestaurant?.place_id)
                     const defaultIcon = list.isDefault
                         ? (list.name === 'Liked'
-                            ? <FavoriteIcon sx={{ fontSize: 18, color: '#EF233C' }} />
+                            ? <FavoriteIcon sx={{ fontSize: 18, color: '#D97706' }} />
                             : list.name === 'Must Visit'
-                                ? <PlaceIcon sx={{ fontSize: 18, color: '#EF233C' }} />
+                                ? <PlaceIcon sx={{ fontSize: 18, color: '#D97706' }} />
                                 : null)
                         : null
                     return (
                         <MenuItem key={list._id} onClick={() => toggleRestaurantInList(list._id, addToListRestaurant)} sx={{ gap: 1 }}>
-                            <Checkbox size="small" checked={isInList} disableRipple sx={{ p: 0, color: '#EF233C', '&.Mui-checked': { color: '#EF233C' } }} onClick={(e) => e.stopPropagation()} />
+                            <Checkbox size="small" checked={isInList} disableRipple sx={{ p: 0, color: '#D97706', '&.Mui-checked': { color: '#D97706' } }} onClick={(e) => e.stopPropagation()} />
                             {defaultIcon}
                             <Typography variant="body2">{list.name}</Typography>
                         </MenuItem>
                     )
                 })}
                 <Divider />
-                <MenuItem onClick={() => { setAddToListAnchor(null); setAddToListRestaurant(null); setActiveTab(1); setSelectedListId(null); setCreatingList(true) }} sx={{ color: '#EF233C', gap: 1 }}>
+                <MenuItem onClick={() => { setAddToListAnchor(null); setAddToListRestaurant(null); setActiveTab(1); setSelectedListId(null); setCreatingList(true) }} sx={{ color: '#D97706', gap: 1 }}>
                     <AddIcon fontSize="small" />
                     <Typography variant="body2" fontWeight={600}>New list</Typography>
                 </MenuItem>
@@ -770,7 +845,7 @@ const SavedRestaurantsPage = () => {
                         if (filtered.length === 0) {
                             return (
                                 <Box sx={{ textAlign: 'center', mt: 8 }}>
-                                    <RestaurantIcon sx={{ fontSize: 44, color: '#EF233C', mb: 1 }} />
+                                    <RestaurantIcon sx={{ fontSize: 44, color: '#D97706', mb: 1 }} />
                                     <Typography color="text.secondary" fontSize="14px">
                                         {addPlacesSearch ? 'No restaurants match your search.' : 'No recommendations yet. Go explore!'}
                                     </Typography>
@@ -795,9 +870,9 @@ const SavedRestaurantsPage = () => {
                                                 px: 1.5,
                                                 borderRadius: '16px',
                                                 cursor: 'pointer',
-                                                backgroundColor: isInList ? '#EF233C08' : 'transparent',
-                                                border: isInList ? '1px solid #EF233C20' : '1px solid transparent',
-                                                '&:hover': { backgroundColor: '#EF233C10', border: '1px solid #EF233C30' },
+                                                backgroundColor: isInList ? 'rgba(252,211,77,0.15)' : 'transparent',
+                                                border: isInList ? '1px solid rgba(252,211,77,0.4)' : '1px solid transparent',
+                                                '&:hover': { backgroundColor: 'rgba(252,211,77,0.2)', border: '1px solid rgba(252,211,77,0.5)' },
                                             }}
                                             onClick={() => toggleRestaurantInList(selectedListId, restaurant)}
                                         >
@@ -805,8 +880,8 @@ const SavedRestaurantsPage = () => {
                                                 size="small"
                                                 checked={!!isInList}
                                                 disableRipple
-                                                sx={{ p: 0, color: '#ddd', '&.Mui-checked': { color: '#EF233C' } }}
-                                                onClick={e => e.stopPropagation()}
+                                                sx={{ p: 0, color: '#ddd', '&.Mui-checked': { color: '#D97706' } }}
+                                                onClick={e => { e.stopPropagation(); toggleRestaurantInList(selectedListId, restaurant) }}
                                             />
                                             <img
                                                 src={restaurant.photo}
@@ -831,10 +906,10 @@ const SavedRestaurantsPage = () => {
                                                     <IconButton
                                                         size="small"
                                                         onClick={e => { e.stopPropagation(); likedList && toggleRestaurantInList(likedList._id, restaurant) }}
-                                                        sx={{ p: 0.5, '&:hover .like-icon': { color: '#EF233C' } }}
+                                                        sx={{ p: 0.5, '&:hover .like-icon': { color: '#D97706' } }}
                                                     >
                                                         {isLiked
-                                                            ? <FavoriteIcon className="like-icon" sx={{ fontSize: 20, color: '#EF233C' }} />
+                                                            ? <FavoriteIcon className="like-icon" sx={{ fontSize: 20, color: '#D97706' }} />
                                                             : <FavoriteBorderIcon className="like-icon" sx={{ fontSize: 20, color: '#ccc', transition: 'color 0.15s' }} />
                                                         }
                                                     </IconButton>
@@ -845,7 +920,7 @@ const SavedRestaurantsPage = () => {
                                                         onClick={e => { e.stopPropagation(); window.open(mapsUrl, '_blank', 'noopener') }}
                                                         sx={{ p: 0.5 }}
                                                     >
-                                                        <OpenInNewIcon sx={{ fontSize: 16, color: '#bbb', '&:hover': { color: '#EF233C' } }} />
+                                                        <OpenInNewIcon sx={{ fontSize: 16, color: '#bbb', '&:hover': { color: '#D97706' } }} />
                                                     </IconButton>
                                                 </Tooltip>
                                             </Box>
@@ -863,9 +938,9 @@ const SavedRestaurantsPage = () => {
                         fullWidth
                         variant="contained"
                         onClick={() => { setAddPlacesOpen(false); setAddPlacesSearch('') }}
-                        sx={{ color: 'white', backgroundColor: '#EF233C', borderRadius: '36px', textTransform: 'none', fontWeight: 600, py: 1.25, boxShadow: 0, '&:hover': { backgroundColor: '#d41e35', boxShadow: 0 } }}
+                        sx={{ color: '#92610A', backgroundColor: '#FCD34D', borderRadius: '36px', textTransform: 'none', fontWeight: 600, py: 1.25, boxShadow: 0, '&:hover': { backgroundColor: '#FBBF24', boxShadow: 0 } }}
                     >
-                        Done ({selectedList?.place_ids?.length ?? 0} places)
+                        Done ({(selectedList?.place_ids ?? []).filter(id => savedIds.includes(id)).length} places)
                     </Button>
                 </Box>
             </Drawer>
@@ -937,13 +1012,13 @@ const SavedRestaurantsPage = () => {
                                     disableElevation
                                     sx={{
                                         '@keyframes savedPulse': {
-                                            '0%':   { boxShadow: '0 2px 16px rgba(0,0,0,0.15), 0 0 0 0 rgba(239,35,60,0.40)' },
-                                            '65%':  { boxShadow: '0 2px 16px rgba(0,0,0,0.15), 0 0 0 12px rgba(239,35,60,0)' },
-                                            '100%': { boxShadow: '0 2px 16px rgba(0,0,0,0.15), 0 0 0 0 rgba(239,35,60,0)' },
+                                            '0%':   { boxShadow: '0 2px 16px rgba(0,0,0,0.15), 0 0 0 0 rgba(252,211,77,0.6)' },
+                                            '65%':  { boxShadow: '0 2px 16px rgba(0,0,0,0.15), 0 0 0 12px rgba(252,211,77,0)' },
+                                            '100%': { boxShadow: '0 2px 16px rgba(0,0,0,0.15), 0 0 0 0 rgba(252,211,77,0)' },
                                         },
                                         borderRadius: '50px',
                                         backgroundColor: 'white',
-                                        color: '#EF233C',
+                                        color: '#D97706',
                                         boxShadow: '0 2px 16px rgba(0,0,0,0.15)',
                                         textTransform: 'none',
                                         fontWeight: 700,
@@ -951,9 +1026,9 @@ const SavedRestaurantsPage = () => {
                                         px: 2.5,
                                         py: 0.9,
                                         whiteSpace: 'nowrap',
-                                        border: '1.5px solid #EF233C30',
+                                        border: '1.5px solid rgba(252,211,77,0.5)',
                                         animation: mobilePanelOpen ? 'none' : 'savedPulse 2s ease-out infinite',
-                                        '&:hover': { backgroundColor: '#fff5f5' },
+                                        '&:hover': { backgroundColor: '#FFFBEB' },
                                     }}
                                 >
                                     {savedRestaurants.length} saved {mobilePanelOpen ? '▼' : '▲'}

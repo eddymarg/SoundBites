@@ -65,7 +65,7 @@ const HomeHeader = ({setHasFetchedRestaurants, setVisibleRestaurants, homeButton
                 {homeButton ? (
                     <Tooltip title="Back to home">
                         <IconButton onClick={() => navigate("/userHome")}>
-                            <HomeIcon sx={{ width: 40, height: 40, color: '#F5536A' }} />
+                            <HomeIcon sx={{ width: 40, height: 40, color: '#EF233C' }} />
                         </IconButton>
                     </Tooltip>
                 ) : (
@@ -81,7 +81,7 @@ const HomeHeader = ({setHasFetchedRestaurants, setVisibleRestaurants, homeButton
                 <Stack spacing={2} direction="row">
                     <Tooltip title="Saved restaurants">
                         <IconButton aria-label="bookmark" onClick={() => navigate("/savedRestaurantsPage")}>
-                            <BookmarkIcon fontSize="large" sx={{ color: '#F5536A' }}/>
+                            <BookmarkIcon fontSize="large" sx={{ color: '#EF233C' }}/>
                         </IconButton>
                     </Tooltip>
                     <Button variant="contained" color="mainRed" onClick={handleUserLogout}
